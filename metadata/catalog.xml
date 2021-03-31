@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="http://www.demandware.com/xml/impex/catalog/2006-10-31" catalog-id="apparel-m-catalog">
+    <header>
+        <image-settings>
+            <internal-location base-path="/images"/>
+            <view-types>
+                <view-type>large</view-type>
+                <view-type>medium</view-type>
+                <view-type>small</view-type>
+                <view-type>swatch</view-type>
+                <view-type>hi-res</view-type>
+            </view-types>
+            <variation-attribute-id>color</variation-attribute-id>
+            <alt-pattern>${productname}, ${variationvalue}, ${viewtype}</alt-pattern>
+            <title-pattern>${productname}, ${variationvalue}</title-pattern>
+        </image-settings>
+    </header>
+
+    <product product-id="EXTEND-12">
+        <ean/>
+        <upc/>
+        <unit/>
+        <min-order-quantity>1</min-order-quantity>
+        <step-quantity>1</step-quantity>
+        <display-name xml:lang="x-default">EXTEND-12</display-name>
+        <store-force-price-flag>false</store-force-price-flag>
+        <store-non-inventory-flag>false</store-non-inventory-flag>
+        <store-non-revenue-flag>false</store-non-revenue-flag>
+        <store-non-discountable-flag>false</store-non-discountable-flag>
+        <online-flag>true</online-flag>
+        <available-flag>false</available-flag>
+        <searchable-flag>false</searchable-flag>
+        <images>
+            <image-group view-type="hi-res">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="large">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="medium">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="small">
+                <image path="extend/extend-logo-small.png"/>
+            </image-group>
+        </images>
+        <tax-class-id>standard</tax-class-id>
+        <page-attributes/>
+        <options>
+            <option option-id="extendTerm">
+                <sort-mode>price</sort-mode>
+                <option-values>
+                    <option-value value-id="12" default="true">
+                        <display-value xml:lang="x-default">1Y</display-value>
+                        <product-id-modifier>12</product-id-modifier>
+                        <option-value-prices>
+                            <option-value-price currency="USD">0.00</option-value-price>
+                        </option-value-prices>
+                    </option-value>
+                </option-values>
+            </option>
+        </options>
+        <classification-category catalog-id="storefront-catalog-m-en">root</classification-category>
+        <pinterest-enabled-flag>false</pinterest-enabled-flag>
+        <facebook-enabled-flag>false</facebook-enabled-flag>
+        <store-attributes>
+            <force-price-flag>false</force-price-flag>
+            <non-inventory-flag>false</non-inventory-flag>
+            <non-revenue-flag>false</non-revenue-flag>
+            <non-discountable-flag>false</non-discountable-flag>
+        </store-attributes>
+    </product>
+
+    <product product-id="EXTEND-24">
+        <ean/>
+        <upc/>
+        <unit/>
+        <min-order-quantity>1</min-order-quantity>
+        <step-quantity>1</step-quantity>
+        <display-name xml:lang="x-default">EXTEND-24</display-name>
+        <store-force-price-flag>false</store-force-price-flag>
+        <store-non-inventory-flag>false</store-non-inventory-flag>
+        <store-non-revenue-flag>false</store-non-revenue-flag>
+        <store-non-discountable-flag>false</store-non-discountable-flag>
+        <online-flag>true</online-flag>
+        <available-flag>false</available-flag>
+        <searchable-flag>false</searchable-flag>
+        <images>
+            <image-group view-type="hi-res">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="large">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="medium">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="small">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+        </images>
+        <tax-class-id>standard</tax-class-id>
+        <page-attributes/>
+        <options>
+            <option option-id="extendTerm">
+                <sort-mode>price</sort-mode>
+                <option-values>
+                    <option-value value-id="24" default="true">
+                        <display-value xml:lang="x-default">2Y</display-value>
+                        <product-id-modifier>24</product-id-modifier>
+                        <option-value-prices>
+                            <option-value-price currency="USD">0.00</option-value-price>
+                        </option-value-prices>
+                    </option-value>
+                </option-values>
+            </option>
+        </options>
+        <classification-category catalog-id="storefront-catalog-m-en">root</classification-category>
+        <pinterest-enabled-flag>false</pinterest-enabled-flag>
+        <facebook-enabled-flag>false</facebook-enabled-flag>
+        <store-attributes>
+            <force-price-flag>false</force-price-flag>
+            <non-inventory-flag>false</non-inventory-flag>
+            <non-revenue-flag>false</non-revenue-flag>
+            <non-discountable-flag>false</non-discountable-flag>
+        </store-attributes>
+    </product>
+
+    <product product-id="EXTEND-36">
+        <ean/>
+        <upc/>
+        <unit/>
+        <min-order-quantity>1</min-order-quantity>
+        <step-quantity>1</step-quantity>
+        <display-name xml:lang="x-default">EXTEND-36</display-name>
+        <store-force-price-flag>false</store-force-price-flag>
+        <store-non-inventory-flag>false</store-non-inventory-flag>
+        <store-non-revenue-flag>false</store-non-revenue-flag>
+        <store-non-discountable-flag>false</store-non-discountable-flag>
+        <online-flag>true</online-flag>
+        <available-flag>false</available-flag>
+        <searchable-flag>false</searchable-flag>
+        <images>
+            <image-group view-type="hi-res">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="large">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="medium">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+            <image-group view-type="small">
+                <image path="extend/extend-logo.png"/>
+            </image-group>
+        </images>
+        <tax-class-id>standard</tax-class-id>
+        <brand>EXTEND-36 Brand</brand>
+        <page-attributes/>
+        <options>
+            <option option-id="extendTerm">
+                <sort-mode>price</sort-mode>
+                <option-values>
+                    <option-value value-id="36" default="true">
+                        <display-value xml:lang="x-default">3Y</display-value>
+                        <product-id-modifier>36</product-id-modifier>
+                        <option-value-prices>
+                            <option-value-price currency="USD">0.00</option-value-price>
+                        </option-value-prices>
+                    </option-value>
+                </option-values>
+            </option>
+        </options>
+        <classification-category catalog-id="storefront-catalog-m-en">root</classification-category>
+        <pinterest-enabled-flag>false</pinterest-enabled-flag>
+        <facebook-enabled-flag>false</facebook-enabled-flag>
+        <store-attributes>
+            <force-price-flag>false</force-price-flag>
+            <non-inventory-flag>false</non-inventory-flag>
+            <non-revenue-flag>false</non-revenue-flag>
+            <non-discountable-flag>false</non-discountable-flag>
+        </store-attributes>
+    </product>
+
+</catalog>

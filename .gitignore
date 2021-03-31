@@ -1,0 +1,7 @@
+.settings
+*.iml
+.idea
+.DS_Store
+dw.json
+node_modules/
+cartridges/*/cartridge/static/default/fonts/

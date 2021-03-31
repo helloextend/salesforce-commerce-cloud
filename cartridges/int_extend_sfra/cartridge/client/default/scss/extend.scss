@@ -1,0 +1,13 @@
+@import "~base/variables";
+
+.extend-upsell-style {
+    padding-top: .6em;
+
+    .extend-upsell-style-btn {
+        font-size: .813em;
+        border: 1px solid $red;
+        color: $red !important;
+        padding: .2em .4em;
+        border-radius: 3px;
+    }
+}

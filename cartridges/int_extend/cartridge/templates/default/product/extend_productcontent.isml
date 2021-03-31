@@ -1,0 +1,11 @@
+<iscomment>
+    Extend integration
+    =============================================================
+</iscomment>
+<isscript>
+    var EXT_GLOBAL_SWITCH = dw.system.Site.current.preferences.custom.extendGlobalSwitch;
+    var EXT_PDP_SWITCH = dw.system.Site.current.preferences.custom.extendPDPSwitch;
+</isscript>
+<isif condition="${EXT_GLOBAL_SWITCH && EXT_PDP_SWITCH}">
+    <div id="extend-offer"></div>
+</isif>

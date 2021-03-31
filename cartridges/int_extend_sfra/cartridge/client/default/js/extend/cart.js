@@ -1,0 +1,182 @@
+'use strict';
+
+var Extend = window.Extend || undefined;
+
+/**
+ * Renders an Extend upsell button in cart page
+ * @param {string} uuid - line item uuid
+ * @param {string} pid - corresponding product id
+ * @param {string} qty- corresponding quantity
+ * @returns
+ */
+function addExtendUpsellBtnCart(uuid, pid, qty) {
+	var hasExtendUpsell = $('.item-' + uuid).parents('.product-card-footer').find('#extend-offer-'+uuid).length > 0;
+    if (!hasExtendUpsell) {
+        $('<div class="extend-upsell-style" id="extend-offer-'+uuid+'"></div>').insertAfter('.item-' + uuid).ready(function(){
+        	/** initialize offer */
+        	Extend.buttons.renderSimpleOffer('#extend-offer-'+uuid, {
+        		 referenceId: pid,
+        		 onAddToCart:
+        		   function(plan) {
+        			if (plan) {
+        				var form = {};
+        				form.extendPlanId = plan.plan.planId;
+        				form.extendPrice = plan.plan.price;
+        				form.extendTerm = plan.plan.term;
+        				form.pid = pid;
+        				form.pliUUID = uuid;
+        				form.quantity = qty;
+        				$.spinner().start();
+
+        				$.ajax({
+        					url: window.EXT_CART_ADDTOCART,
+        					method: 'POST',
+        					data: form,
+        					success: function () {
+        						location.reload();
+        					},
+        					error: function () {
+        						$.spinner().stop();
+        					}
+        				});
+        			}
+        		}
+        	});
+        });
+    }
+}
+
+/**
+ * Renders an Extend upsell button under Mini Cart popup
+ * @param {string} uuid - line item uuid
+ * @param {string} btnLabel - upsell button label
+ * @param {string} pid - corresponding product id
+ */
+function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
+    var hasExtendUpsell = $('.minicart').find('.card.uuid-' + uuid).find('#extend-offer-'+uuid).length > 0;
+    if (!hasExtendUpsell) {
+        $('<div class="extend-upsell-style" id="extend-offer-'+uuid+'"></div>').insertAfter('.minicart .product-summary ' + '.item-' + uuid).ready(function(){
+        	/** initialize offer */
+        	Extend.buttons.renderSimpleOffer('#extend-offer-'+uuid, {
+        		 referenceId: pid,
+        		 onAddToCart:
+        		   function(plan) {
+        			if (plan) {
+        				var form = {};
+        				form.extendPlanId = plan.plan.planId;
+        				form.extendPrice = plan.plan.price;
+        				form.extendTerm = plan.plan.term;
+        				form.pid = pid;
+        				form.pliUUID = uuid;
+        				form.quantity = qty;
+        				$.spinner().start();
+
+        				$.ajax({
+        					url: window.EXT_CART_ADDTOCART,
+        					method: 'POST',
+        					data: form,
+        					success: function () {
+        						location.reload();
+        					},
+        					error: function () {
+        						$.spinner().stop();
+        					}
+        				});
+        			}
+        		}
+        	});
+        });;
+    }
+}
+/**
+ * Extend config is initialized
+ */
+function initExtend() {
+    $(document).ready(function () {
+        var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
+        var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
+        Extend.config({ storeId: EXT_STORE_ID, environment:EXT_ENVIRONMENT});
+    });
+}
+
+/**
+ * Render the upsell buttons
+ */
+function renderUpsellBtns() {
+    if (!window.EXT_CART_UPSELL_SWITCH) {
+        return;
+    }
+
+    $('.cart-page .card.product-info').each(function (index, product) {
+        var classes = $(product).attr('class').match(/uuid-(\w+)/);
+        var uuid;
+
+        if (classes) {
+            uuid = classes[1];
+        }
+
+        makeRequestForRender(uuid, addExtendUpsellBtnCart);
+    });
+}
+
+/**
+ * Render the upsell buttons on mini cart
+ */
+function renderUpsellBtnsMiniCart() {
+    if (!window.EXT_CART_UPSELL_SWITCH) {
+        return;
+    }
+
+    $('.minicart .product-summary .card').each(function (index, product) {
+        var classes = $(product).attr('class').match(/uuid-(\w+)/);
+        var uuid;
+
+        if (classes) {
+            uuid = classes[1];
+        }
+
+        makeRequestForRender(uuid, addExtendUpsellBtnInMiniCart);
+    });
+}
+
+
+/**
+ * Produces the request for render upsell buttons
+ */
+function makeRequestForRender(uuid, renderUpsellBtnCallback) {
+    $.ajax({
+        url: window.EXT_CART_WARRANTYCHECK + '?uuid=' + uuid,
+        method: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            if (data.isEligible) {
+                renderUpsellBtnCallback(uuid, data.pid, data.qty);
+            }
+        },
+        error: function () { }
+    });
+}
+
+
+/**
+ * Rerender the button after the warranty is deleted from cart
+ */
+function updateUpsellBtns() {
+    $('body').on('click', '.cart-delete-confirmation-btn', function () {
+        $('body').on("cart:update", function () {
+            renderUpsellBtns();
+        });
+    }); 
+
+    // Render when Mini Cart loaded
+    $('body').on('extend:minicart:loaded', function () {
+        renderUpsellBtnsMiniCart();
+    });
+}
+
+
+module.exports = {
+    initExtend: initExtend,
+    renderUpsellBtns: renderUpsellBtns,
+    updateUpsellBtns: updateUpsellBtns
+};

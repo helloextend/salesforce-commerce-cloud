@@ -1,0 +1,14 @@
+<iscomment>Extend SDK</iscomment>
+<script>
+    var EXT_STORE_ID = "${dw.system.Site.current.preferences.custom.extendStoreID}";
+    var EXT_GLOBAL_SWITCH = ${dw.system.Site.current.preferences.custom.extendGlobalSwitch};
+    var EXT_PDP_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendPDPUpsellSwitch};
+    var EXT_CART_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendCartUpsellSwitch};
+    var EXT_CART_UPSELL = "${URLUtils.https('Extend-IsEligibleForWarranty')}";
+    var EXT_CART_ADDTOCART = "${URLUtils.https('Extend-AddExtendProduct')}";
+    var EXT_ENVIRONMENT = ${dw.system.Site.current.preferences.custom.isExtendProductionMode} ? 'production' : 'demo';
+</script>
+<isif condition="${dw.system.Site.current.preferences.custom.extendGlobalSwitch}">
+    <script src="${dw.system.Site.current.preferences.custom.extendSDK}"></script>
+    <script src="${URLUtils.staticURL('/js/extend.js')}"></script>
+</isif>
