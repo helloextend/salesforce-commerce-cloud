@@ -24,7 +24,7 @@
     "babel-preset-env": "^1.7.0"
   },
   "dependencies": {
-    "sgmf-scripts": "^2.3.0",
+    "sgmf-scripts": "^2.4.1",
     "bootstrap": "4.3.1",
     "jquery": "^3.4.1"
   },
