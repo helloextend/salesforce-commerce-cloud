@@ -656,6 +656,7 @@ module.exports = {
 
             // BEGIN Extend integration
             var EXT_PDP_UPSELL_SWITCH = window.EXT_PDP_UPSELL_SWITCH || undefined;
+            var isPlanSelected = false;
 
             if ($('#extend-offer').length) {
                 var extendComponent = Extend.buttons.instance('#extend-offer');
@@ -665,8 +666,10 @@ module.exports = {
                     form.extendPlanId = extendPlan.planId;
                     form.extendPrice = extendPlan.price;
                     form.extendTerm = extendPlan.term;
+                    isPlanSelected = true;
                     $(this).trigger('updateAddToCartFormData', form);
-                } else if (EXT_PDP_UPSELL_SWITCH) {
+                }
+            } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected) {
                     Extend.modal.open({
                         referenceId: $('.product-detail').data('pid'),
                         onClose: function (plan) {
@@ -696,7 +699,6 @@ module.exports = {
                         }
                     });
                     return;
-                }
             }
             // END Extend integration
 
