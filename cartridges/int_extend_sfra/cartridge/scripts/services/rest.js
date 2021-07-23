@@ -347,6 +347,50 @@ function Offers() {
     });
 }
 
+/**
+ * Inits service instance for specific Extend operation
+ * @returns {dw.svc.LocalServiceRegistry} - initialized service instance
+ */
+function Leads() {
+    return require('dw/svc/LocalServiceRegistry').createService('int_extend.http.Extend', {
+        createRequest: function (service, requestData) {
+            var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+            var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
+            var credential = service.configuration.credential;
+
+            // Set request headers
+            service.addHeader('Accept', 'application/json; version=2021-04-01');
+            service.addHeader('Content-Type', 'application/json');
+            service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
+
+            // Set request method
+            service.setRequestMethod('POST');
+
+            // Set request endpoint
+            service.setURL(credential.URL + 'stores/' + STORE_ID + '/leads');
+
+            logger.debug('Extend Post Leads Request: {0}', requestData);
+            return requestData;
+        },
+        parseResponse: function (service, httpClient) {
+            logger.debug('Extend Post Leads Response: {0}', httpClient.text);
+            return JSON.parse(httpClient.text);
+        },
+        filterLogMessage: function () {
+            return;
+        },
+        getRequestLogMessage: function () {
+            return;
+        },
+        getResponseLogMessage: function () {
+            return;
+        },
+        mockFull: function (service, httpClient) {
+            return;
+        }
+    });
+}
+
 /** Exports function wrappers */
 module.exports = {
     createContractRequest: function (contractCO) {
@@ -359,5 +403,8 @@ module.exports = {
     createProductRequest: function (requestData) {
         var requestStr = createProductObj(requestData);
         return Products().call(requestStr);
+    },
+    createLeadsRequest: function (requestData) {
+        return Leads().call(requestData);
     }
 };

@@ -76,6 +76,22 @@ function getCustomer(order) {
 }
 
 /**
+ * Get parentLineItemUUID of extended plans in order
+ * @param {Order} order : API Order object
+ * @returns {Array} an array of parentLineItemUUID of extended plans.
+ */
+function getExtendPlansParents(order) {
+    var plans = [];
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+        if (pLi.custom.parentLineItemUUID) {
+            plans.push(pLi.custom.parentLineItemUUID);
+        }
+    }
+    return plans;
+}
+
+/**
  * Add Extend products to Contracts queue
  */
 server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
@@ -83,6 +99,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     var OrderMgr = require('dw/order/OrderMgr');
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
     var Transaction = require('dw/system/Transaction');
+    var extend = require('~/cartridge/scripts/extend'); 
     var viewData = res.getViewData();
 
     if (viewData.error) {
@@ -90,6 +107,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     }
 
     var order = OrderMgr.getOrder(viewData.orderID);
+    var plans = getExtendPlansParents(order);
 
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
@@ -105,6 +123,37 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);
                 });
+            }
+        } else if (pLi.custom.isWarrantable) {
+            // Create lead for product that do not have Extend protection plans associated with them
+            var isExtendedLI = false;
+            
+            if (pLi.custom.persistentUUID) {
+                for (var n = 0; n < plans.length; n++) {
+                    if (plans[n] === pLi.custom.persistentUUID) {
+                        isExtendedLI = true;
+                        break;
+                    }
+                }
+            }
+            if (!isExtendedLI) {
+                var lead = {
+                    customer: {
+                        email: order.customerEmail
+                    },
+                    quantity: pLi.quantity.value,
+                    product: {
+                        purchasePrice: {
+                            currencyCode: order.currencyCode,
+                            amount: moneyToCents(pLi.getAdjustedNetPrice())
+                        },
+                        referenceId: pLi.productID,
+                        transactionDate: Date.now(),
+                        transactionId: order.currentOrderNo
+                    },
+                }
+                // Service call to leads endpoint
+                extend.createLead(JSON.stringify(lead));
             }
         }
     }

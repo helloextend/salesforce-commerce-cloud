@@ -109,10 +109,11 @@ server.append('AddProduct', function (req, res, next) {
  */
 server.get('DoesWarrantyExists', function(req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
+    var Transaction = require('dw/system/Transaction');
     var extend = require('~/cartridge/scripts/extend');
     var qs = req.querystring;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
-    var pid, qty;
+    var pid, qty, lead;
 
     // Query string parameter wasn't provided
     if (!qs.uuid) {
@@ -140,6 +141,7 @@ server.get('DoesWarrantyExists', function(req, res, next) {
         if (currentBasket.productLineItems[i].UUID === qs.uuid) {
             pid = currentBasket.productLineItems[i].productID;
             qty = currentBasket.productLineItems[i].quantityValue;
+            lead = currentBasket.productLineItems[i];
             break;
         }
     }
@@ -159,6 +161,10 @@ server.get('DoesWarrantyExists', function(req, res, next) {
         pid: pid,
         qty:qty
     });
+
+    Transaction.wrap(function() {
+        lead.custom.isWarrantable = true;
+    })
 
     next();
 });
