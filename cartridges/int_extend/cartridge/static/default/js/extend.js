@@ -83,6 +83,7 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
                     form.append('<input type="hidden" name="extendPlanId" value="' + plan.planId + '" />');
                     form.append('<input type="hidden" name="extendPrice" value="' + plan.price + '" />');
                     form.append('<input type="hidden" name="extendTerm" value="' + plan.term + '" />');
+                    isPlanSelected = true;
                 }
                 addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
                 $('.extend-form-data').remove();
