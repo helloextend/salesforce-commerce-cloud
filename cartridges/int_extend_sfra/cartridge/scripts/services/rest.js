@@ -359,7 +359,7 @@ function Leads() {
             var credential = service.configuration.credential;
 
             // Set request headers
-            service.addHeader('Accept', 'application/json; version=2021-04-01');
+            service.addHeader('Accept', 'application/json; version=default');
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
 
@@ -404,7 +404,7 @@ module.exports = {
         var requestStr = createProductObj(requestData);
         return Products().call(requestStr);
     },
-    createLeadsRequest: function (requestData) {
+    createLeadRequest: function (requestData) {
         return Leads().call(requestData);
     }
 };

@@ -107,7 +107,7 @@ function createProduct(paramData) {
  function createLead(paramData) {
     var serviceResponse = null;
 
-    serviceResponse = webService.createLeadsRequest(paramData);
+    serviceResponse = webService.createLeadRequest(paramData);
 
     if (!serviceResponse.ok) {
         var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();

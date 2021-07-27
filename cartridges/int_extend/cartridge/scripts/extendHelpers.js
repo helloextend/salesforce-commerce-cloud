@@ -192,8 +192,71 @@ function addContractToQueue(order) {
     }
 }
 
+/**
+ * Get parentLineItemUUID of extended plans in order
+ * @param {Order} order : API Order object
+ * @returns {Array} an array of parentLineItemUUID of extended plans.
+ */
+ function getExtendPlansParents(order) {
+    var plans = [];
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+        if (pLi.custom.parentLineItemUUID) {
+            plans.push(pLi.custom.parentLineItemUUID);
+        }
+    }
+    return plans;
+}
+
+/**
+ * Create lead for product that do not have Extend protection plans associated with them
+ * @param {dw.order.Order} order : order that's just been placed
+ */
+function createLeads(order) {
+    var extend = require('~/cartridge/scripts/extend'); 
+
+    var plans = getExtendPlansParents(order);
+
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+
+        if (!pLi.custom.parentLineItemUUID && pLi.custom.isWarrantable) {
+            var isExtendedLI = false;
+
+            if (pLi.custom.persistentUUID) {
+                for (var n = 0; n < plans.length; n++) {
+                    if (plans[n] === pLi.custom.persistentUUID) {
+                        isExtendedLI = true;
+                        break;
+                    }
+                }
+            }
+            if (!isExtendedLI) {
+                var lead = {
+                    customer: {
+                        email: order.customerEmail
+                    },
+                    quantity: pLi.quantity.value,
+                    product: {
+                        purchasePrice: {
+                            currencyCode: order.currencyCode,
+                            amount: moneyToCents(pLi.getAdjustedNetPrice())
+                        },
+                        referenceId: pLi.productID,
+                        transactionDate: Date.now(),
+                        transactionId: order.currentOrderNo
+                    },
+                }
+                // Service call to leads endpoint
+                extend.createLead(JSON.stringify(lead));
+            }
+        }
+    }
+}
+
 module.exports = {
     createOrUpdateExtendLineItem: createOrUpdateExtendLineItem,
     checkForWarrantyLI: checkForWarrantyLI,
-    addContractToQueue: addContractToQueue
+    addContractToQueue: addContractToQueue,
+    createLeads: createLeads
 };

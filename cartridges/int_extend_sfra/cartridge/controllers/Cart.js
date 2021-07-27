@@ -156,15 +156,15 @@ server.get('DoesWarrantyExists', function(req, res, next) {
         return;
     }
 
+    Transaction.wrap(function() {
+        lead.custom.isWarrantable = true;
+    });
+
     res.json({
         isEligible: true,
         pid: pid,
         qty:qty
     });
-
-    Transaction.wrap(function() {
-        lead.custom.isWarrantable = true;
-    })
 
     next();
 });

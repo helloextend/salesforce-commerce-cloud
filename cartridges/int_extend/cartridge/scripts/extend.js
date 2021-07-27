@@ -104,9 +104,40 @@ function createProduct(paramData) {
     return serviceResponse.object;
 }
 
+/**
+ * Returns a response object from Extend
+ *
+ * @param {Object} paramData - query params
+ * @returns {Object} - response object
+ */
+ function createLead(paramData) {
+    var serviceResponse = null;
+
+    serviceResponse = webService.createLeadRequest(paramData);
+
+    if (!serviceResponse.ok) {
+        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
+        logger.error(
+            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}stores/{3}/leads',
+            serviceResponse.errorMessage,
+            serviceResponse.error,
+            serviceURL,
+            Site.getCustomPreferenceValue('extendStoreID')
+        );
+        return {
+            error: true,
+            errorMessage: serviceResponse.errorMessage || 'No results found.',
+            errorCode: serviceResponse.error
+        };
+    }
+
+    return serviceResponse.object;
+}
+
 /* Exported Methods */
 module.exports = {
     createContract: createContract,
     getOffer: getOffer,
-    createProduct: createProduct
+    createProduct: createProduct,
+    createLead: createLead
 };
