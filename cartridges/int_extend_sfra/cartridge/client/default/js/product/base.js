@@ -1,6 +1,8 @@
 'use strict';
 var focusHelper = require('base/components/focus');
 var Extend = window.Extend || undefined;
+//ExtendAnalytics
+var extendAnalytics = require('./../extend/extendAnalytics')
 
 /**
  * Retrieves the relevant pid value
@@ -665,8 +667,13 @@ module.exports = {
                     form.extendPlanId = extendPlan.planId;
                     form.extendPrice = extendPlan.price;
                     form.extendTerm = extendPlan.term;
+                    form.offerTypeArea = 'product_page';
+                    form.offerTypeComponent = 'buttons';
                     $(this).trigger('updateAddToCartFormData', form);
                 } else if (EXT_PDP_UPSELL_SWITCH) {
+                    //ExtendAnalytics
+                    extendAnalytics.methods.trackOfferViewedModal(form.pid, 'product_modal')
+
                     Extend.modal.open({
                         referenceId: $('.product-detail').data('pid'),
                         onClose: function (plan) {
@@ -674,6 +681,8 @@ module.exports = {
                                 form.extendPlanId = plan.planId;
                                 form.extendPrice = plan.price;
                                 form.extendTerm = plan.term;
+                                form.offerTypeArea = 'product_modal';
+                                form.offerTypeComponent = 'modal';
                                 $(this).trigger('updateAddToCartFormData', form);
                             }
 

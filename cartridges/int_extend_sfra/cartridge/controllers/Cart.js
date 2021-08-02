@@ -210,6 +210,7 @@ server.post('AddExtendProduct', server.middleware.https, function(req, res, next
     return next();
 });
 
+
 /**
  * Handle deletion of Extend parent line item
  */
@@ -264,6 +265,140 @@ server.append('RemoveProductLineItem', function (req, res, next) {
         });
     }
 
+    return next();
+});
+
+/**
+ * ExtendAnalytics
+ */
+ server.prepend('RemoveProductLineItem', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers')
+
+    var currentBasket = BasketMgr.getCurrentBasket();
+    var viewData = res.getViewData();
+    var productId = req.querystring.pid;
+    var uuid = req.querystring.uuid;
+    
+    if (productId && uuid) {
+        var removedProduct;
+        var removedExtendPlan;
+        var productLineItems = currentBasket.getAllProductLineItems(productId);
+
+        for (var i = 0; i < productLineItems.length; i++) {
+            if (extendAnalyticsHelpers.isExtendProduct(productLineItems[i], uuid)) {
+                removedExtendPlan = productLineItems[i];
+            } else {
+                removedProduct = productLineItems[i];
+            }
+        }
+
+         if (removedProduct) {
+             if (removedProduct.custom.persistentUUID) {
+                var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, removedProduct);
+
+                if (extendProduct) {
+                    return next();
+                }
+             }
+             viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
+
+         } else if (removedExtendPlan) {
+            var removedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, removedExtendPlan);
+            viewData.extendAnalytics = extendAnalyticsHelpers.getOfferRemovedFromCartData(removedExtendedProduct, removedExtendPlan);
+         }
+         res.setViewData(viewData)
+     }
+
+     return next();
+});
+
+/**
+ * ExtendAnalytics
+ */
+server.append('AddProduct', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers')
+
+    var currentBasket = BasketMgr.getCurrentBasket();
+    var viewData = res.getViewData();
+    var form = req.form;
+
+    if (currentBasket) {
+        var addedProduct;
+        var productLineItems = currentBasket.getAllProductLineItems(form.pid);
+
+        if (productLineItems.length === 0 ) {
+            return next();
+        }
+
+        for (var i = 0; i < productLineItems.length; i++) {
+            if (productLineItems[i].productID === form.pid ) {
+                addedProduct = productLineItems[i];
+            }
+        }
+
+        if (!form.extendPlanId) {
+            viewData.extendAnalytics = extendAnalyticsHelpers.getProductAddedToCartData(addedProduct, form);
+
+        } else if (form.extendPlanId) {
+            var addedExtendPlan = extendAnalyticsHelpers.getExtendProduct(currentBasket, addedProduct);
+            viewData.extendAnalytics = extendAnalyticsHelpers.getOfferAddedToCartData(addedExtendPlan, addedProduct, form);
+        }
+    } 
+    res.setViewData(viewData)
+    return next();
+});
+
+/**
+ * ExtendAnalytics
+ */
+ server.append('UpdateQuantity', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers')
+
+    var currentBasket = BasketMgr.getCurrentBasket();
+    var viewData = res.getViewData();
+
+    if (!viewData.items) {
+        return next();
+    }
+    
+    if (currentBasket) {
+        var productId = req.querystring.pid;
+        var uuid = req.querystring.uuid;
+        var updatedProduct;
+        var updatedExtendPlan;
+        var productLineItems = currentBasket.getAllProductLineItems(productId);
+
+        if (productLineItems.length === 0 ) {
+            return next();
+        }
+
+        for (var i = 0; i < productLineItems.length; i++) {
+            if (extendAnalyticsHelpers.isExtendProduct(productLineItems[i], uuid)) {
+                updatedExtendPlan = productLineItems[i];
+            } else {
+                updatedProduct = productLineItems[i];
+            }
+        }
+
+        if (updatedProduct) {
+            if (updatedProduct.custom.persistentUUID) {
+                var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, updatedProduct);
+
+                if (extendProduct) {
+                    return next();
+                }
+            }
+            viewData.extendAnalytics = extendAnalyticsHelpers.getProductUpdatedData(updatedProduct);
+
+        } else if (updatedExtendPlan) {
+            var updatedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, updatedExtendPlan);
+            viewData.extendAnalytics = extendAnalyticsHelpers.getOfferUpdatedData(updatedExtendedProduct, updatedExtendPlan);
+        }
+        res.setViewData(viewData)
+    }
     return next();
 });
 

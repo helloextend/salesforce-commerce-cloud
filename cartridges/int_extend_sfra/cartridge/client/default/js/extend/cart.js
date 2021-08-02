@@ -1,6 +1,8 @@
 'use strict';
 
 var Extend = window.Extend || undefined;
+//ExtendAnalytics
+var extendAnalytics = require('./../extend/extendAnalytics')
 
 /**
  * Renders an Extend upsell button in cart page
@@ -33,6 +35,7 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
         					method: 'POST',
         					data: form,
         					success: function () {
+                                extendAnalytics.methods.trackOfferAddedToCart(form, 'cart_page', 'modal');
         						location.reload();
         					},
         					error: function () {
@@ -42,6 +45,8 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
         			}
         		}
         	});
+        }).on('click', function () {
+            console.log('test')
         });
     }
 }
@@ -76,6 +81,7 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
         					method: 'POST',
         					data: form,
         					success: function () {
+                                extendAnalytics.methods.trackOfferAddedToCart(form, 'cart_page', 'modal');
         						location.reload();
         					},
         					error: function () {
