@@ -2,122 +2,94 @@
 
 var ExtendAnalytics = window.ExtendAnalytics || undefined;
 
-function trackOfferViewedModal(data, area) {
-    console.log('trackOfferViewed.PDP.modal');
-    ExtendAnalytics.trackOfferViewed(
-        {
+function trackOfferViewedPDP(productId) {
+    ExtendAnalytics.trackOfferViewed({
+        productId: productId,
+        offerType: {
+            area: 'product_page',
+            component: 'buttons'
+        }
+    });
+}
+
+function trackOfferViewedModal(productId, area) {
+    ExtendAnalytics.trackOfferViewed({
+        productId: productId,
+        offerType: {
+            area: area,
+            component: 'modal'
+        }
+    });
+}
+
+function trackAddToCart(data, area, component) {
+    if (data.extendPlanId) {
+        ExtendAnalytics.trackOfferAddedToCart({
             productId: data.pid,
-            offerType: {
-                area: area,
-                component: 'modal'
-            }
-        }
-    );
-}
-
-function trackProductAddedToCart(data) {
-    console.log(data);
-    console.log('trackProductAddedToCart');
-    ExtendAnalytics.trackProductAddedToCart(
-        {
-            productId: data.productId,
-            productQuantity: data.productQuantity
-        }
-    );
-}
-
-function trackOfferAddedToCart(data) {
-    console.log(data);
-    console.log('trackOfferAddedToCart');
-    ExtendAnalytics.trackOfferAddedToCart(
-        {
-            productId: data.productId,
-            productQuantity: data.productQuantity,
+            productQuantity: +data.quantity,
             planId: data.extendPlanId,
             offerType: {
-                area: data.offerTypeArea,
-                component: data.offerTypeComponent
+                area: area,
+                component: component
             }
-        }
-    );
+        });
+    } else {
+        ExtendAnalytics.trackProductAddedToCart({
+            productId: data.pid,
+            productQuantity: +data.quantity
+        });
+    }
 }
 
+
 function trackOfferRemovedFromCart(data) {
-    console.log(data);
-    console.log('trackOfferRemovedFromCart');
-    ExtendAnalytics.trackOfferRemovedFromCart(
-        {
-            productId: data.referenceId,
-            planId: data.planId
-        }
-    );
+    ExtendAnalytics.trackOfferRemovedFromCart({
+        productId: data.referenceId,
+        planId: data.planId
+    });
 }
 
 function trackProductRemovedFromCart(data) {
-    console.log('trackProductRemovedFromCart');
-    console.log(data);
-    ExtendAnalytics.trackProductRemovedFromCart(
-        {
-            productId: data.productId,
-        }
-    );
+    ExtendAnalytics.trackProductRemovedFromCart({
+        productId: data.productId,
+    });
 }
 
 function trackProductUpdated(data) {
-    console.log(data);
-    console.log('trackProductUpdated');
-    ExtendAnalytics.trackProductUpdated(
-        {
-            productId: data.productId,
-            updates: {
-                productQuantity: +data.productQuantity
-            },
-        }
-    );
+    ExtendAnalytics.trackProductUpdated({
+        productId: data.productId,
+        updates: {
+            productQuantity: +data.productQuantity
+        },
+    });
 }
 
 function trackOfferUpdated(data) {
-    console.log(data);
-    console.log('trackOfferUpdated');
-    ExtendAnalytics.trackOfferUpdated(
-        {
-            productId: data.productId,
-            planId: data.planId,
-            updates: {
-                warrantyQuantity: +data.warrantyQuantity,
-                productQuantity: +data.productQuantity,
-            },
-        }
-    );
+    ExtendAnalytics.trackOfferUpdated({
+        productId: data.productId,
+        planId: data.planId,
+        updates: {
+            warrantyQuantity: +data.warrantyQuantity,
+            productQuantity: +data.productQuantity,
+        },
+    });
 }
 
-function trackCartCheckout(params) {
-    ExtendAnalytics.config(
-        {
-            cartTotal: params.cartTotal
+function trackLinkClicked(data) {
+    ExtendAnalytics.trackLinkClicked({
+        linkEvent: data.linkEvent,
+        productId: data.productId,
+        linkType: {
+            area: data.LinkTypeArea,
+            component: data.LinkTypeComponent
         }
-    );
+    });
 }
-
-function trackLinkClicked(params) {
-    ExtendAnalytics.config(
-        {
-            linkEvent: params.linkEvent,
-            productId: params.productId,
-            linkType: {
-                area: params.area,
-                component: params.component
-            }
-        }
-    );
-}
-
 
 module.exports = {
     methods: {
         trackOfferViewedModal: trackOfferViewedModal,
-        trackProductAddedToCart: trackProductAddedToCart,
-        trackOfferAddedToCart: trackOfferAddedToCart
+        trackAddToCart: trackAddToCart
     },
 
     initExtendAnalytics: function () {
@@ -125,9 +97,10 @@ module.exports = {
         ExtendAnalytics.config({ storeId: EXT_STORE_ID });
     },
 
-    trackOfferViewedPDP: function () {
+    trackOfferViewedPDPButtons: function () {
         $(document).on('DOMNodeInserted', '#extend-offer', function (e) {
             if (e.target.tagName.toLowerCase() === 'iframe') {
+                var currentTarget = $(e.target);
                 var productId;
                 var extendComponent = Extend.buttons.instance('#extend-offer');
 
@@ -136,24 +109,113 @@ module.exports = {
                 } else {
                     productId = $('.product-detail').data('pid');
                 }
-                console.log('trackOfferViewed.PDP.buttons')
-                ExtendAnalytics.trackOfferViewed({
-                    productId: productId,
-                    offerType: {
-                        area: 'product_page',
-                        component: 'buttons'
+                trackOfferViewedPDP(productId)
+
+                var addTrackEvent = function () {
+                    $(currentTarget).contents().find('.info-button').on('click', function () {
+                        var data = {
+                            linkEvent: 'learn_more_clicked',
+                            productId: productId,
+                            LinkTypeArea: 'product_page',
+                            LinkTypeComponent: 'learn_more_info_icon'
+                        }
+
+                        trackLinkClicked(data);
+                    });
+                    $(currentTarget).contents().find('.info-button').addClass('chained')
+                    if ($(currentTarget).contents().find('.info-button').hasClass('chained')) {
+                        clearTimeout(timer);
+                        $(currentTarget).contents().find('.info-button').removeClass('chained')
                     }
-                });
+                }
+                var timer = setInterval(addTrackEvent, 100);
             }
         });
     },
 
     trackOfferViewedCartModal: function () {
+        $(document).on('DOMNodeInserted', '.cart', function (e) {
+            if (e.target.tagName.toLowerCase() === 'iframe') {
+                var currentTarget = $(e.target);
+
+                var addTrackEvent = function () {
+                    $(currentTarget).contents().find('.simple-offer').on('click', function () {
+                        var pid = $(currentTarget).parents('.extend-upsell-style').data().pid;
+                        window.extendModalReferenceId = pid;
+                        trackOfferViewedModal(pid, 'cart_page')
+                    });
+                    $(currentTarget).contents().find('.simple-offer').addClass('chained')
+                    if ($(currentTarget).contents().find('button').hasClass('chained')) {
+                        clearTimeout(timer);
+                        $(currentTarget).contents().find('.simple-offer').removeClass('chained')
+                    }
+                }
+                var timer = setInterval(addTrackEvent, 100);
+            }
+        });
+    },
+
+    trackPlanDetailsLinkClicked: function () {
         $(document).on('DOMNodeInserted', 'body', function (e) {
             if (e.target.id === 'extend-offers-modal-iframe') {
-                console.log(e);
-                // var extendComponent = Extend.buttons.instance('#extend-offer');
-                // console.log(extendComponent.getActiveProduct());
+                var currentTarget = $(e.target);
+
+                var addTrackEvent = function () {
+                    $(currentTarget).contents().find('.link').on('click', function () {
+                        var productId;
+                        var area;
+                        var pdp = $('.product-detail');
+
+                        if (pdp.length) {
+                            productId = pdp.find('.product-id').html();
+                            area = 'offer_modal';
+                        } else {
+                            productId = window.extendModalReferenceId;
+                            area = 'simple_offer_modal';
+                        }
+
+                        var data = {
+                            linkEvent: 'plan_details_clicked',
+                            productId: productId,
+                            LinkTypeArea: area,
+                            LinkTypeComponent: 'see_plan_details_link'
+                        }
+
+                        trackLinkClicked(data);
+                    });
+
+                    $(currentTarget).contents().find('.link').addClass('chained')
+                    if ($(currentTarget).contents().find('.link').hasClass('chained')) {
+                        clearTimeout(timer);
+                        $(currentTarget).contents().find('.link').removeClass('chained')
+                    }
+                }
+                var timer = setInterval(addTrackEvent, 100);
+
+            } else if (e.target.id === 'extend-learn-more-modal-iframe') {
+                var currentTarget = $(e.target);
+
+                var addTrackEvent = function () {
+                    $(currentTarget).contents().find('.terms-link').on('click', function () {
+                        var productId = $('.product-detail').find('.product-id').html();
+
+                        var data = {
+                            linkEvent: 'plan_details_clicked',
+                            productId: productId,
+                            LinkTypeArea: 'learn_more_modal',
+                            LinkTypeComponent: 'see_plan_details_link'
+                        }
+
+                        trackLinkClicked(data);
+                    });
+
+                    $(currentTarget).contents().find('.terms-link').addClass('chained')
+                    if ($(currentTarget).contents().find('.terms-link').hasClass('chained')) {
+                        clearTimeout(timer);
+                        $(currentTarget).contents().find('.terms-link').removeClass('chained')
+                    }
+                }
+                var timer = setInterval(addTrackEvent, 100);
             }
         });
     },
@@ -177,19 +239,16 @@ module.exports = {
         });
     },
 
-    trackAfterAddToCart: function () {
-        $('body').on('product:afterAddToCart', function (e, data) {
-            if (data.extendAnalytics) {
-                var eventData = data.extendAnalytics;
-                var event = data.extendAnalytics.event;
+    trackCheckoutBtn: function () {
+        $('body').on('click', '.checkout-btn', function () {
+            var productAmmount = $('.minicart').find('.grand-total').html()
+                || $('.cart').find('.grand-total').html();
 
-                if (event === 'productAddedToCart') {
-                    trackProductAddedToCart(eventData)
-                } else if (event === 'offerAddedToCart') {
-                    trackOfferAddedToCart(eventData)
-                }
-            }
-        });
+
+            ExtendAnalytics.trackCartCheckout({
+                cartTotal: productAmmount
+            });
+        })
     },
 
 };

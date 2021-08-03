@@ -1,5 +1,11 @@
 'use strict';
 
+/**
+ * Get extend product from basket
+ * @param {dw.order.Basket} currentBasket
+ * @param {dw.order.ProductLineItem} persistentItem
+ * @returns {dw.order.ProductLineItem} - extend product with parentLineItemUUID === persistentItem
+ */
 function getExtendProduct(currentBasket, persistentItem) {
     var productLineItems = currentBasket.getAllProductLineItems()
     for (var i = 0; i < productLineItems.length; i++) {
@@ -9,6 +15,12 @@ function getExtendProduct(currentBasket, persistentItem) {
     }
 }
 
+/**
+ * Get extended product from basket
+ * @param {dw.order.Basket} currentBasket
+ * @param {dw.order.ProductLineItem} persistentItem
+ * @returns {dw.order.ProductLineItem} - extended product with persistentItem === parentLineItemUUID
+ */
 function getExtendedProduct(currentBasket, parentLineItem) {
     var productLineItems = currentBasket.getAllProductLineItems()
     for (var i = 0; i < productLineItems.length; i++) {
@@ -18,15 +30,27 @@ function getExtendedProduct(currentBasket, parentLineItem) {
     }
 }
 
-function isExtendProduct(productLineItems, uuid) {
+/**
+ * Сheck if the product is extend product by uuid
+ * @param {dw.order.ProductLineItem} productLineItem
+ * @param {String} uuid
+ * @returns {boolean} - true if product is extend product
+ */
+function isExtendProduct(productLineItem, uuid) {
     if (
-        productLineItems.UUID === uuid &&
-        productLineItems.custom.parentLineItemUUID
+        productLineItem.UUID === uuid &&
+        productLineItem.custom.parentLineItemUUID
     ) {
         return true;
     }
 }
 
+/**
+ * Get data for trackOfferUpdated event
+ * @param {dw.order.ProductLineItem} updatedProduct
+ * @param {dw.order.ProductLineItem} updatedPlan
+ * @returns {Object} - data for trackOfferUpdated event
+ */
 function getOfferUpdatedData(updatedProduct, updatedPlan) {
     var offerUpdated = {
         productId: updatedProduct.productID,
@@ -39,6 +63,11 @@ function getOfferUpdatedData(updatedProduct, updatedPlan) {
     return offerUpdated;
 }
 
+/**
+ * Get data for trackProductUpdated event
+ * @param {dw.order.ProductLineItem} updatedProduct
+ * @returns {Object} - data for trackProductUpdated event
+ */
 function getProductUpdatedData(updatedProduct) {
     var productUpdated = {
         productId: updatedProduct.productID,
@@ -49,6 +78,11 @@ function getProductUpdatedData(updatedProduct) {
     return productUpdated;
 }
 
+/**
+ * Get data for trackProductRemovedFromCart event
+ * @param {dw.order.ProductLineItem} removedProduct
+ * @returns {Object} - data for trackProductRemovedFromCart event
+ */
 function getProductRemovedFromCartData(removedProduct) {
     var productRemovedFromCart = {
         productId: removedProduct.productID,
@@ -58,6 +92,12 @@ function getProductRemovedFromCartData(removedProduct) {
     return productRemovedFromCart;
 }
 
+/**
+ * Get data for trackOfferRemovedFromCart event
+ * @param {dw.order.ProductLineItem} removedProduct
+ * @param {dw.order.ProductLineItem} removedPlan
+ * @returns {Object} - data for trackOfferRemovedFromCart event
+ */
 function getOfferRemovedFromCartData(removedProduct, removedPlan) {
     var offerRemovedFromCart = {
         referenceId: removedProduct.productID,
@@ -68,28 +108,6 @@ function getOfferRemovedFromCartData(removedProduct, removedPlan) {
     return offerRemovedFromCart;
 }
 
-function getProductAddedToCartData(addedProduct, form) {
-    var productAddedToCart = {
-        productId: addedProduct.productID,
-        productQuantity: parseInt(form.quantity, 10),
-        event: 'productAddedToCart'
-    }
-
-    return productAddedToCart;
-}
-
-function getOfferAddedToCartData(addedOffer, addedProduct, form) {
-    var offerAddedToCart = {
-        productId: addedProduct.productID,
-        productQuantity: parseInt(form.quantity, 10),
-        planId: addedOffer.manufacturerSKU,
-        offerTypeArea: form.offerTypeArea,
-        offerTypeComponent: form.offerTypeComponent,
-        event: 'offerAddedToCart'
-    }
-
-    return offerAddedToCart;
-}
 
 /* Exported Methods */
 module.exports = {
@@ -99,7 +117,5 @@ module.exports = {
     isExtendProduct: isExtendProduct,
     getProductUpdatedData: getProductUpdatedData,
     getProductRemovedFromCartData: getProductRemovedFromCartData,
-    getOfferRemovedFromCartData: getOfferRemovedFromCartData,
-    getProductAddedToCartData: getProductAddedToCartData,
-    getOfferAddedToCartData: getOfferAddedToCartData
+    getOfferRemovedFromCartData: getOfferRemovedFromCartData
 };

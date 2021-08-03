@@ -65,6 +65,7 @@
             </div>
             <div class="col-4">
                 <p class="text-right sub-total">${pdict.totals.subTotal}</p>
+                <p hidden class="text-right grand-total">${pdict.totals.grandTotal}</p>
             </div>
         </div>
         <div class="row">

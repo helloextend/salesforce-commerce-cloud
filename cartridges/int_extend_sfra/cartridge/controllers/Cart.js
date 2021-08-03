@@ -269,7 +269,7 @@ server.append('RemoveProductLineItem', function (req, res, next) {
 });
 
 /**
- * ExtendAnalytics
+ * Add tracking of removing plans and products from cart
  */
  server.prepend('RemoveProductLineItem', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
@@ -314,44 +314,7 @@ server.append('RemoveProductLineItem', function (req, res, next) {
 });
 
 /**
- * ExtendAnalytics
- */
-server.append('AddProduct', function (req, res, next) {
-    var BasketMgr = require('dw/order/BasketMgr');
-    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers')
-
-    var currentBasket = BasketMgr.getCurrentBasket();
-    var viewData = res.getViewData();
-    var form = req.form;
-
-    if (currentBasket) {
-        var addedProduct;
-        var productLineItems = currentBasket.getAllProductLineItems(form.pid);
-
-        if (productLineItems.length === 0 ) {
-            return next();
-        }
-
-        for (var i = 0; i < productLineItems.length; i++) {
-            if (productLineItems[i].productID === form.pid ) {
-                addedProduct = productLineItems[i];
-            }
-        }
-
-        if (!form.extendPlanId) {
-            viewData.extendAnalytics = extendAnalyticsHelpers.getProductAddedToCartData(addedProduct, form);
-
-        } else if (form.extendPlanId) {
-            var addedExtendPlan = extendAnalyticsHelpers.getExtendProduct(currentBasket, addedProduct);
-            viewData.extendAnalytics = extendAnalyticsHelpers.getOfferAddedToCartData(addedExtendPlan, addedProduct, form);
-        }
-    } 
-    res.setViewData(viewData)
-    return next();
-});
-
-/**
- * ExtendAnalytics
+ * Add tracking of updating plans and products quantity
  */
  server.append('UpdateQuantity', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
