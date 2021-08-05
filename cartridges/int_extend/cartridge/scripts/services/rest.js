@@ -81,10 +81,11 @@ function Products() {
         createRequest: function (service, requestData) {
             var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
             var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
+            var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion');
             var credential = service.configuration.credential;
 
             // Set request headers
-            service.addHeader('Accept', 'application/json; version=default');
+            service.addHeader('Accept', 'application/json; version=' + API_VERSION);
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
 
@@ -205,11 +206,12 @@ function Contracts() {
         createRequest: function (service, requestData) {
             var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
             var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
+            var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion');
             var credential = service.configuration.credential;
             var requestObject = {};
 
             // Set request headers
-            service.addHeader('Accept', 'application/json; version=default');
+            service.addHeader('Accept', 'application/json; version=' + API_VERSION);
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
 
@@ -291,11 +293,12 @@ function Offers() {
         createRequest: function (service, productId) {
             var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
             var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
+            var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion');
             var credential = service.configuration.credential;
             var requestObject = {};
 
             // Set request headers
-            service.addHeader('Accept', 'application/json; version=default');
+            service.addHeader('Accept', 'application/json; version=' + API_VERSION);
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
 

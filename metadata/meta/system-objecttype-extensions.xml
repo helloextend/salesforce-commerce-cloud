@@ -123,6 +123,14 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="extendAPIVersion">
+                <display-name xml:lang="x-default">Extend API Version</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+                <default-value>default</default-value>
+            </attribute-definition>
             <attribute-definition attribute-id="extendCartUpsellSwitch">
                 <display-name xml:lang="x-default">Enable Up-sell in Cart</display-name>
                 <type>boolean</type>
@@ -189,6 +197,7 @@
                 <display-name xml:lang="x-default">Extend Configurations</display-name>
                 <attribute attribute-id="extendAccessToken"/>
                 <attribute attribute-id="extendStoreID"/>
+                <attribute attribute-id="extendAPIVersion"/>
                 <attribute attribute-id="extendImageViewType"/>
                 <attribute attribute-id="extendSDK"/>
                 <attribute attribute-id="extendGlobalSwitch"/>
