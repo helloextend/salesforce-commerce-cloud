@@ -86,6 +86,111 @@ function trackLinkClicked(data) {
     });
 }
 
+function trackExtendPDP(currentTarget) {
+    var productId;
+    var extendComponent = Extend.buttons.instance('#extend-offer');
+
+    if (extendComponent) {
+        productId = extendComponent.getActiveProduct().id;
+    } else {
+        productId = $('.product-detail').data('pid');
+    }
+    trackOfferViewedPDP(productId)
+
+    var addTrackEvent = function () {
+        $(currentTarget).contents().find('.info-button').on('click', function () {
+            var data = {
+                linkEvent: 'learn_more_clicked',
+                productId: productId,
+                LinkTypeArea: 'product_page',
+                LinkTypeComponent: 'learn_more_info_icon'
+            }
+
+            trackLinkClicked(data);
+        });
+        $(currentTarget).contents().find('.info-button').addClass('chained')
+        if ($(currentTarget).contents().find('.info-button').hasClass('chained')) {
+            clearTimeout(timer);
+            $(currentTarget).contents().find('.info-button').removeClass('chained')
+        }
+    }
+    var timer = setInterval(addTrackEvent, 100);
+}
+
+function addTrackEventUpsellCart(currentTarget) {
+    var addTrackEvent = function () {
+        $(currentTarget).contents().find('.simple-offer').on('click', function () {
+            var pid = $(currentTarget).parents('.extend-upsell-style').data().pid;
+            window.extendModalReferenceId = pid;
+            trackOfferViewedModal(pid, 'cart_page')
+        });
+        $(currentTarget).contents().find('.simple-offer').addClass('chained')
+        if ($(currentTarget).contents().find('button').hasClass('chained')) {
+            clearTimeout(timer);
+            $(currentTarget).contents().find('.simple-offer').removeClass('chained')
+        }
+    }
+    var timer = setInterval(addTrackEvent, 100);
+}
+
+function addTrackEventModal(currentTarget) {
+    var addTrackEvent = function () {
+        $(currentTarget).contents().find('.link').on('click', function () {
+            var productId;
+            var area;
+            var pdp = $('.product-detail');
+
+            if (pdp.length) {
+                productId = pdp.find('.product-id').html();
+                area = 'offer_modal';
+            } else {
+                productId = window.extendModalReferenceId;
+                area = 'simple_offer_modal';
+            }
+
+            var data = {
+                linkEvent: 'plan_details_clicked',
+                productId: productId,
+                LinkTypeArea: area,
+                LinkTypeComponent: 'see_plan_details_link'
+            }
+
+            trackLinkClicked(data);
+        });
+
+        $(currentTarget).contents().find('.link').addClass('chained')
+        if ($(currentTarget).contents().find('.link').hasClass('chained')) {
+            clearTimeout(timer);
+            $(currentTarget).contents().find('.link').removeClass('chained')
+        }
+    }
+    var timer = setInterval(addTrackEvent, 100);
+}
+
+function trackModalLinkClicked(currentTarget) {
+    var addTrackEvent = function () {
+        $(currentTarget).contents().find('.terms-link').on('click', function () {
+            var productId = $('.product-detail').find('.product-id').html();
+
+            var data = {
+                linkEvent: 'plan_details_clicked',
+                productId: productId,
+                LinkTypeArea: 'learn_more_modal',
+                LinkTypeComponent: 'see_plan_details_link'
+            }
+
+            trackLinkClicked(data);
+        });
+
+        $(currentTarget).contents().find('.terms-link').addClass('chained')
+        if ($(currentTarget).contents().find('.terms-link').hasClass('chained')) {
+            clearTimeout(timer);
+            $(currentTarget).contents().find('.terms-link').removeClass('chained')
+        }
+    }
+    var timer = setInterval(addTrackEvent, 100);
+}
+
 module.exports = {
     methods: {
         trackOfferViewedModal: trackOfferViewedModal,
@@ -97,125 +202,28 @@ module.exports = {
         ExtendAnalytics.config({ storeId: EXT_STORE_ID });
     },
 
-    trackOfferViewedPDPButtons: function () {
-        $(document).on('DOMNodeInserted', '#extend-offer', function (e) {
-            if (e.target.tagName.toLowerCase() === 'iframe') {
-                var currentTarget = $(e.target);
-                var productId;
-                var extendComponent = Extend.buttons.instance('#extend-offer');
-
-                if (extendComponent) {
-                    productId = extendComponent.getActiveProduct().id;
-                } else {
-                    productId = $('.product-detail').data('pid');
-                }
-                trackOfferViewedPDP(productId)
-
-                var addTrackEvent = function () {
-                    $(currentTarget).contents().find('.info-button').on('click', function () {
-                        var data = {
-                            linkEvent: 'learn_more_clicked',
-                            productId: productId,
-                            LinkTypeArea: 'product_page',
-                            LinkTypeComponent: 'learn_more_info_icon'
-                        }
-
-                        trackLinkClicked(data);
-                    });
-                    $(currentTarget).contents().find('.info-button').addClass('chained')
-                    if ($(currentTarget).contents().find('.info-button').hasClass('chained')) {
-                        clearTimeout(timer);
-                        $(currentTarget).contents().find('.info-button').removeClass('chained')
-                    }
-                }
-                var timer = setInterval(addTrackEvent, 100);
-            }
-        });
-    },
-
-    trackOfferViewedCartModal: function () {
-        $(document).on('DOMNodeInserted', '.cart', function (e) {
-            if (e.target.tagName.toLowerCase() === 'iframe') {
-                var currentTarget = $(e.target);
-
-                var addTrackEvent = function () {
-                    $(currentTarget).contents().find('.simple-offer').on('click', function () {
-                        var pid = $(currentTarget).parents('.extend-upsell-style').data().pid;
-                        window.extendModalReferenceId = pid;
-                        trackOfferViewedModal(pid, 'cart_page')
-                    });
-                    $(currentTarget).contents().find('.simple-offer').addClass('chained')
-                    if ($(currentTarget).contents().find('button').hasClass('chained')) {
-                        clearTimeout(timer);
-                        $(currentTarget).contents().find('.simple-offer').removeClass('chained')
-                    }
-                }
-                var timer = setInterval(addTrackEvent, 100);
-            }
-        });
-    },
-
-    trackPlanDetailsLinkClicked: function () {
+    trackExtendDOMNodeInserted: function () {
         $(document).on('DOMNodeInserted', 'body', function (e) {
-            if (e.target.id === 'extend-offers-modal-iframe') {
-                var currentTarget = $(e.target);
+            if (e.target.tagName && e.target.tagName.toLowerCase() !== 'iframe') {
+                return;
+            }
+            var currentTarget = $(e.target);
 
-                var addTrackEvent = function () {
-                    $(currentTarget).contents().find('.link').on('click', function () {
-                        var productId;
-                        var area;
-                        var pdp = $('.product-detail');
+            // trackOfferViewedPDPButtons and trackLinkClicked
+            if ($(e.target).parents('#extend-offer').length) {
+                trackExtendPDP(currentTarget);
 
-                        if (pdp.length) {
-                            productId = pdp.find('.product-id').html();
-                            area = 'offer_modal';
-                        } else {
-                            productId = window.extendModalReferenceId;
-                            area = 'simple_offer_modal';
-                        }
+                // trackOfferViewedModal and trackLinkClicked
+            } else if ($(e.target).parents('.extend-upsell-style').length) {
+                addTrackEventUpsellCart(currentTarget);
 
-                        var data = {
-                            linkEvent: 'plan_details_clicked',
-                            productId: productId,
-                            LinkTypeArea: area,
-                            LinkTypeComponent: 'see_plan_details_link'
-                        }
+                // trackLinkClicked
+            } else if (e.target.id === 'extend-offers-modal-iframe') {
+                addTrackEventModal(currentTarget);
 
-                        trackLinkClicked(data);
-                    });
-
-                    $(currentTarget).contents().find('.link').addClass('chained')
-                    if ($(currentTarget).contents().find('.link').hasClass('chained')) {
-                        clearTimeout(timer);
-                        $(currentTarget).contents().find('.link').removeClass('chained')
-                    }
-                }
-                var timer = setInterval(addTrackEvent, 100);
-
+                // trackLinkClicked
             } else if (e.target.id === 'extend-learn-more-modal-iframe') {
-                var currentTarget = $(e.target);
-
-                var addTrackEvent = function () {
-                    $(currentTarget).contents().find('.terms-link').on('click', function () {
-                        var productId = $('.product-detail').find('.product-id').html();
-
-                        var data = {
-                            linkEvent: 'plan_details_clicked',
-                            productId: productId,
-                            LinkTypeArea: 'learn_more_modal',
-                            LinkTypeComponent: 'see_plan_details_link'
-                        }
-
-                        trackLinkClicked(data);
-                    });
-
-                    $(currentTarget).contents().find('.terms-link').addClass('chained')
-                    if ($(currentTarget).contents().find('.terms-link').hasClass('chained')) {
-                        clearTimeout(timer);
-                        $(currentTarget).contents().find('.terms-link').removeClass('chained')
-                    }
-                }
-                var timer = setInterval(addTrackEvent, 100);
+                trackModalLinkClicked(currentTarget);
             }
         });
     },
@@ -241,12 +249,14 @@ module.exports = {
 
     trackCheckoutBtn: function () {
         $('body').on('click', '.checkout-btn', function () {
-            var productAmmount = $('.minicart').find('.grand-total').html()
-                || $('.cart').find('.grand-total').html();
+            var productAmmount = $('.minicart').find('.sub-total').html()
+                || $('.cart').find('.sub-total').html();
 
+            productAmmount = productAmmount.slice(1);
+            productAmmount = productAmmount.replace(',', '');
 
             ExtendAnalytics.trackCartCheckout({
-                cartTotal: productAmmount
+                cartTotal: +productAmmount
             });
         })
     },
