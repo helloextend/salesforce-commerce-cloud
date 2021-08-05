@@ -1,6 +1,8 @@
 'use strict';
 
 var Extend = window.Extend || undefined;
+//ExtendAnalytics
+var extendAnalytics = require('./../extend/extendAnalytics')
 
 /**
  * Renders an Extend upsell button in cart page
@@ -12,7 +14,7 @@ var Extend = window.Extend || undefined;
 function addExtendUpsellBtnCart(uuid, pid, qty) {
 	var hasExtendUpsell = $('.item-' + uuid).parents('.product-card-footer').find('#extend-offer-'+uuid).length > 0;
     if (!hasExtendUpsell) {
-        $('<div class="extend-upsell-style" id="extend-offer-'+uuid+'"></div>').insertAfter('.item-' + uuid).ready(function(){
+        $('<div class="extend-upsell-style" id="extend-offer-'+uuid+'" data-pid='+pid+'></div>').insertAfter('.item-' + uuid).ready(function(){
         	/** initialize offer */
         	Extend.buttons.renderSimpleOffer('#extend-offer-'+uuid, {
         		 referenceId: pid,
@@ -33,6 +35,7 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
         					method: 'POST',
         					data: form,
         					success: function () {
+                                extendAnalytics.methods.trackAddToCart(form, 'cart_page', 'modal');
         						location.reload();
         					},
         					error: function () {
@@ -55,7 +58,7 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
 function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
     var hasExtendUpsell = $('.minicart').find('.card.uuid-' + uuid).find('#extend-offer-'+uuid).length > 0;
     if (!hasExtendUpsell) {
-        $('<div class="extend-upsell-style" id="extend-offer-'+uuid+'"></div>').insertAfter('.minicart .product-summary ' + '.item-' + uuid).ready(function(){
+        $('<div class="extend-upsell-style" id="extend-offer-'+uuid+'" data-pid='+pid+'></div>').insertAfter('.minicart .product-summary ' + '.item-' + uuid).ready(function(){
         	/** initialize offer */
         	Extend.buttons.renderSimpleOffer('#extend-offer-'+uuid, {
         		 referenceId: pid,
@@ -76,6 +79,7 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
         					method: 'POST',
         					data: form,
         					success: function () {
+                                extendAnalytics.methods.trackAddToCart(form, 'cart_page', 'modal');
         						location.reload();
         					},
         					error: function () {
@@ -85,7 +89,7 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
         			}
         		}
         	});
-        });;
+        });
     }
 }
 /**

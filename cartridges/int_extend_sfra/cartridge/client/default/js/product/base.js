@@ -1,6 +1,8 @@
 'use strict';
 var focusHelper = require('base/components/focus');
 var Extend = window.Extend || undefined;
+//ExtendAnalytics
+var extendAnalytics = require('./../extend/extendAnalytics')
 
 /**
  * Retrieves the relevant pid value
@@ -670,35 +672,38 @@ module.exports = {
                     $(this).trigger('updateAddToCartFormData', form);
                 }
             } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected) {
-                    Extend.modal.open({
-                        referenceId: $('.product-detail').data('pid'),
-                        onClose: function (plan) {
-                            if (plan) {
-                                form.extendPlanId = plan.planId;
-                                form.extendPrice = plan.price;
-                                form.extendTerm = plan.term;
-                                $(this).trigger('updateAddToCartFormData', form);
-                            }
-
-                            if (addToCartUrl) {
-                                $.ajax({
-                                    url: addToCartUrl,
-                                    method: 'POST',
-                                    data: form,
-                                    success: function (data) {
-                                        handlePostCartAdd(data);
-                                        $('body').trigger('product:afterAddToCart', data);
-                                        $.spinner().stop();
-                                        miniCartReportingUrl(data.reportingURL);
-                                    },
-                                    error: function () {
-                                        $.spinner().stop();
-                                    }
-                                });
-                            }
+                //ExtendAnalytics
+                extendAnalytics.methods.trackOfferViewedModal(form.pid, 'product_modal')
+                Extend.modal.open({
+                    referenceId: $('.product-detail').data('pid'),
+                    onClose: function (plan) {
+                        if (plan) {
+                            form.extendPlanId = plan.planId;
+                            form.extendPrice = plan.price;
+                            form.extendTerm = plan.term;
+                            $(this).trigger('updateAddToCartFormData', form);
                         }
-                    });
-                    return;
+
+                        if (addToCartUrl) {
+                            $.ajax({
+                                url: addToCartUrl,
+                                method: 'POST',
+                                data: form,
+                                success: function (data) {
+                                    extendAnalytics.methods.trackAddToCart(form, 'product_modal', 'modal')
+                                    handlePostCartAdd(data);
+                                    $('body').trigger('product:afterAddToCart', data);
+                                    $.spinner().stop();
+                                    miniCartReportingUrl(data.reportingURL);
+                                },
+                                error: function () {
+                                    $.spinner().stop();
+                                }
+                            });
+                        }
+                    }
+                });
+                return;
             }
             // END Extend integration
 
@@ -709,6 +714,7 @@ module.exports = {
                     method: 'POST',
                     data: form,
                     success: function (data) {
+                        extendAnalytics.methods.trackAddToCart(form, 'product_page', 'buttons')
                         handlePostCartAdd(data);
                         $('body').trigger('product:afterAddToCart', data);
                         $.spinner().stop();
