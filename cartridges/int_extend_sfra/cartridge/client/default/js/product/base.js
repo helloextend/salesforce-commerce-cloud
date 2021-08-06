@@ -1,8 +1,6 @@
 'use strict';
 var focusHelper = require('base/components/focus');
 var Extend = window.Extend || undefined;
-//ExtendAnalytics
-var extendAnalytics = require('./../extend/extendAnalytics')
 
 /**
  * Retrieves the relevant pid value
@@ -669,8 +667,9 @@ module.exports = {
                     form.extendTerm = extendPlan.term;
                     $(this).trigger('updateAddToCartFormData', form);
                 } else if (EXT_PDP_UPSELL_SWITCH) {
-                    //ExtendAnalytics
-                    extendAnalytics.methods.trackOfferViewedModal(form.pid, 'product_modal')
+
+                    $('body').trigger('extend:modal:viewed',
+                        { productId: form.pid, area: 'product_modal'});
 
                     Extend.modal.open({
                         referenceId: $('.product-detail').data('pid'),
@@ -688,7 +687,8 @@ module.exports = {
                                     method: 'POST',
                                     data: form,
                                     success: function (data) {
-                                        extendAnalytics.methods.trackAddToCart(form, 'product_modal', 'modal')
+                                        $('body').trigger('extend:cart:add',
+                                            { form: form, area: 'product_modal', component: 'modal' });
                                         handlePostCartAdd(data);
                                         $('body').trigger('product:afterAddToCart', data);
                                         $.spinner().stop();
@@ -713,7 +713,8 @@ module.exports = {
                     method: 'POST',
                     data: form,
                     success: function (data) {
-                        extendAnalytics.methods.trackAddToCart(form, 'product_page', 'buttons')
+                        $('body').trigger('extend:cart:add',
+                            { form: form, area: 'product_page', component: 'buttons' });
                         handlePostCartAdd(data);
                         $('body').trigger('product:afterAddToCart', data);
                         $.spinner().stop();
