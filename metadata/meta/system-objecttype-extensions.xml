@@ -76,6 +76,21 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="extendAnalyticsSDK">
+                <display-name xml:lang="x-default">Extend Analytics SDK</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+                <default-value>https://sdk.helloextend.com/extend-analytics-sdk/v1/extend-analytics-sdk.min.js</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendAnalyticsSwitch">
+                <display-name xml:lang="x-default">Extend Analytics Switch</display-name>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
             <attribute-definition attribute-id="extendCartUpsellSwitch">
                 <display-name xml:lang="x-default">Enable Up-sell in Cart</display-name>
                 <type>boolean</type>
@@ -149,6 +164,8 @@
                 <attribute attribute-id="extendPDPUpsellSwitch"/>
                 <attribute attribute-id="extendCartUpsellSwitch"/>
 				<attribute attribute-id="isExtendProductionMode"/>
+                <attribute attribute-id="extendAnalyticsSDK"/>
+                <attribute attribute-id="extendAnalyticsSwitch"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
