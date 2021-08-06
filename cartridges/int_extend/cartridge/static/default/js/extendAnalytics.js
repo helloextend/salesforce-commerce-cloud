@@ -206,8 +206,6 @@ function trackModalLinkClicked(currentTarget) {
     var timer = setInterval(addTrackEvent, 100);
 }
 
-
-
 function trackExtendDOMNodeInserted() {
     $(document).on('DOMNodeInserted', 'body', function (e) {
         if (e.target.tagName && e.target.tagName.toLowerCase() !== 'iframe') {
@@ -239,9 +237,10 @@ function trackCartUpdate() {
     if (analyticsPayload.length) {
         var data = $('.analytics-payload').data().data;
 
-        if (!data && !data.array) {
+        if (!data) {
             return;
         }
+
         for (var i = 0; i < data.array.length; i++) {
             var current = data.array[i]
 

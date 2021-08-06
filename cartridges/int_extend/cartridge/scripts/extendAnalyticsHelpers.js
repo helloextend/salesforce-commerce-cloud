@@ -136,17 +136,17 @@ function getItemsData(items, cart) {
  */
 function getUpdateCartData(cart) {
     var params = request.httpParameterMap;
-    var regexTest = /dwfrm_cart_shipments_(.*)_items_(.*)_quantity/gim;
+    var regexParam = /dwfrm_cart_shipments_(.*)_items_(.*)_quantity/gim;
     var itemsToChangeInfo = [];
 
     for (var i = 2; i < params.parameterNames.length; i++) {
         var param = params.parameterNames[i];
-        var tested = param.match(regexTest);
-        if (tested && tested[0] === param) {
-            var matched = param.match(/\d/g);
+        var paramMatches = param.match(regexParam);
+        if (paramMatches && paramMatches[0] === param) {
+            var paramValues = param.match(/\d/g);
             var itemToChange = {
-                shipment: matched[0],
-                position: matched[1],
+                shipment: paramValues[0],
+                position: paramValues[1],
                 newQuantity: params[params.parameterNames[i]].value
             }
             itemsToChangeInfo.push(itemToChange);
@@ -164,7 +164,6 @@ function getUpdateCartData(cart) {
  * @returns {void}
  */
 function setUpdateCartPayload(cart, productsToUpdate) {
-    var Transaction = require('dw/system/Transaction');
     var itemsData = [];
 
     for (var i = 0; i < productsToUpdate.length; i++) {
@@ -223,9 +222,7 @@ function setUpdateCartPayload(cart, productsToUpdate) {
 
     var strData = JSON.stringify(newData);
 
-    Transaction.wrap(function () {
-        request.session.custom.analyticsPayload = strData;
-    });
+    request.session.custom.analyticsPayload = strData;
 }
 
 /**
@@ -235,7 +232,6 @@ function setUpdateCartPayload(cart, productsToUpdate) {
  * @returns {void}
  */
 function setDeleteProductPayload(cart, object) {
-    var Transaction = require('dw/system/Transaction');
     var extendProduct, extendedProduct;
     var itemsData = [];
     var data = {};
@@ -261,9 +257,7 @@ function setDeleteProductPayload(cart, object) {
 
     var strData = JSON.stringify(newData);
 
-    Transaction.wrap(function () {
-        request.session.custom.analyticsPayload = strData;
-    });
+    request.session.custom.analyticsPayload = strData;
 }
 
 /**
@@ -271,12 +265,9 @@ function setDeleteProductPayload(cart, object) {
  * @returns {Object} extend analytics data 
  */
 function getAnalyticsPayload() {
-    var Transaction = require('dw/system/Transaction');
     var payload = request.session.custom.analyticsPayload;
 
-    Transaction.wrap(function () {
-        request.session.custom.analyticsPayload = '';
-    });
+    request.session.custom.analyticsPayload = '';
 
     return payload;
 }

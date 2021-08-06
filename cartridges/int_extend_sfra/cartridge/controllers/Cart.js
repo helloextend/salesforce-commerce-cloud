@@ -277,62 +277,68 @@ server.append('RemoveProductLineItem', function (req, res, next) {
 /**
  * Add tracking of removing plans and products from cart
  */
- server.prepend('RemoveProductLineItem', function (req, res, next) {
+server.prepend('RemoveProductLineItem', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
-    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers')
+    var Site = require('dw/system/Site');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers');
 
+    var analyticsSDK = Site.getCurrent().getCustomPreferenceValue('extendAnalyticsSwitch');
     var currentBasket = BasketMgr.getCurrentBasket();
     var viewData = res.getViewData();
     var productId = req.querystring.pid;
     var uuid = req.querystring.uuid;
-    
-    if (productId && uuid) {
-        var removedProduct;
-        var removedExtendPlan;
-        var productLineItems = currentBasket.getAllProductLineItems(productId);
 
-        for (var i = 0; i < productLineItems.length; i++) {
-            if (extendAnalyticsHelpers.isExtendProduct(productLineItems[i], uuid)) {
-                removedExtendPlan = productLineItems[i];
-            } else {
-                removedProduct = productLineItems[i];
+    if (!analyticsSDK || !productId || !uuid) {
+        return next();
+    }
+
+    var removedProduct;
+    var removedExtendPlan;
+    var productLineItems = currentBasket.getAllProductLineItems(productId);
+
+    for (var i = 0; i < productLineItems.length; i++) {
+        if (extendAnalyticsHelpers.isExtendProduct(productLineItems[i], uuid)) {
+            removedExtendPlan = productLineItems[i];
+        } else {
+            removedProduct = productLineItems[i];
+        }
+    }
+
+    if (removedProduct) {
+        if (removedProduct.custom.persistentUUID) {
+            var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, removedProduct);
+
+            if (extendProduct) {
+                return next();
             }
         }
+        viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
 
-         if (removedProduct) {
-             if (removedProduct.custom.persistentUUID) {
-                var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, removedProduct);
+    } else if (removedExtendPlan) {
+        var removedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, removedExtendPlan);
+        viewData.extendAnalytics = extendAnalyticsHelpers.getOfferRemovedFromCartData(removedExtendedProduct, removedExtendPlan);
+    }
+    res.setViewData(viewData)
 
-                if (extendProduct) {
-                    return next();
-                }
-             }
-             viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
-
-         } else if (removedExtendPlan) {
-            var removedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, removedExtendPlan);
-            viewData.extendAnalytics = extendAnalyticsHelpers.getOfferRemovedFromCartData(removedExtendedProduct, removedExtendPlan);
-         }
-         res.setViewData(viewData)
-     }
-
-     return next();
+    return next();
 });
 
 /**
  * Add tracking of updating plans and products quantity
  */
- server.append('UpdateQuantity', function (req, res, next) {
+server.append('UpdateQuantity', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
-    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers')
+    var Site = require('dw/system/Site');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers');
 
+    var analyticsSDK = Site.getCurrent().getCustomPreferenceValue('extendAnalyticsSwitch');
     var currentBasket = BasketMgr.getCurrentBasket();
     var viewData = res.getViewData();
 
-    if (!viewData.items) {
+    if (!analyticsSDK || !viewData.items) {
         return next();
     }
-    
+
     if (currentBasket) {
         var productId = req.querystring.pid;
         var uuid = req.querystring.uuid;
@@ -340,7 +346,7 @@ server.append('RemoveProductLineItem', function (req, res, next) {
         var updatedExtendPlan;
         var productLineItems = currentBasket.getAllProductLineItems(productId);
 
-        if (productLineItems.length === 0 ) {
+        if (productLineItems.length === 0) {
             return next();
         }
 

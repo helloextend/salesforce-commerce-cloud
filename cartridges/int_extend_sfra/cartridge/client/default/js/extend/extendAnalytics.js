@@ -22,25 +22,24 @@ function trackOfferViewedModal(productId, area) {
     });
 }
 
-function trackAddToCart(data, area, component) {
-    if (data.extendPlanId) {
-        ExtendAnalytics.trackOfferAddedToCart({
-            productId: data.pid,
-            productQuantity: +data.quantity,
-            planId: data.extendPlanId,
-            offerType: {
-                area: area,
-                component: component
-            }
-        });
-    } else {
-        ExtendAnalytics.trackProductAddedToCart({
-            productId: data.pid,
-            productQuantity: +data.quantity
-        });
-    }
+function trackOfferAddedToCart(data) {
+    ExtendAnalytics.trackOfferAddedToCart({
+        productId: data.form.pid,
+        productQuantity: +data.form.quantity,
+        planId: data.form.extendPlanId,
+        offerType: {
+            area: data.area,
+            component: data.component
+        }
+    });
 }
 
+function trackProductAddedToCart(data) {
+    ExtendAnalytics.trackProductAddedToCart({
+        productId: data.form.pid,
+        productQuantity: +data.form.quantity
+    });
+}
 
 function trackOfferRemovedFromCart(data) {
     ExtendAnalytics.trackOfferRemovedFromCart({
@@ -95,7 +94,7 @@ function trackExtendPDP(currentTarget) {
     } else {
         productId = $('.product-detail').data('pid');
     }
-    trackOfferViewedPDP(productId)
+    trackOfferViewedPDP(productId);
 
     var addTrackEvent = function () {
         $(currentTarget).contents().find('.info-button').on('click', function () {
@@ -108,10 +107,10 @@ function trackExtendPDP(currentTarget) {
 
             trackLinkClicked(data);
         });
-        $(currentTarget).contents().find('.info-button').addClass('chained')
+        $(currentTarget).contents().find('.info-button').addClass('chained');
         if ($(currentTarget).contents().find('.info-button').hasClass('chained')) {
             clearTimeout(timer);
-            $(currentTarget).contents().find('.info-button').removeClass('chained')
+            $(currentTarget).contents().find('.info-button').removeClass('chained');
         }
     }
     var timer = setInterval(addTrackEvent, 100);
@@ -124,10 +123,10 @@ function addTrackEventUpsellCart(currentTarget) {
             window.extendModalReferenceId = pid;
             trackOfferViewedModal(pid, 'cart_page')
         });
-        $(currentTarget).contents().find('.simple-offer').addClass('chained')
+        $(currentTarget).contents().find('.simple-offer').addClass('chained');
         if ($(currentTarget).contents().find('button').hasClass('chained')) {
             clearTimeout(timer);
-            $(currentTarget).contents().find('.simple-offer').removeClass('chained')
+            $(currentTarget).contents().find('.simple-offer').removeClass('chained');
         }
     }
     var timer = setInterval(addTrackEvent, 100);
@@ -158,10 +157,10 @@ function addTrackEventModal(currentTarget) {
             trackLinkClicked(data);
         });
 
-        $(currentTarget).contents().find('.link').addClass('chained')
+        $(currentTarget).contents().find('.link').addClass('chained');
         if ($(currentTarget).contents().find('.link').hasClass('chained')) {
             clearTimeout(timer);
-            $(currentTarget).contents().find('.link').removeClass('chained')
+            $(currentTarget).contents().find('.link').removeClass('chained');
         }
     }
     var timer = setInterval(addTrackEvent, 100);
@@ -182,29 +181,30 @@ function trackModalLinkClicked(currentTarget) {
             trackLinkClicked(data);
         });
 
-        $(currentTarget).contents().find('.terms-link').addClass('chained')
+        $(currentTarget).contents().find('.terms-link').addClass('chained');
         if ($(currentTarget).contents().find('.terms-link').hasClass('chained')) {
             clearTimeout(timer);
-            $(currentTarget).contents().find('.terms-link').removeClass('chained')
+            $(currentTarget).contents().find('.terms-link').removeClass('chained');
         }
     }
     var timer = setInterval(addTrackEvent, 100);
 }
 
 module.exports = {
-    methods: {
-        trackOfferViewedModal: trackOfferViewedModal,
-        trackAddToCart: trackAddToCart
-    },
-
     initExtendAnalytics: function () {
+        if (!ExtendAnalytics) {
+            return;
+        }
+
         var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
         ExtendAnalytics.config({ storeId: EXT_STORE_ID });
     },
 
     trackExtendDOMNodeInserted: function () {
         $(document).on('DOMNodeInserted', 'body', function (e) {
-            if (e.target.tagName && e.target.tagName.toLowerCase() !== 'iframe') {
+            if (!ExtendAnalytics) {
+                return
+            } else if (e.target.tagName && e.target.tagName.toLowerCase() !== 'iframe') {
                 return;
             }
             var currentTarget = $(e.target);
@@ -230,25 +230,56 @@ module.exports = {
 
     trackCartUpdate: function () {
         $('body').on('cart:update', function (e, data) {
-            if (data.extendAnalytics) {
-                var eventData = data.extendAnalytics;
-                var event = data.extendAnalytics.event;
-
-                if (event === 'productRemovedFromCart') {
-                    trackProductRemovedFromCart(eventData);
-                } else if (event === 'offerRemovedFromCart') {
-                    trackOfferRemovedFromCart(eventData);
-                } else if (event === 'productUpdated') {
-                    trackProductUpdated(eventData);
-                } else if (event === 'offerUpdated') {
-                    trackOfferUpdated(eventData);
-                }
+            if (!data.extendAnalytics || !ExtendAnalytics) {
+                return;
             }
+
+            var eventData = data.extendAnalytics;
+            var event = data.extendAnalytics.event;
+
+            if (event === 'productRemovedFromCart') {
+                trackProductRemovedFromCart(eventData);
+            } else if (event === 'offerRemovedFromCart') {
+                trackOfferRemovedFromCart(eventData);
+            } else if (event === 'productUpdated') {
+                trackProductUpdated(eventData);
+            } else if (event === 'offerUpdated') {
+                trackOfferUpdated(eventData);
+            }
+
+        });
+    },
+
+    trackAddToCart: function () {
+        $('body').on('extend:cart:add', function (e, data) {
+            if (!ExtendAnalytics) {
+                return;
+            }
+
+            if (data.form.extendPlanId) {
+                trackOfferAddedToCart(data);
+            } else {
+                trackProductAddedToCart(data);
+            }
+        });
+    },
+
+    trackModalView: function () {
+        $('body').on('extend:modal:viewed', function (e, data) {
+            if (!ExtendAnalytics) {
+                return;
+            }
+
+            trackOfferViewedModal(data.productId, data.area);
         });
     },
 
     trackCheckoutBtn: function () {
         $('body').on('click', '.checkout-btn', function () {
+            if (!ExtendAnalytics) {
+                return;
+            }
+
             var productAmmount = $('.minicart').find('.sub-total').html()
                 || $('.cart').find('.sub-total').html();
 
