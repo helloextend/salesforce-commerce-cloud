@@ -42,14 +42,6 @@ class Collection {
     size() {
         return this.items.length;
     }
-
-    сhangeWarrantyItemUUID() {
-        this.items.forEach(function (item) {
-            if (item.custom && item.custom.parentLineItemUUID) {
-                item.custom.parentLineItemUUID = '987654321N'
-            }
-        })
-    }
 }
 
 module.exports = Collection;
