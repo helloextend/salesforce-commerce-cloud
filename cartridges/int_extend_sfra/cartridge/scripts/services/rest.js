@@ -360,6 +360,11 @@ function Leads() {
             var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
             var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
             var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion');
+
+            if (API_VERSION === 'default') {
+                API_VERSION = '2021-04-01';
+            }
+
             var credential = service.configuration.credential;
 
             // Set request headers
