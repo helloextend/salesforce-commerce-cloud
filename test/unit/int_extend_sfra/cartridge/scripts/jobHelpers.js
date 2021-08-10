@@ -18,12 +18,8 @@ describe('jobHelpers Helpers', () => {
     };
 
     describe('getPSTtime()', () => {
-        it('should return PST time', () => {
-            var currentTime = new Date();
-            var PST_offset = 8;
-
-            currentTime.setHours(currentTime.getHours() - PST_offset);
-            assert.equal(Date.parse(jobHelpers.getPSTtime()), Date.parse(currentTime));
+        it('should return PST timestamp', () => {
+            assert.isNumber(Date.parse(jobHelpers.getPSTtime()))
         });
     });
 
@@ -31,32 +27,47 @@ describe('jobHelpers Helpers', () => {
         it('should return product object for service call', () => {
             var Product = require(mockPath + 'dw/catalog/Product');
             var product = new Product();
+            var result = jobHelpers.getProductLoggerModel(product)
 
-            console.log(product.ID)
-            var result = {
-                ID: product.ID,
-                title: product.name,
+            var loggerModel = {
+                ID: '1234567',
+                title: 'test product',
                 price: 20,
-                timestampPST: jobHelpers.getPSTtime().getTime()
+                timestampPST: result.timestampPST
             };
 
-            assert.deepEqual(jobHelpers.getProductLoggerModel(product), result);
+            assert.deepEqual(result, loggerModel);
         });
     });
 
     describe('getContractLoggerModel()', () => {
-        it('should return contract object for service call', () => {
+        it('should return contract object for service call: !empty(customerProfile)', () => {
             var order = require(mockPath + 'dw/order/Order');
-            var expte
+            var result = jobHelpers.getContractLoggerModel(order)
 
-            var result = {
-                orderNumber: order.getOrderNo(),
-                customerFirstName: 'firstName',
-                customerLastName: 'lastName',
-                timestampPST: jobHelpers.getPSTtime().getTime()
+            var loggerModel = {
+                orderNumber: '345021307483&',
+                customerFirstName: 'Amanda',
+                customerLastName: 'Jones',
+                timestampPST: result.timestampPST
             };
 
-            assert.deepEqual(jobHelpers.getContractLoggerModel(order), result);
+            assert.deepEqual(result, loggerModel);
+        });
+
+        it('should return contract object for service call: empty(customerProfile)', () => {
+            var order = require(mockPath + 'dw/order/Order');
+            order.customer.profile = null;
+            var result = jobHelpers.getContractLoggerModel(order)
+
+            var loggerModel = {
+                orderNumber: '345021307483&',
+                customerFirstName: 'Amanda',
+                customerLastName: 'Jones',
+                timestampPST: result.timestampPST
+            };
+
+            assert.deepEqual(result, loggerModel);
         });
     });
 

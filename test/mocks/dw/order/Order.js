@@ -27,8 +27,8 @@ class Order {
         this.orderNo = '345021307483&';
         this.customer = {
             profile: {
-                firstName: 'firstName',
-                lastName: 'lastName',
+                firstName: 'Amanda',
+                lastName: 'Jones',
                 gender: {
                     value: 1
                 },

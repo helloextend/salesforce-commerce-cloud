@@ -14,7 +14,6 @@ class ProductLineItem {
         this.price = new Money(20,'USD');
         this.quantity = new Quantity(1);
         this.quantityValue = 1;
-        this.custom = {bonusProductLineItemUUID: ''};
         this.productID = '1234567';
         this.product = new Product();
 
@@ -26,6 +25,12 @@ class ProductLineItem {
                 this[key] = arg[key];
             }
         }
+        if (this.custom) {
+            this.custom.bonusProductLineItemUUID = '';
+        } else {
+            this.custom = {bonusProductLineItemUUID: ''};
+        }
+
     }
     getQuantity() {
         return this.quantity;
@@ -37,6 +42,18 @@ class ProductLineItem {
 
     getProduct() {
         return this.product;
+    }
+
+    getUUID() {
+        return this.UUID;
+    }
+
+    setQuantityValue(newValue) {
+        this.quantityValue = newValue;
+    }
+
+    getQuantityValue() {
+        return this.quantityValue;
     }
 }
 module.exports = ProductLineItem;

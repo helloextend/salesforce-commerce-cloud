@@ -8,29 +8,31 @@ var mockPath = './../../../../mocks/';
 var cartridgePath = '../../../../../cartridges/int_extend_sfra/';
 var Transaction = require(mockPath + 'dw/system/Transaction');
 var BasketMgr = require(mockPath + 'dw/order/BasketMgr');
+var Basket = require(mockPath + 'dw/order/Basket');
 var Site = require(mockPath + 'dw/system/Site');
 var ArrayList = require('../../../../mocks/dw.util.Collection.js');
 
 var collections = proxyquire(
     '../../../../../cartridges/app_storefront_base/cartridge/scripts/util/collections', {
-        'dw/util/ArrayList': ArrayList
-    });
+    'dw/util/ArrayList': ArrayList
+});
 
 var normalizationCartHook = proxyquire(cartridgePath + 'cartridge/scripts/normalizationCartHook.js', {
     'dw/system/Transaction': Transaction,
     'dw/order/BasketMgr': BasketMgr,
     '*/cartridge/scripts/util/collections': collections,
 });
-// dw.system.Site.current.preferences.custom.extendGlobalSwitch
-describe('normalizationCartHook', () => {
-    global.dw = {
-        system: {
-            Site: {
-                current: Site.getCurrent()
-            }
+
+var dw = {
+    system: {
+        Site: {
+            current: Site.getCurrent()
         }
     }
+}
 
+
+describe('normalizationCartHook', () => {
     global.empty = function (val) {
         if (val === undefined || val == null || val.length <= 0) {
             return true;
@@ -39,9 +41,22 @@ describe('normalizationCartHook', () => {
         }
     };
 
-    describe('normalizeCartQuantities()', () => {
-        it('should return PST time', () => {
-            assert.isUndefined(normalizationCartHook());
+    global.dw = dw;
+
+    describe('normalizationCartHook()', () => {
+        it('Testing method: normalizationCartHook: !extendGlobalSwitch', () => {
+            assert.isUndefined(normalizationCartHook(Basket));
+        });
+
+        it('Testing method: normalizationCartHook: extendGlobalSwitch', () => {
+            global.dw.system.Site.current.preferences.custom.extendGlobalSwitch = false;
+            assert.isUndefined(normalizationCartHook(Basket));
+        });
+
+        it('Testing method: normalizationCartHook: !parentLineItemUUID', () => {
+            global.dw.system.Site.current.preferences.custom.extendGlobalSwitch = true;
+            Basket.productLineItems[2].custom.parentLineItemUUID = 'null';
+            assert.isUndefined(normalizationCartHook(Basket));
         });
     });
 

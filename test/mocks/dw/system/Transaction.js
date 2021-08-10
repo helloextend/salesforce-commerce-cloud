@@ -1,3 +1,9 @@
 'use strict';
 
-module.exports = {};
+class Transaction {
+    wrap(wrapper) {
+        wrapper();
+    }
+}
+
+module.exports = new Transaction;

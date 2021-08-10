@@ -28,7 +28,8 @@ class Basket {
                 productID: 'product1',
                 adjustedGrossPrice: new Money(15,'USD'),
                 adjustedNetPrice: new Money(13,'USD'),
-                quantityValue: 1
+                quantityValue: 1,
+                UUID: '654321U'
             }),
             new ProductLineItem({
                 bonusProductLineItem: false,
@@ -36,13 +37,30 @@ class Basket {
                 productID: 'product2',
                 adjustedGrossPrice: new Money(30,'USD'),
                 adjustedNetPrice: new Money(27,'USD'),
-                quantityValue: 2
+                quantityValue: 2,
+                UUID: '123456U'
+            }),
+            new ProductLineItem({
+                bonusProductLineItem: false,
+                bundledProductLineItem: false,
+                productID: 'product2',
+                adjustedGrossPrice: new Money(30,'USD'),
+                adjustedNetPrice: new Money(27,'USD'),
+                quantityValue: 2,
+                UUID: '7891011U',
+                custom: {
+                    parentLineItemUUID: '123456U'
+                }
             })
         ]);
         this.allProductLineItems = this.productLineItems;
     }
 
     getProductLineItems() {
+        return this.allProductLineItems;
+    }
+
+    getAllProductLineItems() {
         return this.allProductLineItems;
     }
 
@@ -117,8 +135,6 @@ class Basket {
     setCustomerEmail(emailAddress) {
         return {};
     }
-
-
 
 }
 
