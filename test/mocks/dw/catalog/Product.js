@@ -2,8 +2,12 @@
 var ProductVariationModel = require('./ProductVariationModel');
 var ProductPriceModel = require('./ProductPriceModel');
 class Product {
-    constructor() {
-        this.ID = '1234567';
+    constructor(props) {
+        if (props) {
+            this.ID = props.ID || '1234567';
+        } else {
+            this.ID = '1234567';
+        } 
         this.name = 'test product';
         this.variant = true;
         this.price = 45;
