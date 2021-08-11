@@ -128,6 +128,12 @@ function upsellModal(uuid) {
                         method: 'POST',
                         data: form,
                         success: function () {
+                            if (window.EXT_A_EXT_GLOBAL_SWITCH) {
+                                form.area = 'cart_page';
+                                form.component = 'modal';
+                                trackAddToCart(form);
+                            }
+
                             location.reload();
                         },
                         error: function () {
@@ -161,7 +167,12 @@ function addExtendUpsellBtn(uuid, pid, qty) {
                                 method: 'POST',
                                 data: form,
                                 success: function () {
-                                    trackAddToCart(form, 'cart_page', 'modal');
+                                    if (window.EXT_A_EXT_GLOBAL_SWITCH) {
+                                        form.area = 'cart_page';
+                                        form.component = 'modal';
+                                        trackAddToCart(form);
+                                    }
+
                                     location.reload();
                                 },
                                 error: function () {
