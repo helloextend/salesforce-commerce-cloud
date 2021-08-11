@@ -39,15 +39,28 @@ function trackOfferViewedModal(productId, area) {
 
 function trackAddToCart(data) {
     if (data.extendPlanId) {
-        ExtendAnalytics.trackOfferAddedToCart({
-            productId: data.productId,
-            productQuantity: +data.quantity,
-            planId: data.extendPlanId,
-            offerType: {
-                area: data.area,
-                component: data.component
-            }
-        });
+        if (data.area === 'product_page' || data.area === 'cart_page') {
+            ExtendAnalytics.trackOfferAddedToCart({
+                productId: data.productId || data.pid,
+                productQuantity: +data.quantity,
+                warrantyQuantity: +data.quantity,
+                planId: data.extendPlanId,
+                offerType: {
+                    area: data.area,
+                    component: data.component
+                }
+            });
+        } else {
+            ExtendAnalytics.trackOfferAddedToCart({
+                productId: data.productId || data.pid,
+                productQuantity: +data.quantity,
+                planId: data.extendPlanId,
+                offerType: {
+                    area: data.area,
+                    component: data.component
+                }
+            });
+        }
     } else {
         ExtendAnalytics.trackProductAddedToCart({
             productId: data.productId,
