@@ -45,4 +45,27 @@
             </run-once>
         </triggers>
     </job>
+
+    <job job-id="Create Refunds from SFCC" priority="0">
+        <description/>
+        <parameters/>
+        <flow>
+            <context site-id="Sites"/>
+            <step step-id="exportProducts" type="ExecuteScriptModule" enforce-restart="false">
+                <description/>
+                <parameters>
+                    <parameter name="ExecuteScriptModule.Module">int_extend_sfra/cartridge/scripts/jobs/createRefunds.js</parameter>
+                    <parameter name="ExecuteScriptModule.FunctionName">create</parameter>
+                    <parameter name="ExecuteScriptModule.Transactional">false</parameter>
+                </parameters>
+            </step>
+        </flow>
+        <rules/>
+        <triggers>
+            <run-once enabled="false">
+                <date>2019-11-29Z</date>
+                <time>14:27:42.000Z</time>
+            </run-once>
+        </triggers>
+    </job>
 </jobs>
