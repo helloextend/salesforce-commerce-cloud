@@ -92,14 +92,60 @@ function getExtendPlansParents(order) {
 }
 
 /**
- * Add Extend products to Contracts queue
+ * Get is product line item has extend protection plan
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @param {Array} plans : an array of parentLineItemUUID of extended plans.
+ * @returns {Boolean} true if product line item has extend protection plan.
+ */
+function getIsProductLineItemExtended(pLi, plans) {
+    var isExtendedLI = false;
+    if (pLi.custom.persistentUUID) {
+        for (var n = 0; n < plans.length; n++) {
+            if (plans[n] === pLi.custom.persistentUUID) {
+                isExtendedLI = true;
+                break;
+            }
+        }
+    }
+
+    return isExtendedLI;
+}
+
+/**
+ * Get lead object for service call
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @param {Order} order : API Order object
+ * @returns {Object} lead object.
+ */
+function getLeadObject(pLi, order) {
+    var lead = {
+        customer: {
+            email: order.customerEmail
+        },
+        quantity: pLi.quantity.value,
+        product: {
+            purchasePrice: {
+                currencyCode: order.currencyCode,
+                amount: moneyToCents(pLi.getAdjustedNetPrice())
+            },
+            referenceId: pLi.productID,
+            transactionDate: Date.now(),
+            transactionId: order.currentOrderNo
+        },
+    }
+
+    return lead;
+}
+
+/**
+ * Add Extend products to Contracts queue or create lead products
  */
 server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     var Site = require('dw/system/Site');
     var OrderMgr = require('dw/order/OrderMgr');
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
     var Transaction = require('dw/system/Transaction');
-    var extend = require('~/cartridge/scripts/extend'); 
+    var extend = require('~/cartridge/scripts/extend');
     var viewData = res.getViewData();
 
     if (viewData.error) {
@@ -126,34 +172,19 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
             }
         } else if (pLi.custom.isWarrantable) {
             // Create lead for product that do not have Extend protection plans associated with them
-            var isExtendedLI = false;
-            
-            if (pLi.custom.persistentUUID) {
-                for (var n = 0; n < plans.length; n++) {
-                    if (plans[n] === pLi.custom.persistentUUID) {
-                        isExtendedLI = true;
-                        break;
-                    }
-                }
-            }
+            var isExtendedLI = getIsProductLineItemExtended(pLi, plans);
+
             if (!isExtendedLI) {
-                var lead = {
-                    customer: {
-                        email: order.customerEmail
-                    },
-                    quantity: pLi.quantity.value,
-                    product: {
-                        purchasePrice: {
-                            currencyCode: order.currencyCode,
-                            amount: moneyToCents(pLi.getAdjustedNetPrice())
-                        },
-                        referenceId: pLi.productID,
-                        transactionDate: Date.now(),
-                        transactionId: order.currentOrderNo
-                    },
-                }
+                var lead = getLeadObject(pLi, order);
+
                 // Service call to leads endpoint
-                extend.createLead(JSON.stringify(lead));
+                var response = extend.createLead(JSON.stringify(lead));
+
+                if (response.leadToken) {
+                    Transaction.wrap(function () {
+                        pLi.custom.leadToken = response.leadToken;
+                    });
+                }
             }
         }
     }
