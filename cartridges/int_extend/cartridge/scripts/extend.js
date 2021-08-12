@@ -104,9 +104,41 @@ function createProduct(paramData) {
     return serviceResponse.object;
 }
 
+/**
+ * Returns a response object from Extend
+ *
+ * @param {Object} paramData - query params
+ * @returns {Object} - response object
+ */
+ function createRefund(paramData) {
+    var serviceResponse = null;
+
+    serviceResponse = webService.createRefundRequest(paramData);
+
+    if (!serviceResponse.ok) {
+        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
+        logger.error(
+            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}stores/{3}/contracts/{4}/refund',
+            serviceResponse.errorMessage,
+            serviceResponse.error,
+            serviceURL,
+            Site.getCustomPreferenceValue('extendStoreID'),
+            paramData.extendContractId
+        );
+        return {
+            error: true,
+            errorMessage: serviceResponse.errorMessage || 'No results found.',
+            errorCode: serviceResponse.error
+        };
+    }
+
+    return serviceResponse.object;
+}
+
 /* Exported Methods */
 module.exports = {
     createContract: createContract,
     getOffer: getOffer,
-    createProduct: createProduct
+    createProduct: createProduct,
+    createRefund: createRefund
 };
