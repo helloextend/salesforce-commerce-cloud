@@ -1,15 +1,32 @@
 'use strict';
 var ProductVariationModel = require('./ProductVariationModel');
 var ProductPriceModel = require('./ProductPriceModel');
+
+function getProductPrimaryCategory(props) {
+    if (props && props.noCategory) {
+        return;
+    }
+
+    return {
+        name: 'Mens clothing',
+        id: 'Mens',
+        getID: function () {
+            return this.id;
+        }
+    }
+}
+
 class Product {
     constructor(props) {
         if (props) {
             this.ID = props.ID || '1234567';
+            this.master = props.master || false;
         } else {
             this.ID = '1234567';
+            this.master = false;
         } 
         this.name = 'test product';
-        this.variant = true;
+        this.variant = !this.master;
         this.price = 45;
         this.availabilityModel = {
             isOrderable: {
@@ -27,7 +44,18 @@ class Product {
         };
         this.variationModel = new ProductVariationModel();
         this.priceModel = new ProductPriceModel();
-        this.master = false;
+
+        if (!this.master) {
+            this.masterProduct = {
+                getPrimaryCategory: function () {
+                    return this.primaryCategory;
+                },
+                primaryCategory: getProductPrimaryCategory(props)
+            }
+        } else {
+            this.primaryCategory = getProductPrimaryCategory(props);
+        }
+
         this.image = {
             'small': {
                 URL: 'testUrlSmall'
@@ -39,6 +67,10 @@ class Product {
                 URL: 'testUrlLarge'
             }
         };
+    }
+
+    getPrimaryCategory() {
+        return this.primaryCategory;
     }
 
     getImage(size) {
@@ -106,6 +138,10 @@ class Product {
 
     getVariationModel() {
         return this.variationModel;
+    }
+
+    getMasterProduct() {
+        return this.masterProduct;
     }
 }
 

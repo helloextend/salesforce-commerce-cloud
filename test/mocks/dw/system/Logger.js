@@ -9,6 +9,9 @@ class Logger {
             },
             info: function (msg) {
                 return msg;
+            },
+            debug: function (msg) {
+                return msg;
             }
         };
     }

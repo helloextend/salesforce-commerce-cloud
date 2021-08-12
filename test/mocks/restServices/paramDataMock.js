@@ -6,28 +6,34 @@ var CustomObjectMgr = require('./../dw/object/CustomObjectMgr');
 
 var ContractQueueObjects = CustomObjectMgr.getAllCustomObjects('ExtendContractsQueue').asList();
 
-var createContractParamMock = ContractQueueObjects.items[0];
-var createContractWrongParamMock = ContractQueueObjects.items[1];
-var createContractMissedParamMock = ContractQueueObjects.items[2];
-var createContractReqData = ContractQueueObjects.items[3];
+var contractMock = ContractQueueObjects.items[0];
+var contractWrongMock = ContractQueueObjects.items[1];
+var contractMissedMock = ContractQueueObjects.items[2];
+var contractReqData = ContractQueueObjects.items[3];
 
-var getOfferParamMock = '1234567';
-var getOfferWrongParamMock = '';
-var getOfferMissedParamMock = '999987';
+var getOfferMock = '1234567';
+var getOfferWrongMock = '';
+var getOfferMissedMock = '999987';
 
-var createProductParamMock = [new Product()]
-var createProductWrongParamMock = [new ProductLineItem()]
-var createProductMissedParamMock = [new Product({ID: '987654'})]
+var productMock = [new Product()];
+var productNoCategoryMock = [new Product({noCategory: true})];
+var productMasterMock = [new Product({master:true})];
+var productMasterNoCategoryMock = [new Product({noCategory: true, master:true})];
+var productWrongMock = [new ProductLineItem()];
+var productMissedMock = [new Product({ID: '987654'})];
 
 module.exports = {
-    createContractParamMock: createContractParamMock,
-    createContractWrongParamMock: createContractWrongParamMock,
-    createContractMissedParamMock: createContractMissedParamMock,
-    getOfferParamMock: getOfferParamMock,
-    getOfferWrongParamMock: getOfferWrongParamMock,
-    getOfferMissedParamMock: getOfferMissedParamMock,
-    createProductParamMock: createProductParamMock,
-    createProductWrongParamMock: createProductWrongParamMock,
-    createProductMissedParamMock: createProductMissedParamMock,
-    createContractReqData: createContractReqData
+    contractMock: contractMock,
+    contractWrongMock: contractWrongMock,
+    contractMissedMock: contractMissedMock,
+    contractReqData: contractReqData,
+    getOfferMock: getOfferMock,
+    getOfferWrongMock: getOfferWrongMock,
+    getOfferMissedMock: getOfferMissedMock,
+    productMock: productMock,
+    productMasterMock: productMasterMock,
+    productNoCategoryMock: productNoCategoryMock,
+    productMasterNoCategoryMock: productMasterNoCategoryMock,
+    productWrongMock: productWrongMock,
+    productMissedMock: productMissedMock,
 }

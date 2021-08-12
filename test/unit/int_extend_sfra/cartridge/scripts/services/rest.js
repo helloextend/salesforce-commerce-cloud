@@ -27,8 +27,38 @@ describe('rest services', () => {
     };
 
     describe('createContractRequest()', () => {
-        it('createContractObj(): should return array of modified object', () => {
-            var result = rest.createContractRequest(params.createContractReqData);
+        it('should return', () => {
+            var result = rest.createContractRequest(params.contractReqData);
+            result;
+        });
+    });
+
+    describe('getOfferRequest()', () => {
+        it('should return', () => {
+            var result = rest.getOfferRequest(params.getOfferMock);
+            result;
+        });
+    });
+
+    describe('createProductRequest()', () => {
+        it('should return', () => {
+            var result = rest.createProductRequest(params.productMock);
+            result;
+        });
+
+        it('should return', () => {
+            var result = rest.createProductRequest(params.productMasterMock);
+            result;
+        });
+
+        it('should return', () => {
+            var result = rest.createProductRequest(params.productNoCategoryMock);
+            result;
+        });
+
+        it('should return', () => {
+            var result = rest.createProductRequest(params.productMasterNoCategoryMock);
+            result;
         });
     });
 
