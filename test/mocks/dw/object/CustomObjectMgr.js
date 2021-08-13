@@ -59,7 +59,7 @@ var objects = {
                 }
             }
         },
-        'customConfigWrong': {
+        'customConfigMissed': {
             custom: {
                 orderNo: '345021307483&',
                 orderTotal: 30000,

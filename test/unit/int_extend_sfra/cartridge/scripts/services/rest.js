@@ -27,38 +27,26 @@ describe('rest services', () => {
     };
 
     describe('createContractRequest()', () => {
-        it('should return', () => {
+        it('should return response object with id of contract', () => {
             var result = rest.createContractRequest(params.contractReqData);
-            result;
+            assert.exists(result.object);
+            assert.isTrue(result.ok);
         });
     });
 
     describe('getOfferRequest()', () => {
-        it('should return', () => {
+        it('should return response object with plans', () => {
             var result = rest.getOfferRequest(params.getOfferMock);
-            result;
+            assert.exists(result.object);
+            assert.isTrue(result.ok);
         });
     });
 
     describe('createProductRequest()', () => {
-        it('should return', () => {
-            var result = rest.createProductRequest(params.productMock);
-            result;
-        });
-
-        it('should return', () => {
-            var result = rest.createProductRequest(params.productMasterMock);
-            result;
-        });
-
-        it('should return', () => {
-            var result = rest.createProductRequest(params.productNoCategoryMock);
-            result;
-        });
-
-        it('should return', () => {
-            var result = rest.createProductRequest(params.productMasterNoCategoryMock);
-            result;
+        it('should return response object with sync arrays of product by types', () => {
+            var result = rest.createProductRequest(params.productsRestMock);
+            assert.exists(result.object);
+            assert.isTrue(result.ok);
         });
     });
 

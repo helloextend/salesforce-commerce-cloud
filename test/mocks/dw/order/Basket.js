@@ -2,11 +2,14 @@
 /* eslint-disable no-unused-vars */
 
 var ProductLineItem = require('./ProductLineItem');
+var ProductQuantities = require('./ProductQuantities');
+var GiftCertificateLineItem = require('./GiftCertificateLineItem');
 var PaymentInstrument = require('./PaymentInstrument');
 var Shipment = require('./Shipment');
 var Money = require('./../value/Money');
 var Collection = require('./../util/Collection');
 var OrderAddress = require('./OrderAddress');
+var PriceAdjustment = require('./PriceAdjustment');
 
 class Basket {
     constructor() {
@@ -24,36 +27,95 @@ class Basket {
         this.productLineItems = new Collection([
             new ProductLineItem({
                 bonusProductLineItem: false,
-                bundledProductLineItem: false,
+                bundledProductLineItem: true,
+                optionProductLineItem: false,
                 productID: 'product1',
-                adjustedGrossPrice: new Money(15,'USD'),
-                adjustedNetPrice: new Money(13,'USD'),
+                adjustedGrossPrice: new Money(15, 'USD'),
+                adjustedNetPrice: new Money(13, 'USD'),
                 quantityValue: 1,
                 UUID: '654321U'
             }),
             new ProductLineItem({
-                bonusProductLineItem: false,
+                bonusProductLineItem: true,
                 bundledProductLineItem: false,
+                optionProductLineItem: true,
                 productID: 'product2',
-                adjustedGrossPrice: new Money(30,'USD'),
-                adjustedNetPrice: new Money(27,'USD'),
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
                 quantityValue: 2,
                 UUID: '123456U'
             }),
             new ProductLineItem({
                 bonusProductLineItem: false,
                 bundledProductLineItem: false,
-                productID: 'product2',
-                adjustedGrossPrice: new Money(30,'USD'),
-                adjustedNetPrice: new Money(27,'USD'),
+                productID: 'product3',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
                 quantityValue: 2,
                 UUID: '7891011U',
                 custom: {
                     parentLineItemUUID: '123456U'
                 }
+            }),
+            new ProductLineItem({
+                bonusProductLineItem: false,
+                bundledProductLineItem: false,
+                optionProductLineItem: true,
+                productID: 'product3',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
+                quantityValue: 2,
+                UUID: '7891011U'
+            }),
+            new ProductLineItem({
+                bonusProductLineItem: true,
+                bundledProductLineItem: false,
+                optionProductLineItem: false,
+                productID: 'product3',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
+                quantityValue: 2,
+                UUID: '7891011U',
+                priceAdjustments: new Collection(new PriceAdjustment(11.77, 'USD'))
+            }),
+            new ProductLineItem({
+                bonusProductLineItem: true,
+                bundledProductLineItem: false,
+                optionProductLineItem: false,
+                productID: 'product3',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
+                quantityValue: 2,
+                UUID: '7891011U',
+                priceAdjustments: new Collection()
+            }),
+            new ProductLineItem({
+                bonusProductLineItem: false,
+                bundledProductLineItem: false,
+                optionProductLineItem: false,
+                productID: 'product3',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
+                quantityValue: 2,
+                UUID: '7891011U',
+                product: null
+            }),
+            new ProductLineItem({
+                bonusProductLineItem: false,
+                bundledProductLineItem: false,
+                optionProductLineItem: false,
+                productID: 'product3',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
+                quantityValue: 2,
+                UUID: '7891011U'
             })
         ]);
         this.allProductLineItems = this.productLineItems;
+        this.giftCertificateLineItems = new Collection([
+            new GiftCertificateLineItem(),
+            new GiftCertificateLineItem()
+        ])
     }
 
     getProductLineItems() {
@@ -62,6 +124,14 @@ class Basket {
 
     getAllProductLineItems() {
         return this.allProductLineItems;
+    }
+
+    updateTotals() {
+        return;
+    }
+
+    getGiftCertificateLineItems() {
+        return this.giftCertificateLineItems;
     }
 
     getPaymentInstruments() {
@@ -136,6 +206,9 @@ class Basket {
         return {};
     }
 
+    getProductQuantities() {
+        return new ProductQuantities();
+    }
 }
 
 module.exports = new Basket;

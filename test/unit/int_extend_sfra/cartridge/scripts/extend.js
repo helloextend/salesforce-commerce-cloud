@@ -40,8 +40,9 @@ describe('extend services', () => {
         });
 
         it('should return response error: No results found', () => {
-            var result = extend.createProduct(params.productMissedMock);
+            var result = extend.createContract(params.contractMissedMock);
             assert.isTrue(result.error);
+            assert.equal(result.errorMessage, 'No results found.');
         });
     });
 
@@ -60,6 +61,7 @@ describe('extend services', () => {
         it('should return response error: No results found', () => {
             var result = extend.getOffer(params.getOfferMissedMock);
             assert.isTrue(result.error);
+            assert.equal(result.errorMessage, 'No results found.');
         });
     });
 
@@ -79,6 +81,7 @@ describe('extend services', () => {
         it('should return response error: No results found', () => {
             var result = extend.createProduct(params.productMissedMock);
             assert.isTrue(result.error);
+            assert.equal(result.errorMessage, 'No results found.');
         });
     });
 

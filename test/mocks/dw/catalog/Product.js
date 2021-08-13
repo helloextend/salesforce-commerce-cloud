@@ -24,9 +24,10 @@ class Product {
         } else {
             this.ID = '1234567';
             this.master = false;
-        } 
+        }
         this.name = 'test product';
         this.variant = !this.master;
+        this.brand = 'Brand'
         this.price = 45;
         this.availabilityModel = {
             isOrderable: {
@@ -44,16 +45,11 @@ class Product {
         };
         this.variationModel = new ProductVariationModel();
         this.priceModel = new ProductPriceModel();
-
-        if (!this.master) {
-            this.masterProduct = {
-                getPrimaryCategory: function () {
-                    return this.primaryCategory;
-                },
-                primaryCategory: getProductPrimaryCategory(props)
-            }
-        } else {
-            this.primaryCategory = getProductPrimaryCategory(props);
+        this.shortDescription = {
+            getMarkup: function () {
+                return this.description;
+            },
+            description: 'Lorem ipsum dolor sit amet'
         }
 
         this.image = {
@@ -67,14 +63,20 @@ class Product {
                 URL: 'testUrlLarge'
             }
         };
-    }
 
-    getPrimaryCategory() {
-        return this.primaryCategory;
+        this.custom = {
+            mfrWarrantyParts: 12,
+            mfrWarrantyLabor: 12
+        }
+
+        this.UPC = '555';
     }
 
     getImage(size) {
         var _image = this.image[size];
+        if (!_image) {
+            return;
+        }
         return {
             _image,
             getAbsURL() {
@@ -86,6 +88,19 @@ class Product {
     getName() {
         return this.name;
     }
+
+    getBrand() {
+        return this.brand;
+    }
+
+    getID() {
+        return this.ID;
+    }
+
+    getUPC() {
+        return this.UPC;
+    }
+
     getAvailabilityModel() {
         return {
             'availability': 1,
@@ -114,8 +129,8 @@ class Product {
             online: online,
             parent: parent,
             length: length,
-            toArray: function() {
-                return [{ 
+            toArray: function () {
+                return [{
                     displayName: displayName,
                     online: true,
                     parent: parent,
@@ -140,8 +155,8 @@ class Product {
         return this.variationModel;
     }
 
-    getMasterProduct() {
-        return this.masterProduct;
+    getShortDescription() {
+        return this.shortDescription;
     }
 }
 

@@ -11,6 +11,10 @@ class GiftCertificateLineItem {
         this.custom = {};
         this.giftCertificateID = '1234567';
     }
+
+    setPriceValue(newValue) {
+        this.priceValue = newValue;
+    }
 }
 
 module.exports = GiftCertificateLineItem;

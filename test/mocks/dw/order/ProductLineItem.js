@@ -1,4 +1,5 @@
 var Product = require('./../catalog/Product');
+var ProductPriceModel = require('./../catalog/ProductPriceModel');
 var Money = require('./../value/Money');
 var Quantity = require('./../value/Quantity');
 
@@ -15,7 +16,9 @@ class ProductLineItem {
         this.quantity = new Quantity(1);
         this.quantityValue = 1;
         this.productID = '1234567';
+        this.catalogProduct = true;
         this.product = new Product();
+        this.priceModel = new ProductPriceModel();
 
         this.length = {};
 
@@ -55,5 +58,14 @@ class ProductLineItem {
     getQuantityValue() {
         return this.quantityValue;
     }
+
+    setPriceValue(newValue) {
+        this.priceValue = newValue;
+    }
+
+    updateOptionPrice() {
+        return;
+    }
+
 }
 module.exports = ProductLineItem;

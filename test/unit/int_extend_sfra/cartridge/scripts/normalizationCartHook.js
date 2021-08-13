@@ -10,12 +10,9 @@ var Transaction = require(mockPath + 'dw/system/Transaction');
 var BasketMgr = require(mockPath + 'dw/order/BasketMgr');
 var Basket = require(mockPath + 'dw/order/Basket');
 var Site = require(mockPath + 'dw/system/Site');
-var ArrayList = require('../../../../mocks/dw.util.Collection.js');
+var ArrayList = require('../../../../mocks/util/Collection.js');
 
-var collections = proxyquire(
-    '../../../../../cartridges/app_storefront_base/cartridge/scripts/util/collections', {
-    'dw/util/ArrayList': ArrayList
-});
+var collections = require(mockPath + 'util/collections');
 
 var normalizationCartHook = proxyquire(cartridgePath + 'cartridge/scripts/normalizationCartHook.js', {
     'dw/system/Transaction': Transaction,
@@ -30,7 +27,6 @@ var dw = {
         }
     }
 }
-
 
 describe('normalizationCartHook', () => {
     global.empty = function (val) {

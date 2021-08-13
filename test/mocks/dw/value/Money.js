@@ -6,6 +6,7 @@ class Money {
     constructor(value = 0, currencyCode) {
         this.currencyCode = currencyCode;
         this.value = value;
+        this.available = true;
     }
 
     add(money) {

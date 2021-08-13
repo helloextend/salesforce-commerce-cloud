@@ -2,6 +2,20 @@
 
 var Product = require('./Product');
 
+function getProductPrimaryCategory(props) {
+    if (props && props.noCategory) {
+        return;
+    }
+
+    return {
+        name: 'Mens clothing',
+        id: 'Mens',
+        getID: function () {
+            return this.id;
+        }
+    }
+}
+
 class Variant extends Product {
     constructor(obj) {
         super();
@@ -10,21 +24,31 @@ class Variant extends Product {
                 this[k] = obj[k];
             }
         }
+        this.variant = true;
+        this.master = false;
         this.masterProduct = {
-            getOnlineCategories: function() {
+            ID: '8888888',
+            primaryCategory: getProductPrimaryCategory(obj),
+            getPrimaryCategory: function () {
+                return this.primaryCategory;
+            },
+            getID: function () {
+                return this.ID;
+            },
+            getOnlineCategories: function () {
                 var displayName = 'testCategoryVariant',
                     length = 2,
                     parent = {
-                        displayName : 'testCategoryVariantParent',
+                        displayName: 'testCategoryVariantParent',
                         parent: null,
                         length: 2
                     };
                 return {
-                    displayName:displayName,
-                    parent:parent,
+                    displayName: displayName,
+                    parent: parent,
                     length: length,
-                    toArray: function() {
-                        return [{ 
+                    toArray: function () {
+                        return [{
                             displayName: displayName,
                             parent: parent,
                             length: length
@@ -35,5 +59,8 @@ class Variant extends Product {
         }
     }
 
+    getMasterProduct() {
+        return this.masterProduct;
+    }
 }
 module.exports = Variant;
