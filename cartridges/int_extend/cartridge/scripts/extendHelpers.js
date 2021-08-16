@@ -133,7 +133,7 @@ function getSFCCProduct(order, UUID) {
  */
 function getExtendPlan(pLi) {
     var obj = {
-        purchasePrice: moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)),
+        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue))),
         planId: pLi.getManufacturerSKU()
     };
 
