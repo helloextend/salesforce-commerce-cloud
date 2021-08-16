@@ -6,8 +6,10 @@ var Status = require('./../system/Status');
 var SeekableIterator = require('./../util/SeekableIterator');
 
  class OrderMgr {
-    getOrder() {
-        return Order;
+    getOrder(orderNo) {
+        if (orderNo) {
+            return Order;
+        }
     }
     
     placeOrder(order) {

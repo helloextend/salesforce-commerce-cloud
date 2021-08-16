@@ -139,10 +139,19 @@ class Product {
             }
         };
     }
+
     isVariant() {
         return this.variant;
     }
 
+    isProduct() {
+        return true;
+    }
+
+    isOnline() {
+        return true;
+    }
+ 
     isMaster() {
         return this.master;
     }

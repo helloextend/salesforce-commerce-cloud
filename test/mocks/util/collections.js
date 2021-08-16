@@ -10,9 +10,7 @@ var ArrayList = require('./Collection');
  * @returns {Array} Array of results of map
  */
 function map(collection, callback, scope) {
-    var iterator = Object.hasOwnProperty.call(collection, 'iterator')
-        ? collection.iterator()
-        : collection;
+    var iterator = collection.iterator();
     var index = 0;
     var item = null;
     var result = [];

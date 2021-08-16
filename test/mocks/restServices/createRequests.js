@@ -8,9 +8,8 @@ class WebService {
             return responseDataMock.createContractResponseSuccessMock;
         } else if (paramData.custom.product.referenceId !== "SKU-123-456") {
             return responseDataMock.responseErrorNoResultsMock;
-        } 
-            return responseDataMock.responseErrorMock;
- 
+        }
+        return responseDataMock.responseErrorMock;
     }
 
     getOfferRequest(paramData) {
@@ -30,6 +29,23 @@ class WebService {
         }
         return responseDataMock.responseErrorMock;
     }
+
+    createContract(paramData) {
+        var response = this.createContractRequest(paramData);
+
+        if (response.object) {
+            return response.object;
+        } else if (!response.errorMessage) {
+            response.id = 'someId';
+        }
+        return response;
+    }
+
+    createProduct(paramData) {
+        var response = this.createProductRequest(paramData);
+        return response;
+    }
+
 }
 
 module.exports = new WebService();

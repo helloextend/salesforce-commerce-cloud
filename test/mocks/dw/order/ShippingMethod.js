@@ -2,8 +2,7 @@
 
 class ShippingMethod {
     constructor() {
-        this.displayName = '002';
-        this.description = 'test';
+        this.description = 'ShippingMethod';
     }
 }
 

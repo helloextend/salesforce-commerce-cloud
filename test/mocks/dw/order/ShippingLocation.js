@@ -2,6 +2,7 @@
 
 class ShippingLocation {
     constructor() {
+        this.description = 'ShippingLocation';
     }
 }
 

@@ -1,3 +1,5 @@
+var Collection = require('./Collection');
+
 class SeekableIterator {
     constructor(arr) {
         this._current = 0;
@@ -5,10 +7,13 @@ class SeekableIterator {
         for(var key in arr) {
             this[key] = arr[key];
         }
+        this.items = arr;
     }
+
     hasNext() {
         return this._current < this.count;
     }
+
     next() {
         var next = null;
         if( this.hasNext() ) {
@@ -16,8 +21,13 @@ class SeekableIterator {
         }
         return next;
     }
+
     close() {
         return true;
+    }
+
+    asList() {
+        return new Collection(this.items);
     }
 }
 

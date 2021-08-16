@@ -41,6 +41,14 @@ class Money {
         return this.value + ' ' +this.currencyCode;
     }
 
+    toNumberString() {
+        return +this.value;
+    }
+
+    getDecimalValue() {
+        return this.value;
+    }
+
     getValue() {
         return this.value;
     }

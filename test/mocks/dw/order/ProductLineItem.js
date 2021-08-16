@@ -8,7 +8,7 @@ class ProductLineItem {
         this.ID = '0045001';
         this.bonusProductLineItem = false;
         this.gift = false;
-        this.UUID = 'some UUID';
+        this.UUID = '24851';
         this.proratedPrice = new Money(17,'USD');
         this.adjustedPrice = new Money(18,'USD');
         this.basePrice = new Money(20,'USD');
@@ -29,7 +29,7 @@ class ProductLineItem {
             }
         }
         if (this.custom) {
-            this.custom.bonusProductLineItemUUID = '';
+            this.custom.bonusProductLineItemUUID =  this.custom.bonusProductLineItemUUID || '';
         } else {
             this.custom = {bonusProductLineItemUUID: ''};
         }
@@ -65,6 +65,14 @@ class ProductLineItem {
 
     updateOptionPrice() {
         return;
+    }
+
+    isProduct() {
+        return false;
+    }
+
+    isVariant() {
+        return false;
     }
 
 }

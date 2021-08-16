@@ -3,7 +3,7 @@ class PromotionMgr {
 
     }
     applyDiscounts(basket) {
-        return basket
+        return basket;
     }
 }
 

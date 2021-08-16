@@ -62,5 +62,9 @@ class Variant extends Product {
     getMasterProduct() {
         return this.masterProduct;
     }
+
+    isProduct() {
+        return false;
+    }
 }
 module.exports = Variant;

@@ -1,5 +1,11 @@
 'use strict';
 
+var Collection = require('./Collection');
+
+function toArrayList(params) {
+    return new Collection(params)
+}
+
 class ArrayList extends Array {
     contains(data) {
         return this.includes(data);
@@ -10,4 +16,7 @@ class ArrayList extends Array {
 
     }
 }
-module.exports = ArrayList;
+module.exports = {
+    ArrayList: ArrayList,
+    toArrayList: toArrayList
+}

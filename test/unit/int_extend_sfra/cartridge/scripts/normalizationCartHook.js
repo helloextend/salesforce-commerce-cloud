@@ -28,7 +28,7 @@ var dw = {
     }
 }
 
-describe('normalizationCartHook', () => {
+describe('normalizationCartHook hook', () => {
     global.empty = function (val) {
         if (val === undefined || val == null || val.length <= 0) {
             return true;
@@ -40,16 +40,16 @@ describe('normalizationCartHook', () => {
     global.dw = dw;
 
     describe('normalizationCartHook()', () => {
-        it('Testing method: normalizationCartHook: !extendGlobalSwitch', () => {
+        it('Should calculate basket and return undefined: !extendGlobalSwitch', () => {
             assert.isUndefined(normalizationCartHook(Basket));
         });
 
-        it('Testing method: normalizationCartHook: extendGlobalSwitch', () => {
+        it('Should calculate basket and return undefined: extendGlobalSwitch', () => {
             global.dw.system.Site.current.preferences.custom.extendGlobalSwitch = false;
             assert.isUndefined(normalizationCartHook(Basket));
         });
 
-        it('Testing method: normalizationCartHook: !parentLineItemUUID', () => {
+        it('Should calculate basket and return undefined: !parentLineItemUUID', () => {
             global.dw.system.Site.current.preferences.custom.extendGlobalSwitch = true;
             Basket.productLineItems[2].custom.parentLineItemUUID = 'null';
             assert.isUndefined(normalizationCartHook(Basket));
