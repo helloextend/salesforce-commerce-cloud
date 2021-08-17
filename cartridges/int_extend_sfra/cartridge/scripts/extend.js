@@ -14,7 +14,7 @@ var webService = require('~/cartridge/scripts/services/rest');
 function createContract(paramData) {
     var serviceResponse = null;
 
-    serviceResponse = webService.createContractRequest(paramData);
+    //serviceResponse = webService.createContractRequest(paramData);
 
     if (!serviceResponse.ok) {
         var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
