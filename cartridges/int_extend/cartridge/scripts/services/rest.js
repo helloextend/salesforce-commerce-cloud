@@ -346,6 +346,54 @@ function Offers() {
     });
 }
 
+/**
+ * Inits service instance for specific Extend operation
+ * @returns {dw.svc.LocalServiceRegistry} - initialized service instance
+ */
+ function Refunds() {
+    return require('dw/svc/LocalServiceRegistry').createService('int_extend.http.Extend', {
+        createRequest: function (service, requestData) {
+            var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+            var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
+            var credential = service.configuration.credential;
+
+            // Set request headers
+            service.addHeader('Accept', 'application/json; version=default');
+            service.addHeader('Content-Type', 'application/json');
+            service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
+
+            // Set request method
+            service.setRequestMethod('POST');
+
+            // Set query param
+            service.addParam('commit', requestData.commit)
+
+            // Set request endpoint
+            service.setURL(credential.URL + 'stores/' + STORE_ID + '/contracts/' + requestData.extendContractId + '/refund');
+
+            logger.debug('Extend Create Refund Request: {0}', requestData);
+
+            return requestData;
+        },
+        parseResponse: function (service, httpClient) {
+            logger.debug('Extend Get Offers Response: {0}', httpClient.text);
+            return JSON.parse(httpClient.text);
+        },
+        filterLogMessage: function () {
+            return;
+        },
+        getRequestLogMessage: function () {
+            return;
+        },
+        getResponseLogMessage: function () {
+            return;
+        },
+        mockFull: function (service, httpClient) {
+            return;
+        }
+    });
+}
+
 /** Exports function wrappers */
 module.exports = {
     createContractRequest: function (contractCO) {
@@ -360,5 +408,8 @@ module.exports = {
         var requestStr = createProductObj(requestData);
         logger.debug('Extend Create Product Request: {0}', requestStr);
         return Products().call(requestStr);
+    },
+    createRefundRequest: function (requestData) {
+        return Refunds().call(requestData);
     }
 };
