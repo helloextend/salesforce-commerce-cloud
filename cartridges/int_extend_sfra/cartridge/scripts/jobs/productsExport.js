@@ -4,8 +4,9 @@
 const ProductMgr = require('dw/catalog/ProductMgr');
 var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
-var extend = require('~/cartridge/scripts/extend'); 
 var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
+var ArrayList = require('dw/util/ArrayList');
+var HookMgr = require('dw/system/HookMgr');
 
 /**
  * @function execute
@@ -15,7 +16,7 @@ var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 
 exports.execute = function () {
     var productsIterator = ProductMgr.queryAllSiteProducts();
-    var productsBatch = [];
+    var productsBatch = new ArrayList();
 
     logger.info('Starting processing new products...');
 
@@ -33,13 +34,13 @@ exports.execute = function () {
         }
 
         if (productsBatch.length === 100) {
-            extend.createProduct(productsBatch);
-            productsBatch = [];
+            HookMgr.callHook('app.extend.callService', 'exportProducts', productsBatch);
+            productsBatch.clear();
         }
     }
 
     if (productsBatch.length) {
-        extend.createProduct(productsBatch);
+        HookMgr.callHook('app.extend.callService', 'exportProducts', productsBatch);
     }
 
     productsIterator.close();

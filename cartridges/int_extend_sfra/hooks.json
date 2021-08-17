@@ -5,20 +5,8 @@
             "script": "./cartridge/scripts/hooks/cart/calculate.js"
         },
         {
-            "name": "app.extend.createContracts",
-            "script": "./cartridge/scripts/hooks/createContracts.js"
-        },
-        {
-            "name": "app.extend.createRefunds",
-            "script": "./cartridge/scripts/hooks/createRefunds.js"
-        },
-        {
-            "name": "app.extend.exportProducts",
-            "script": "./cartridge/scripts/hooks/exportProducts.js"
-        },
-        {
-            "name": "app.extend.getOffer",
-            "script": "./cartridge/scripts/hooks/getOffer.js"
+            "name": "app.extend.callService",
+            "script": "./cartridge/scripts/hooks/callService.js"
         }
     ]
 }

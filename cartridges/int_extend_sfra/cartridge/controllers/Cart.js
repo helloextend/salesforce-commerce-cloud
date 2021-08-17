@@ -109,7 +109,6 @@ server.append('AddProduct', function (req, res, next) {
  */
 server.get('DoesWarrantyExists', function(req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
-    var extend = require('~/cartridge/scripts/extend');
     var qs = req.querystring;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     var pid, qty;

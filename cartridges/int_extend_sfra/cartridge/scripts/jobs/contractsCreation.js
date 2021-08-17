@@ -2,7 +2,6 @@
 
 var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
-var extend = require('~/cartridge/scripts/extend');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
 
 /**
@@ -20,9 +19,8 @@ exports.create = function () {
     
     while (extendContractsCO.hasNext()) {
         var contractCO = extendContractsCO.next();
-        //var contract = extend.createContract(contractCO);
 
-        var contract = HookMgr.callHook('app.extend.createContracts', 'createPayload', contractCO);
+        var contract = HookMgr.callHook('app.extend.callService', 'createContracts', contractCO);
 
         if (!contract.id) {
             continue;
