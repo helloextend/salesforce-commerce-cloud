@@ -19,7 +19,7 @@ exports.create = function () {
 
     while (extendContractsCO.hasNext()) {
         var contractCO = extendContractsCO.next();
-        var contract = extend.createContract(contractCO);
+        var contract = extend.createContracts(contractCO);
 
         if (!contract.id) {
             continue;
