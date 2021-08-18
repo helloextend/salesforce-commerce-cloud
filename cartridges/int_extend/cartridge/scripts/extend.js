@@ -140,8 +140,8 @@ function getProductsPayload(productBatch) {
 function exportProducts(productBatch) {
     var requestObject = getProductsPayload(productBatch);
     var endpointName = 'products';
-    //var response = webService.makeServiceCall(endpointName, requestObject);
-    //return response;
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
 }
 
 /**
