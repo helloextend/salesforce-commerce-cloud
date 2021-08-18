@@ -2,7 +2,6 @@
 
 var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
-var extend = require('~/cartridge/scripts/extend');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
 
 /**
@@ -14,12 +13,14 @@ exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Transaction = require('dw/system/Transaction');
     var ArrayList = require('dw/util/ArrayList');
+    var HookMgr = require('dw/system/HookMgr');
 
     var extendContractsCO = CustomObjectMgr.getAllCustomObjects('ExtendContractsQueue');
     
     while (extendContractsCO.hasNext()) {
         var contractCO = extendContractsCO.next();
-        var contract = extend.createContract(contractCO);
+
+        var contract = HookMgr.callHook('app.extend.callService', 'createContracts', contractCO);
 
         if (!contract.id) {
             continue;

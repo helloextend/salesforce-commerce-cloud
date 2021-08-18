@@ -137,6 +137,25 @@ function getLeadObject(pLi, order) {
     return lead;
 }
 
+ /**
+ * Get customer shipping address JSON object
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @return {String} stringified object
+ */
+function getShippingAddress(pLi) {
+    var address = pLi.getShipment().getShippingAddress();
+    var shippingAddress = {
+        address1: address.getAddress1(),
+        address2: address.getAddress2(),
+        city: address.getCity(),
+        countryCode: address.getCountryCode().toString(),
+        postalCode: address.getPostalCode(),
+        provinceCode: address.getStateCode()
+    }
+
+    return JSON.stringify(shippingAddress);
+}
+
 /**
  * Add Extend products to Contracts queue or create lead products
  */
@@ -145,7 +164,8 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     var OrderMgr = require('dw/order/OrderMgr');
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
     var Transaction = require('dw/system/Transaction');
-    var extend = require('~/cartridge/scripts/extend');
+    var webServices = require('~/cartridge/scripts/services/rest'); 
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     var viewData = res.getViewData();
 
     if (viewData.error) {
@@ -168,22 +188,28 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
                     queueObj.custom.plan = getExtendPlan(pLi);
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);
+                    queueObj.custom.shippingAddress = getShippingAddress(pLi);
                 });
             }
         } else if (pLi.custom.isWarrantable) {
             // Create lead for product that do not have Extend protection plans associated with them
-            var isExtendedLI = getIsProductLineItemExtended(pLi, plans);
+            var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion').value;
+            if (API_VERSION === 'default') {
+                logger.debug('Leads endpoint does not support default API version');
+            } else {
+                var isExtendedLI = getIsProductLineItemExtended(pLi, plans);
 
-            if (!isExtendedLI) {
-                var lead = getLeadObject(pLi, order);
-
-                // Service call to leads endpoint
-                var response = extend.createLead(JSON.stringify(lead));
-
-                if (response.leadToken) {
-                    Transaction.wrap(function () {
-                        pLi.custom.leadToken = response.leadToken;
-                    });
+                if (!isExtendedLI) {
+                    var lead = getLeadObject(pLi, order);
+    
+                    // Service call to leads endpoint
+                    var response = webServices.makeServiceCall('leads', lead);
+    
+                    if (response.leadToken) {
+                        Transaction.wrap(function () {
+                            pLi.custom.leadToken = response.leadToken;
+                        });
+                    }
                 }
             }
         }

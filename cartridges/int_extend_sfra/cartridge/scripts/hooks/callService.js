@@ -153,6 +153,7 @@ function createContracts(paramObj) {
     var requestObject = getContractsPayload(paramObj);
     var endpointName = 'contracts';
     var response = webService.makeServiceCall(endpointName, requestObject);
+    response;
     return response;
 }
 

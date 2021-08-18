@@ -22,8 +22,6 @@ var extendHelpers = require('*/cartridge/scripts/extendHelpers');
  */
 function isEligibleForWarranty() {
     var BasketMgr = require('dw/order/BasketMgr');
-    var extend = require('*/cartridge/scripts/extend');
-
     var qs = request.httpParameters;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     var pid ,qty, lead;
