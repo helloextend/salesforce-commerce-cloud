@@ -12,7 +12,6 @@ var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Order = require('dw/order/Order');
-    var ArrayList = require('dw/util/ArrayList');
     var Transaction = require('dw/system/Transaction');
     var refundStatus = jobHelpers.refundStatus;
 
@@ -50,7 +49,7 @@ exports.create = function () {
                 if (
                     extendRefundStatuses &&
                     (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
-                    extendRefundStatuses[extendContractId] === refundStatus.REJECT)
+                        extendRefundStatuses[extendContractId] === refundStatus.REJECT)
                 ) {
                     continue;
                 }

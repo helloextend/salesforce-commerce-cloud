@@ -3,10 +3,6 @@
         {
             "name": "dw.order.calculate",
             "script": "./cartridge/scripts/hooks/cart/calculate.js"
-        },
-        {
-            "name": "app.extend.callService",
-            "script": "./cartridge/scripts/hooks/callService.js"
         }
     ]
 }

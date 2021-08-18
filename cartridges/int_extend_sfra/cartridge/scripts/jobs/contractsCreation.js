@@ -2,6 +2,7 @@
 
 var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+var extend = require('~/cartridge/scripts/extend');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
 
 /**
@@ -13,14 +14,12 @@ exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Transaction = require('dw/system/Transaction');
     var ArrayList = require('dw/util/ArrayList');
-    var HookMgr = require('dw/system/HookMgr');
 
     var extendContractsCO = CustomObjectMgr.getAllCustomObjects('ExtendContractsQueue');
-    
+
     while (extendContractsCO.hasNext()) {
         var contractCO = extendContractsCO.next();
-
-        var contract = HookMgr.callHook('app.extend.callService', 'createContracts', contractCO);
+        var contract = extend.createContracts(contractCO);
 
         if (!contract.id) {
             continue;
@@ -34,9 +33,9 @@ exports.create = function () {
                 var orderLogObject = jobHelpers.getContractLoggerModel(order);
                 logger.info(JSON.stringify(orderLogObject));    
             }
-            
+
             var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
-             
+
             for (var i = 0; i < order.productLineItems.length; i++) {
                 var pLi = order.productLineItems[i];
 
@@ -58,7 +57,6 @@ exports.create = function () {
             });
         } else {
             logger.debug(JSON.stringify({ errorCode: contract.errorCode, errorMessage: contract.errorMessage }));
-            
             Transaction.wrap(function () {
                 contractCO.custom.log = contract.errorCode + ' ' + contract.errorMessage;
             });
