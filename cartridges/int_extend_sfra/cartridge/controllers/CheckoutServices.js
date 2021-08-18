@@ -193,7 +193,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
             }
         } else if (pLi.custom.isWarrantable) {
             // Create lead for product that do not have Extend protection plans associated with them
-            var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion').value;
+            var API_VERSION = Site.getCurrent().getCustomPreferenceValue('extendAPIVersion').value;
             if (API_VERSION === 'default') {
                 logger.debug('Leads endpoint does not support default API version');
             } else {

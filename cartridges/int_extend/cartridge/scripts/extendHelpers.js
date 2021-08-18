@@ -10,7 +10,7 @@
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
-    
+
     if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty()) {
         return;
     }
@@ -35,14 +35,14 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
     for (var i = 0; i < warrantyLis.length; i++) {
         if (warrantyLis[i].custom.parentLineItemUUID === parentLineItem.UUID) {
             currentWarrantyLi = warrantyLis[i];
-            break; 
+            break;
         }
     }
 
     if (currentWarrantyLi) {
         var quantityInCart = currentWarrantyLi.getQuantity();
 
-        Transaction.wrap(function() {
+        Transaction.wrap(function () {
             currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(quantity, 10));
         });
 
@@ -169,7 +169,7 @@ function getCustomer(order) {
  * @param {ProductLineItem} pLi : API ProductLineItem object
  * @return {String} stringified object
  */
- function getShippingAddress(pLi) {
+function getShippingAddress(pLi) {
     var address = pLi.getShipment().getShippingAddress();
     var shippingAddress = {
         address1: address.getAddress1(),
@@ -217,7 +217,7 @@ function addContractToQueue(order) {
  * @param {Order} order : API Order object
  * @returns {Array} an array of parentLineItemUUID of extended plans.
  */
- function getExtendPlansParents(order) {
+function getExtendPlansParents(order) {
     var plans = [];
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
@@ -234,7 +234,7 @@ function addContractToQueue(order) {
  * @param {Array} plans : an array of parentLineItemUUID of extended plans.
  * @returns {Boolean} true if product line item has extend protection plan.
  */
- function getIsProductLineItemExtended(pLi, plans) {
+function getIsProductLineItemExtended(pLi, plans) {
     var isExtendedLI = false;
     if (pLi.custom.persistentUUID) {
         for (var n = 0; n < plans.length; n++) {
@@ -280,26 +280,34 @@ function getLeadObject(pLi, order) {
  */
 function createLeads(order) {
     var Transaction = require('dw/system/Transaction');
-    var extend = require('~/cartridge/scripts/extend'); 
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var Site = require('dw/system/Site').getCurrent();
 
-    var plans = getExtendPlansParents(order);
+    var webServices = require('~/cartridge/scripts/services/rest');
+    var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion').value;
 
-    for (var i = 0; i < order.productLineItems.length; i++) {
-        var pLi = order.productLineItems[i];
+    if (API_VERSION === 'default') {
+        logger.debug('Leads endpoint does not support default API version');
+    } else {
+        var plans = getExtendPlansParents(order);
 
-        if (!pLi.custom.parentLineItemUUID && pLi.custom.isWarrantable) {
-            var isExtendedLI = getIsProductLineItemExtended(pLi, plans);
+        for (var i = 0; i < order.productLineItems.length; i++) {
+            var pLi = order.productLineItems[i];
 
-            if (!isExtendedLI) {
-                var lead = getLeadObject(pLi, order);
+            if (!pLi.custom.parentLineItemUUID && pLi.custom.isWarrantable) {
+                var isExtendedLI = getIsProductLineItemExtended(pLi, plans);
 
-                // Service call to leads endpoint
-                var response = extend.createLead(JSON.stringify(lead));
+                if (!isExtendedLI) {
+                    var lead = getLeadObject(pLi, order);
 
-                if (response.leadToken) {
-                    Transaction.wrap(function () {
-                        pLi.custom.leadToken = response.leadToken;
-                    });
+                    // Service call to leads endpoint
+                    var response = webServices.makeServiceCall('leads', lead);
+
+                    if (response.leadToken) {
+                        Transaction.wrap(function () {
+                            pLi.custom.leadToken = response.leadToken;
+                        });
+                    }
                 }
             }
         }
