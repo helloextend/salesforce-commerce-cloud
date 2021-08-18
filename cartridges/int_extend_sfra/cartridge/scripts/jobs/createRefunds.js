@@ -79,7 +79,7 @@ exports.create = function () {
                 } else if (response.refundAmount.amount > 0) {
                     // paramObj.commit = false for testing
                     paramObj.commit = true;
-                    var response = extend.createRefund(paramObj);
+                    response = extend.createRefund(paramObj);
 
                     if (response.id) {
                         logger.info('An Extend contract №{0} has been successfully refunded ', extendContractId);
