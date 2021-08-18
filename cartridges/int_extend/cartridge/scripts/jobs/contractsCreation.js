@@ -28,12 +28,13 @@ exports.create = function () {
         if (!contract.error) {
             // Update corresponding order line item with the contract number
             var order = OrderMgr.getOrder(contractCO.custom.orderNo);
-            var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
 
             if (order) {
                 var orderLogObject = jobHelpers.getContractLoggerModel(order);
                 logger.info(JSON.stringify(orderLogObject));    
             }
+
+            var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
 
             for (var i = 0; i < order.productLineItems.length; i++) {
                 var pLi = order.productLineItems[i];

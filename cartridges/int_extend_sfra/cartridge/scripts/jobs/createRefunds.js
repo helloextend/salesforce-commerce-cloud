@@ -2,6 +2,7 @@
 
 var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+var extend = require('~/cartridge/scripts/extend');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 
 /**
@@ -12,9 +13,8 @@ exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Order = require('dw/order/Order');
     var Transaction = require('dw/system/Transaction');
-    var extend = require('~/cartridge/scripts/extend');
-
     var refundStatus = jobHelpers.refundStatus;
+
     var canceledOrders = OrderMgr.searchOrders(
         'status={0} AND custom.extendRefundStatus!={1} AND custom.extendRefundStatus!={2}',
         'creationDate desc',
@@ -49,7 +49,7 @@ exports.create = function () {
                 if (
                     extendRefundStatuses &&
                     (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
-                    extendRefundStatuses[extendContractId] === refundStatus.REJECT)
+                        extendRefundStatuses[extendContractId] === refundStatus.REJECT)
                 ) {
                     continue;
                 }
@@ -64,6 +64,7 @@ exports.create = function () {
                     extendContractId: extendContractId,
                     commit: false
                 }
+
                 var response = extend.createRefund(paramObj);
 
                 if (response.error) {

@@ -4,8 +4,9 @@
 const ProductMgr = require('dw/catalog/ProductMgr');
 var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
-var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
+var extend = require('~/cartridge/scripts/extend');
 var ArrayList = require('dw/util/ArrayList');
+var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
 
 /**
  * @function execute
@@ -24,10 +25,10 @@ exports.execute = function () {
 
         if ((product.isProduct() || product.isVariant()) && product.isOnline()) {
             productsBatch.push(product);
-            
+
             var productLogObject = jobHelpers.getProductLoggerModel(product);
             logger.info(JSON.stringify(productLogObject));
- 
+
         } else {
             continue;
         }
