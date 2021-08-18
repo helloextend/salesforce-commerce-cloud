@@ -13,14 +13,14 @@ exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Transaction = require('dw/system/Transaction');
     var ArrayList = require('dw/util/ArrayList');
-    var HookMgr = require('dw/system/HookMgr');
+    var extend = require('~/cartridge/scripts/extend');
 
     var extendContractsCO = CustomObjectMgr.getAllCustomObjects('ExtendContractsQueue');
     
     while (extendContractsCO.hasNext()) {
         var contractCO = extendContractsCO.next();
 
-        var contract = HookMgr.callHook('app.extend.callService', 'createContracts', contractCO);
+        var contract = extend.createContracts(contractCO);
 
         if (!contract.id) {
             continue;

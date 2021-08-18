@@ -6,7 +6,6 @@ var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
 var ArrayList = require('dw/util/ArrayList');
-var HookMgr = require('dw/system/HookMgr');
 
 /**
  * @function execute
@@ -34,13 +33,13 @@ exports.execute = function () {
         }
 
         if (productsBatch.length === 100) {
-            HookMgr.callHook('app.extend.callService', 'exportProducts', productsBatch);
+            extend.exportProducts(productsBatch);
             productsBatch.clear();
         }
     }
 
     if (productsBatch.length) {
-        HookMgr.callHook('app.extend.callService', 'exportProducts', productsBatch);
+        extend.exportProducts(productsBatch);
     }
 
     productsIterator.close();

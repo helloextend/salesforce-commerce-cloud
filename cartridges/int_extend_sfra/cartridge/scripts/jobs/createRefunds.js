@@ -12,7 +12,7 @@ exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Order = require('dw/order/Order');
     var Transaction = require('dw/system/Transaction');
-    var HookMgr = require('dw/system/HookMgr');
+    var extend = require('~/cartridge/scripts/extend');
 
     var refundStatus = jobHelpers.refundStatus;
     var canceledOrders = OrderMgr.searchOrders(
@@ -64,7 +64,7 @@ exports.create = function () {
                     extendContractId: extendContractId,
                     commit: false
                 }
-                var response = HookMgr.callHook('app.extend.callService', 'createRefund', paramObj);
+                var response = extend.createRefund(paramObj);
 
                 if (response.error) {
                     // An error has been occurred during service call
@@ -79,7 +79,7 @@ exports.create = function () {
                 } else if (response.refundAmount.amount > 0) {
                     // paramObj.commit = false for testing
                     paramObj.commit = true;
-                    response = HookMgr.callHook('app.extend.callService', 'createRefund', paramObj);
+                    var response = extend.createRefund(paramObj);
 
                     if (response.id) {
                         logger.info('An Extend contract №{0} has been successfully refunded ', extendContractId);
