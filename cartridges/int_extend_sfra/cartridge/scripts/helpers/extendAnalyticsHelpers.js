@@ -7,7 +7,7 @@
  * @returns {dw.order.ProductLineItem} - extend product with parentLineItemUUID === persistentItem
  */
 function getExtendProduct(currentBasket, persistentItem) {
-    var productLineItems = currentBasket.getAllProductLineItems()
+    var productLineItems = currentBasket.getAllProductLineItems();
     for (var i = 0; i < productLineItems.length; i++) {
         if (persistentItem.custom.persistentUUID === productLineItems[i].custom.parentLineItemUUID) {
             return productLineItems[i];
@@ -22,7 +22,7 @@ function getExtendProduct(currentBasket, persistentItem) {
  * @returns {dw.order.ProductLineItem} - extended product with persistentItem === parentLineItemUUID
  */
 function getExtendedProduct(currentBasket, parentLineItem) {
-    var productLineItems = currentBasket.getAllProductLineItems()
+    var productLineItems = currentBasket.getAllProductLineItems();
     for (var i = 0; i < productLineItems.length; i++) {
         if (parentLineItem.custom.parentLineItemUUID === productLineItems[i].custom.persistentUUID) {
             return productLineItems[i];
@@ -58,7 +58,7 @@ function getOfferUpdatedData(updatedProduct, updatedPlan) {
         warrantyQuantity: updatedPlan.quantityValue,
         productQuantity: updatedProduct.quantityValue,
         event: 'offerUpdated'
-    }
+    };
 
     return offerUpdated;
 }
@@ -73,7 +73,7 @@ function getProductUpdatedData(updatedProduct) {
         productId: updatedProduct.productID,
         productQuantity: updatedProduct.quantityValue,
         event: 'productUpdated'
-    }
+    };
 
     return productUpdated;
 }
@@ -87,7 +87,7 @@ function getProductRemovedFromCartData(removedProduct) {
     var productRemovedFromCart = {
         productId: removedProduct.productID,
         event: 'productRemovedFromCart'
-    }
+    };
 
     return productRemovedFromCart;
 }
@@ -103,11 +103,45 @@ function getOfferRemovedFromCartData(removedProduct, removedPlan) {
         referenceId: removedProduct.productID,
         planId: removedPlan.manufacturerSKU,
         event: 'offerRemovedFromCart'
-    }
+    };
 
     return offerRemovedFromCart;
 }
 
+/**
+ * Get data for trackProductAddToCart event
+ * @param {dw.order.ProductLineItem} addedProduct
+ * @param {Object} form
+ * @returns {Object} - data for trackOfferAddToCart event
+ */
+function getProductAddedToCartData(addedProduct, form) {
+    var productAddedToCart = {
+        productId: addedProduct.productID,
+        productQuantity: parseInt(form.quantity, 10),
+        event: 'productAddedToCart'
+    }
+
+    return productAddedToCart;
+}
+
+/**
+ * Get data for trackOfferAddToCart event
+ * @param {dw.order.ProductLineItem} addedProduct
+ * @param {Object} form
+ * @returns {Object} - data for trackOfferAddToCart event
+ */
+function getOfferAddedToCartData(addedProduct, form) {
+    var offerAddedToCart = {
+        productId: addedProduct.productID,
+        productQuantity: parseInt(form.quantity, 10),
+        planId: form.extendPlanId,
+        offerTypeArea: form.area,
+        offerTypeComponent: form.component,
+        event: 'offerAddedToCart'
+    }
+
+    return offerAddedToCart;
+}
 
 /* Exported Methods */
 module.exports = {
@@ -117,5 +151,7 @@ module.exports = {
     isExtendProduct: isExtendProduct,
     getProductUpdatedData: getProductUpdatedData,
     getProductRemovedFromCartData: getProductRemovedFromCartData,
-    getOfferRemovedFromCartData: getOfferRemovedFromCartData
+    getOfferRemovedFromCartData: getOfferRemovedFromCartData,
+    getProductAddedToCartData: getProductAddedToCartData,
+    getOfferAddedToCartData: getOfferAddedToCartData
 };

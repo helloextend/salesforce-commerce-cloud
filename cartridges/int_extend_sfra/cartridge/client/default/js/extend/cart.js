@@ -35,12 +35,7 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
                                     method: 'POST',
                                     data: form,
                                     success: function () {
-                                        $('body').trigger('extend:cart:add',
-                                            { form: form, area: 'cart_page', component: 'modal' });
-
-                                        setTimeout(function () {
-                                            location.reload();
-                                        }, 100);
+                                        location.reload();
                                     },
                                     error: function () {
                                         $.spinner().stop();
@@ -85,12 +80,7 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
                                     method: 'POST',
                                     data: form,
                                     success: function () {
-                                        $('body').trigger('extend:cart:add',
-                                            { form: form, area: 'cart_page', component: 'modal' });
-
-                                        setTimeout(function () {
-                                            location.reload();
-                                        }, 100);
+                                        location.reload();
                                     },
                                     error: function () {
                                         $.spinner().stop();

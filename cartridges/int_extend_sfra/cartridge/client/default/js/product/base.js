@@ -657,6 +657,8 @@ module.exports = {
             // BEGIN Extend integration
             var EXT_PDP_UPSELL_SWITCH = window.EXT_PDP_UPSELL_SWITCH || undefined;
             var isPlanSelected = false;
+            form.area = 'product_page';
+            form.component = 'buttons';
 
             if ($('#extend-offer').length) {
                 var extendComponent = Extend.buttons.instance('#extend-offer');
@@ -681,6 +683,8 @@ module.exports = {
                             form.extendPlanId = plan.planId;
                             form.extendPrice = plan.price;
                             form.extendTerm = plan.term;
+                            form.area = 'product_modal';
+                            form.component = 'modal';
                             $(this).trigger('updateAddToCartFormData', form);
                         }
 
@@ -690,8 +694,6 @@ module.exports = {
                                 method: 'POST',
                                 data: form,
                                 success: function (data) {
-                                    $('body').trigger('extend:cart:add',
-                                        { form: form, area: 'product_modal', component: 'modal' });
                                     handlePostCartAdd(data);
                                     $('body').trigger('product:afterAddToCart', data);
                                     $.spinner().stop();
@@ -715,8 +717,6 @@ module.exports = {
                     method: 'POST',
                     data: form,
                     success: function (data) {
-                        $('body').trigger('extend:cart:add',
-                            { form: form, area: 'product_page', component: 'buttons' });
                         handlePostCartAdd(data);
                         $('body').trigger('product:afterAddToCart', data);
                         $.spinner().stop();

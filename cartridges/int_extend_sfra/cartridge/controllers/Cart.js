@@ -274,6 +274,53 @@ server.append('RemoveProductLineItem', function (req, res, next) {
 });
 
 /**
+ * ExtendAnalytics
+ */
+server.append('AddProduct', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Site = require('dw/system/Site');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers')
+
+    var analyticsSDK = Site.getCurrent().getCustomPreferenceValue('extendAnalyticsSwitch');
+    var currentBasket = BasketMgr.getCurrentBasket();
+    var viewData = res.getViewData();
+    var form = req.form;
+
+    if (!analyticsSDK || !currentBasket || !form.pid) {
+        return next();
+    }
+
+    var addedProduct;
+    var productLineItems = currentBasket.getAllProductLineItems(form.pid);
+
+    if (productLineItems.length === 0) {
+        return next();
+    }
+
+    for (var i = 0; i < productLineItems.length; i++) {
+        if (productLineItems[i].productID === form.pid) {
+            addedProduct = productLineItems[i];
+        }
+    }
+
+    if (!addedProduct) {
+        return next();
+    }
+
+    var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, addedProduct);
+
+    if (!form.extendPlanId) {
+        viewData.extendAnalytics = extendAnalyticsHelpers.getProductAddedToCartData(addedProduct, form);
+
+    } else if (form.extendPlanId) {
+        viewData.extendAnalytics = extendAnalyticsHelpers.getOfferAddedToCartData(addedProduct, form);
+    }
+
+    res.setViewData(viewData)
+    return next();
+});
+
+/**
  * Add tracking of removing plans and products from cart
  */
 server.prepend('RemoveProductLineItem', function (req, res, next) {
@@ -362,10 +409,13 @@ server.append('UpdateQuantity', function (req, res, next) {
                 var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, updatedProduct);
 
                 if (extendProduct) {
-                    return next();
+                    viewData.extendAnalytics = extendAnalyticsHelpers.getOfferUpdatedData(updatedProduct, extendProduct);
+                } else {
+                    viewData.extendAnalytics = extendAnalyticsHelpers.getProductUpdatedData(updatedProduct);
                 }
+            } else {
+                viewData.extendAnalytics = extendAnalyticsHelpers.getProductUpdatedData(updatedProduct);
             }
-            viewData.extendAnalytics = extendAnalyticsHelpers.getProductUpdatedData(updatedProduct);
 
         } else if (updatedExtendPlan) {
             var updatedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, updatedExtendPlan);
