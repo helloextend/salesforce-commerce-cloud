@@ -29,9 +29,9 @@ module.exports = [{
     },
     resolve: {
         alias: {
-            jquery: path.resolve(__dirname, '../storefront-reference-architecture/node_modules/jquery'),
-            bootstrap: path.resolve(__dirname, '../storefront-reference-architecture/node_modules/bootstrap'),
-            lodash: path.resolve(__dirname, '../storefront-reference-architecture/node_modules/lodash')
+            jquery: path.resolve(__dirname, '../salesforce-commerce-cloud/node_modules/jquery'),
+            bootstrap: path.resolve(__dirname, '../salesforce-commerce-cloud/node_modules/bootstrap'),
+            lodash: path.resolve(__dirname, '../salesforce-commerce-cloud/node_modules/lodash')
         }
     },
     module: {
@@ -79,8 +79,8 @@ module.exports = [{
                     loader: 'sass-loader',
                     options: {
                         includePaths: [
-                            path.resolve(process.cwd(), '../storefront-reference-architecture/node_modules/'),
-                            path.resolve(process.cwd(), '../storefront-reference-architecture/node_modules/flag-icon-css/sass')
+                            path.resolve(process.cwd(), '../salesforce-commerce-cloud/node_modules/'),
+                            path.resolve(process.cwd(), '../salesforce-commerce-cloud/node_modules/flag-icon-css/sass')
                         ]
                     }
                 }]
