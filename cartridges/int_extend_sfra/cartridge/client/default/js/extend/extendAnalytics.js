@@ -23,38 +23,27 @@ function trackOfferViewedModal(productId, area) {
 }
 
 function trackOfferAddedToCart(data) {
-    if (data.area === 'product_page' || data.area === 'cart_page') {
-        ExtendAnalytics.trackOfferAddedToCart({
-            productId: data.form.pid,
-            productQuantity: +data.form.quantity,
-            warrantyQuantity: +data.form.quantity,
-            planId: data.form.extendPlanId,
-            offerType: {
-                area: data.area,
-                component: data.component
-            }
-        });
-    } else {
-        ExtendAnalytics.trackOfferAddedToCart({
-            productId: data.form.pid,
-            productQuantity: +data.form.quantity,
-            planId: data.form.extendPlanId,
-            offerType: {
-                area: data.area,
-                component: data.component
-            }
-        });
-    }
+    ExtendAnalytics.trackOfferAddedToCart({
+        productId: data.productId,
+        productQuantity: data.productQuantity,
+        warrantyQuantity: data.productQuantity,
+        planId: data.planId,
+        offerType: {
+            area: data.offerTypeArea,
+            component: data.offerTypeComponent
+        }
+    });
 }
 
 function trackProductAddedToCart(data) {
     ExtendAnalytics.trackProductAddedToCart({
-        productId: data.form.pid,
-        productQuantity: +data.form.quantity
+        productId: data.productId,
+        productQuantity: data.productQuantity
     });
 }
 
 function trackOfferRemovedFromCart(data) {
+    console.log(data)
     ExtendAnalytics.trackOfferRemovedFromCart({
         productId: data.referenceId,
         planId: data.planId
@@ -81,7 +70,7 @@ function trackOfferUpdated(data) {
         productId: data.productId,
         planId: data.planId,
         updates: {
-            warrantyQuantity: +data.warrantyQuantity,
+            warrantyQuantity: +data.productQuantity,
             productQuantity: +data.productQuantity,
         },
     });
@@ -249,6 +238,7 @@ module.exports = {
 
             var eventData = data.extendAnalytics;
             var event = data.extendAnalytics.event;
+            console.log(data)
 
             if (event === 'productRemovedFromCart') {
                 trackProductRemovedFromCart(eventData);
@@ -258,21 +248,36 @@ module.exports = {
                 trackProductUpdated(eventData);
             } else if (event === 'offerUpdated') {
                 trackOfferUpdated(eventData);
+            } else if (event === 'offerAddedToCart') {
+                trackOfferAddedToCart(eventData);
+            } else if (event === 'productAddedToCart') {
+                trackProductAddedToCart(eventData);
             }
-
         });
     },
 
     trackAddToCart: function () {
-        $('body').on('extend:cart:add', function (e, data) {
+        $('body').on('product:afterAddToCart', function (e, data) {
             if (!ExtendAnalytics) {
                 return;
             }
 
-            if (data.form.extendPlanId) {
-                trackOfferAddedToCart(data);
-            } else {
-                trackProductAddedToCart(data);
+            var eventData = data.extendAnalytics;
+            var event = data.extendAnalytics.event;
+            console.log(data)
+
+            if (event === 'productRemovedFromCart') {
+                trackProductRemovedFromCart(eventData);
+            } else if (event === 'offerRemovedFromCart') {
+                trackOfferRemovedFromCart(eventData);
+            } else if (event === 'productUpdated') {
+                trackProductUpdated(eventData);
+            } else if (event === 'offerUpdated') {
+                trackOfferUpdated(eventData);
+            } else if (event === 'offerAddedToCart') {
+                trackOfferAddedToCart(eventData);
+            } else if (event === 'productAddedToCart') {
+                trackProductAddedToCart(eventData);
             }
         });
     },

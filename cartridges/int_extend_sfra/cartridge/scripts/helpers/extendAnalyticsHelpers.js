@@ -7,7 +7,8 @@
  * @returns {dw.order.ProductLineItem} - extend product with parentLineItemUUID === persistentItem
  */
 function getExtendProduct(currentBasket, persistentItem) {
-    var productLineItems = currentBasket.getAllProductLineItems()
+    var productLineItems = currentBasket.getAllProductLineItems();
+
     for (var i = 0; i < productLineItems.length; i++) {
         if (persistentItem.custom.persistentUUID === productLineItems[i].custom.parentLineItemUUID) {
             return productLineItems[i];
@@ -108,6 +109,44 @@ function getOfferRemovedFromCartData(removedProduct, removedPlan) {
     return offerRemovedFromCart;
 }
 
+function getProductBeforeAddToCartData(addedProduct, addedOffer) {
+    var beforeAddToCart = {
+        productId: addedProduct.productID,
+        productQuantity: addedProduct.quantityValue,
+        persistentUUID: addedProduct.custom.persistentUUID,
+        event: 'beforeAddToCart'
+    }
+
+    if (addedOffer) {
+        beforeAddToCart.manufacturerSKU = addedOffer.manufacturerSKU;
+    }
+
+    return beforeAddToCart;
+}
+
+function getProductAddedToCartData(addedProduct, form) {
+    var productAddedToCart = {
+        productId: addedProduct.productID,
+        productQuantity: parseInt(form.quantity, 10),
+        event: 'productAddedToCart'
+    }
+
+    return productAddedToCart;
+}
+
+function getOfferAddedToCartData(addedOffer, addedProduct, form) {
+    var offerAddedToCart = {
+        productId: addedProduct.productID,
+        productQuantity: parseInt(form.quantity, 10),
+        planId: addedOffer.manufacturerSKU,
+        offerTypeArea: form.area,
+        offerTypeComponent: form.component,
+        event: 'offerAddedToCart'
+    }
+
+    return offerAddedToCart;
+}
+
 
 /* Exported Methods */
 module.exports = {
@@ -117,5 +156,8 @@ module.exports = {
     isExtendProduct: isExtendProduct,
     getProductUpdatedData: getProductUpdatedData,
     getProductRemovedFromCartData: getProductRemovedFromCartData,
-    getOfferRemovedFromCartData: getOfferRemovedFromCartData
+    getOfferRemovedFromCartData: getOfferRemovedFromCartData,
+    getProductBeforeAddToCartData: getProductBeforeAddToCartData,
+    getProductAddedToCartData: getProductAddedToCartData,
+    getOfferAddedToCartData: getOfferAddedToCartData
 };
