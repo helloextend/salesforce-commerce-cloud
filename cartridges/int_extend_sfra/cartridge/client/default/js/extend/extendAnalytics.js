@@ -248,17 +248,13 @@ module.exports = {
                 trackProductUpdated(eventData);
             } else if (event === 'offerUpdated') {
                 trackOfferUpdated(eventData);
-            } else if (event === 'offerAddedToCart') {
-                trackOfferAddedToCart(eventData);
-            } else if (event === 'productAddedToCart') {
-                trackProductAddedToCart(eventData);
             }
         });
     },
 
     trackAddToCart: function () {
         $('body').on('product:afterAddToCart', function (e, data) {
-            if (!ExtendAnalytics) {
+            if (!ExtendAnalytics || !data.extendAnalytics) {
                 return;
             }
 
@@ -266,15 +262,7 @@ module.exports = {
             var event = data.extendAnalytics.event;
             console.log(data)
 
-            if (event === 'productRemovedFromCart') {
-                trackProductRemovedFromCart(eventData);
-            } else if (event === 'offerRemovedFromCart') {
-                trackOfferRemovedFromCart(eventData);
-            } else if (event === 'productUpdated') {
-                trackProductUpdated(eventData);
-            } else if (event === 'offerUpdated') {
-                trackOfferUpdated(eventData);
-            } else if (event === 'offerAddedToCart') {
+            if (event === 'offerAddedToCart') {
                 trackOfferAddedToCart(eventData);
             } else if (event === 'productAddedToCart') {
                 trackProductAddedToCart(eventData);

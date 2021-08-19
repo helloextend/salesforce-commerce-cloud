@@ -109,21 +109,12 @@ function getOfferRemovedFromCartData(removedProduct, removedPlan) {
     return offerRemovedFromCart;
 }
 
-function getProductBeforeAddToCartData(addedProduct, addedOffer) {
-    var beforeAddToCart = {
-        productId: addedProduct.productID,
-        productQuantity: addedProduct.quantityValue,
-        persistentUUID: addedProduct.custom.persistentUUID,
-        event: 'beforeAddToCart'
-    }
-
-    if (addedOffer) {
-        beforeAddToCart.manufacturerSKU = addedOffer.manufacturerSKU;
-    }
-
-    return beforeAddToCart;
-}
-
+/**
+ * Get data for trackProductAddToCart event
+ * @param {dw.order.ProductLineItem} addedProduct
+ * @param {Object} form
+ * @returns {Object} - data for trackOfferAddToCart event
+ */
 function getProductAddedToCartData(addedProduct, form) {
     var productAddedToCart = {
         productId: addedProduct.productID,
@@ -134,11 +125,17 @@ function getProductAddedToCartData(addedProduct, form) {
     return productAddedToCart;
 }
 
-function getOfferAddedToCartData(addedOffer, addedProduct, form) {
+/**
+ * Get data for trackOfferAddToCart event
+ * @param {dw.order.ProductLineItem} addedProduct
+ * @param {Object} form
+ * @returns {Object} - data for trackOfferAddToCart event
+ */
+function getOfferAddedToCartData(addedProduct, form) {
     var offerAddedToCart = {
         productId: addedProduct.productID,
         productQuantity: parseInt(form.quantity, 10),
-        planId: addedOffer.manufacturerSKU,
+        planId: form.extendPlanId,
         offerTypeArea: form.area,
         offerTypeComponent: form.component,
         event: 'offerAddedToCart'
@@ -146,7 +143,6 @@ function getOfferAddedToCartData(addedOffer, addedProduct, form) {
 
     return offerAddedToCart;
 }
-
 
 /* Exported Methods */
 module.exports = {
@@ -157,7 +153,6 @@ module.exports = {
     getProductUpdatedData: getProductUpdatedData,
     getProductRemovedFromCartData: getProductRemovedFromCartData,
     getOfferRemovedFromCartData: getOfferRemovedFromCartData,
-    getProductBeforeAddToCartData: getProductBeforeAddToCartData,
     getProductAddedToCartData: getProductAddedToCartData,
     getOfferAddedToCartData: getOfferAddedToCartData
 };
