@@ -8,7 +8,6 @@
  */
 function getExtendProduct(currentBasket, persistentItem) {
     var productLineItems = currentBasket.getAllProductLineItems();
-
     for (var i = 0; i < productLineItems.length; i++) {
         if (persistentItem.custom.persistentUUID === productLineItems[i].custom.parentLineItemUUID) {
             return productLineItems[i];
@@ -23,7 +22,7 @@ function getExtendProduct(currentBasket, persistentItem) {
  * @returns {dw.order.ProductLineItem} - extended product with persistentItem === parentLineItemUUID
  */
 function getExtendedProduct(currentBasket, parentLineItem) {
-    var productLineItems = currentBasket.getAllProductLineItems()
+    var productLineItems = currentBasket.getAllProductLineItems();
     for (var i = 0; i < productLineItems.length; i++) {
         if (parentLineItem.custom.parentLineItemUUID === productLineItems[i].custom.persistentUUID) {
             return productLineItems[i];
@@ -59,7 +58,7 @@ function getOfferUpdatedData(updatedProduct, updatedPlan) {
         warrantyQuantity: updatedPlan.quantityValue,
         productQuantity: updatedProduct.quantityValue,
         event: 'offerUpdated'
-    }
+    };
 
     return offerUpdated;
 }
@@ -74,7 +73,7 @@ function getProductUpdatedData(updatedProduct) {
         productId: updatedProduct.productID,
         productQuantity: updatedProduct.quantityValue,
         event: 'productUpdated'
-    }
+    };
 
     return productUpdated;
 }
@@ -88,7 +87,7 @@ function getProductRemovedFromCartData(removedProduct) {
     var productRemovedFromCart = {
         productId: removedProduct.productID,
         event: 'productRemovedFromCart'
-    }
+    };
 
     return productRemovedFromCart;
 }
@@ -104,7 +103,7 @@ function getOfferRemovedFromCartData(removedProduct, removedPlan) {
         referenceId: removedProduct.productID,
         planId: removedPlan.manufacturerSKU,
         event: 'offerRemovedFromCart'
-    }
+    };
 
     return offerRemovedFromCart;
 }
