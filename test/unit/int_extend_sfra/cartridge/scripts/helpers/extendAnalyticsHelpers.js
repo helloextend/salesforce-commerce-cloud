@@ -7,13 +7,15 @@ var cartridgePath = '../../../../../../cartridges/int_extend_sfra/';
 var mockPath = './../../../../../mocks/';
 
 var extendAnalyticsHelpers = proxyquire(cartridgePath + 'cartridge/scripts/helpers/extendAnalyticsHelpers.js', {});
+var Basket = require(mockPath + 'dw/order/Basket');
+var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
+var productLineItem = new ProductLineItem();
+var currentBasket = Basket;
+
 
 describe('extendAnalyticsHelpers Helpers', () => {
     describe('getExtendProduct()', () => {
         it('should extend product from basket', () => {
-            var Basket = require(mockPath + 'dw/order/Basket');
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
-            var currentBasket = new Basket();
             var persistentItem = new ProductLineItem();
 
             var productLineItems = currentBasket.getAllProductLineItems();
@@ -25,9 +27,6 @@ describe('extendAnalyticsHelpers Helpers', () => {
 
     describe('getExtendedProduct()', () => {
         it('should extended product from basket', () => {
-            var Basket = require(mockPath + 'dw/order/Basket');
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
-            var currentBasket = new Basket();
             var parentLineItem = new ProductLineItem();
 
             var productLineItems = currentBasket.getAllProductLineItems();
@@ -39,8 +38,6 @@ describe('extendAnalyticsHelpers Helpers', () => {
 
     describe('isExtendProduct()', () => {
         it('isExtendProduct correct uuid', () => {
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
-            var productLineItem = new ProductLineItem();
             var uuid = '24851';
 
             var result = extendAnalyticsHelpers.isExtendProduct(productLineItem, uuid);
@@ -49,8 +46,6 @@ describe('extendAnalyticsHelpers Helpers', () => {
         });
 
         it('isExtendProduct incorrect uuid', () => {
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
-            var productLineItem = new ProductLineItem();
             var uuid = '24851invalid';
 
             var result = extendAnalyticsHelpers.isExtendProduct(productLineItem, uuid);
@@ -61,7 +56,6 @@ describe('extendAnalyticsHelpers Helpers', () => {
 
     describe('getOfferUpdatedData()', () => {
         it('should return data for trackOfferUpdated event', () => {
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
             var updatedProduct = new ProductLineItem();
             var updatedPlan = new ProductLineItem();
             var offerUpdated = extendAnalyticsHelpers.getOfferUpdatedData(updatedProduct, updatedPlan);
@@ -80,7 +74,6 @@ describe('extendAnalyticsHelpers Helpers', () => {
 
     describe('getProductUpdatedData()', () => {
         it('should return data for trackProductUpdated event', () => {
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
             var updatedProduct = new ProductLineItem();
             var productUpdated = extendAnalyticsHelpers.getProductUpdatedData(updatedProduct);
 
@@ -96,7 +89,6 @@ describe('extendAnalyticsHelpers Helpers', () => {
 
     describe('getProductRemovedFromCartData()', () => {
         it('should return data for trackProductRemovedFromCart', () => {
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
             var removedProduct = new ProductLineItem();
             var productRemovedFromCart = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
 
@@ -111,7 +103,6 @@ describe('extendAnalyticsHelpers Helpers', () => {
 
     describe('getOfferRemovedFromCartData()', () => {
         it('should return data for trackOfferRemoverFromCart', () => {
-            var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
             var removedProduct = new ProductLineItem();
             var removedPlan = new ProductLineItem();
             var offerRemovedFromCart = extendAnalyticsHelpers.getOfferRemovedFromCartData(removedProduct, removedPlan);
