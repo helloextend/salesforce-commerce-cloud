@@ -214,4 +214,4 @@ class Basket {
     }
 }
 
-module.exports = Basket;
+module.exports = new Basket;
