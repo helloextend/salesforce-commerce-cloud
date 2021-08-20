@@ -154,7 +154,9 @@ function getUpdateCartData(cart) {
     }
 
     var data = getItemsData(itemsToChangeInfo, cart)
-    return data;
+
+    var strData = JSON.stringify(data);
+    session.custom.analyticsPayload = strData;
 }
 
 /**
@@ -163,14 +165,20 @@ function getUpdateCartData(cart) {
  * @param {Object} productsToUpdate array of pli to update
  * @returns {void}
  */
-function setUpdateCartPayload(cart, productsToUpdate) {
+function setUpdateCartPayload(cart) {
+    if (!session.custom.analyticsPayload) {
+        session.custom.analyticsPayload = '';
+        return;
+    }
+
+    var productsToUpdate = JSON.parse(session.custom.analyticsPayload);
     var itemsData = [];
 
     for (var i = 0; i < productsToUpdate.length; i++) {
         var extendProduct, extendedProduct;
         var data = {};
         var product = productsToUpdate[i];
-        var productLineItems = cart.object.productLineItems;
+        var productLineItems = cart.productLineItems;
         var isProductExist = false;
 
         for (var j = 0; j < productLineItems.length; j++) {
@@ -222,7 +230,7 @@ function setUpdateCartPayload(cart, productsToUpdate) {
 
     var strData = JSON.stringify(newData);
 
-    request.session.custom.analyticsPayload = strData;
+    session.custom.analyticsPayload = strData;
 }
 
 /**
@@ -257,7 +265,7 @@ function setDeleteProductPayload(cart, object) {
 
     var strData = JSON.stringify(newData);
 
-    request.session.custom.analyticsPayload = strData;
+    session.custom.analyticsPayload = strData;
 }
 
 /**
@@ -265,9 +273,9 @@ function setDeleteProductPayload(cart, object) {
  * @returns {Object} extend analytics data 
  */
 function getAnalyticsPayload() {
-    var payload = request.session.custom.analyticsPayload;
+    var payload = session.custom.analyticsPayload || '';
 
-    request.session.custom.analyticsPayload = '';
+    session.custom.analyticsPayload = '';
 
     return payload;
 }
