@@ -9,12 +9,12 @@ function extendInit() {
         return;
     }
 
-    Extend.config({ storeId: EXT_STORE_ID, environment:EXT_ENVIRONMENT });
-    
+    Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+
     disableLinkForExtendInMiniCart();
 }
 
-function disableLinkForExtendInMiniCart () {
+function disableLinkForExtendInMiniCart() {
     $('.mini-cart-product a[data-is-extend-product="true"]').attr('href', "#");
     $('body').on('click', '.mini-cart-product a[data-is-extend-product="true"]', function (e) {
         e.preventDefault();
@@ -39,6 +39,10 @@ function extendPDP() {
 }
 
 function addItemToCartHandler(form, page, minicart, dialog, addItemToCart) {
+    if (window.EXT_A_EXT_GLOBAL_SWITCH) {
+        var payload = createAddToCartAnalytics(form);
+        trackAddToCart(payload);
+    }
     addItemToCart(form).then(function (response) {
         var $uuid = form.find('input[name="uuid"]');
         if ($uuid.length > 0 && $uuid.val().length > 0) {
@@ -68,9 +72,12 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
         form.append('<input class="extend-form-data" type="hidden" name="extendPlanId" value="' + extendPlan.planId + '" />');
         form.append('<input class="extend-form-data" type="hidden" name="extendPrice" value="' + extendPlan.price + '" />');
         form.append('<input class="extend-form-data" type="hidden" name="extendTerm" value="' + extendPlan.term + '" />');
+        form.append('<input class="extend-form-data" type="hidden" name="eventArea" value="product_page" />');
+        form.append('<input class="extend-form-data" type="hidden" name="eventType" value="buttons" />');
         addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
         $('.extend-form-data').remove();
     } else if (EXT_PDP_UPSELL_SWITCH) {
+        trackOfferViewedModal(form.find('input[name="pid"]').val(), 'product_modal');
         window.Extend.modal.open({
             referenceId: $('.product-number span').text().trim(),
             onClose: function (plan) {
@@ -78,6 +85,8 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
                     form.append('<input type="hidden" name="extendPlanId" value="' + plan.planId + '" />');
                     form.append('<input type="hidden" name="extendPrice" value="' + plan.price + '" />');
                     form.append('<input type="hidden" name="extendTerm" value="' + plan.term + '" />');
+                    form.append('<input class="extend-form-data" type="hidden" name="eventArea" value="product_modal" />');
+                    form.append('<input class="extend-form-data" type="hidden" name="eventType" value="modal" />');
                 }
                 addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
                 $('.extend-form-data').remove();
@@ -122,34 +131,36 @@ function upsellModal(uuid) {
 }
 
 function addExtendUpsellBtn(uuid, pid, qty) {
-    $('#cart-table [data-uuid="' + uuid + '"].cart-row .item-details').append('<div class="extend-upsell-style" id="extend-offer-'+uuid+'"></div>').ready(function(){
-    	/** initialize offer */
-    	Extend.buttons.renderSimpleOffer('#extend-offer-'+uuid, {
-    		 referenceId: pid,
-    		 onAddToCart:
-    		   function(plan) {
-    			if (plan) {
-    				var form = {};
-    				form.extendPlanId = plan.plan.planId;
-    				form.extendPrice = plan.plan.price;
-    				form.extendTerm = plan.plan.term;
-    				form.pid = pid;
-    				form.pliUUID = uuid;
-    				form.quantity = qty;
-    				$.ajax({
-    					url: window.EXT_CART_ADDTOCART,
-    					method: 'POST',
-    					data: form,
-    					success: function () {
-    						location.reload();
-    					},
-    					error: function () {
-    					}
-    				});
-    			}
-    		}
-    	});
-    });
+    $('#cart-table [data-uuid="' + uuid + '"].cart-row .item-details')
+        .append('<div class="extend-upsell-style" id="extend-offer-' + uuid + '" data-pid=' + pid + '></div>')
+        .ready(function () {
+            /** initialize offer */
+            Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
+                referenceId: pid,
+                onAddToCart:
+                    function (plan) {
+                        if (plan) {
+                            var form = {};
+                            form.extendPlanId = plan.plan.planId;
+                            form.extendPrice = plan.plan.price;
+                            form.extendTerm = plan.plan.term;
+                            form.pid = pid;
+                            form.pliUUID = uuid;
+                            form.quantity = qty;
+                            $.ajax({
+                                url: window.EXT_CART_ADDTOCART,
+                                method: 'POST',
+                                data: form,
+                                success: function () {
+                                    location.reload();
+                                },
+                                error: function () {
+                                }
+                            });
+                        }
+                    }
+            });
+        });
 }
 
 function renderUpsellBtns() {
@@ -162,7 +173,7 @@ function renderUpsellBtns() {
             dataType: 'json',
             success: function (data) {
                 if (data.isEligible) {
-                    addExtendUpsellBtn(uuid,data.pid,data.qty);
+                    addExtendUpsellBtn(uuid, data.pid, data.qty);
                 }
             },
             error: function () { }

@@ -656,6 +656,8 @@ module.exports = {
 
             // BEGIN Extend integration
             var EXT_PDP_UPSELL_SWITCH = window.EXT_PDP_UPSELL_SWITCH || undefined;
+            form.area = 'product_page';
+            form.component = 'buttons';
 
             if ($('#extend-offer').length) {
                 var extendComponent = Extend.buttons.instance('#extend-offer');
@@ -667,6 +669,10 @@ module.exports = {
                     form.extendTerm = extendPlan.term;
                     $(this).trigger('updateAddToCartFormData', form);
                 } else if (EXT_PDP_UPSELL_SWITCH) {
+
+                    $('body').trigger('extend:modal:viewed',
+                        { productId: form.pid, area: 'product_modal'});
+
                     Extend.modal.open({
                         referenceId: $('.product-detail').data('pid'),
                         onClose: function (plan) {
@@ -674,6 +680,8 @@ module.exports = {
                                 form.extendPlanId = plan.planId;
                                 form.extendPrice = plan.price;
                                 form.extendTerm = plan.term;
+                                form.area = 'product_modal';
+                                form.component = 'modal';
                                 $(this).trigger('updateAddToCartFormData', form);
                             }
 
