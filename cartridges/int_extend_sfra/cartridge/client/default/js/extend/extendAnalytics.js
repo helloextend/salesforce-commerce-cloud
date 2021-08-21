@@ -43,7 +43,6 @@ function trackProductAddedToCart(data) {
 }
 
 function trackOfferRemovedFromCart(data) {
-    console.log(data)
     ExtendAnalytics.trackOfferRemovedFromCart({
         productId: data.referenceId,
         planId: data.planId
@@ -238,7 +237,6 @@ module.exports = {
 
             var eventData = data.extendAnalytics;
             var event = data.extendAnalytics.event;
-            console.log(data)
 
             if (event === 'productRemovedFromCart') {
                 trackProductRemovedFromCart(eventData);
@@ -260,7 +258,6 @@ module.exports = {
 
             var eventData = data.extendAnalytics;
             var event = data.extendAnalytics.event;
-            console.log(data)
 
             if (event === 'offerAddedToCart') {
                 trackOfferAddedToCart(eventData);
