@@ -66,7 +66,6 @@ function createServiceCall(configObj) {
  */
 function createRequestConfiguration(endpoint, requestObject) {
     var HashMap = require('dw/util/HashMap');
-    var mocks = require('~/cartridge/scripts/services/restMocks');
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
 
     var configObj = {};
@@ -91,6 +90,7 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.method = 'POST';
             configObj.params.put('commit', requestObject.commit);
             configObj.endpoint = 'stores/' + STORE_ID + '/contracts/' + requestObject.extendContractId + '/refund';
+            configObj.mock = mocks.refundsResponseMock;
             break;
 
         default:

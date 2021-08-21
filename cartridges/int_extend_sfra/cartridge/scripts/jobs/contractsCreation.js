@@ -29,10 +29,12 @@ exports.create = function () {
             // Update corresponding order line item with the contract number
             var order = OrderMgr.getOrder(contractCO.custom.orderNo);
 
-            if (order) {
-                var orderLogObject = jobHelpers.getContractLoggerModel(order);
-                logger.info(JSON.stringify(orderLogObject));    
+            if (!order) {
+                continue;
             }
+
+            var orderLogObject = jobHelpers.getContractLoggerModel(order);
+            logger.info(JSON.stringify(orderLogObject));    
 
             var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
 
