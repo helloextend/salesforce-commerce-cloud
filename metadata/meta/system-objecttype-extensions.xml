@@ -117,6 +117,34 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="extendAPIVersion">
+                <display-name xml:lang="x-default">Extend API Version</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Default</display>
+                        <value>default</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2019-08-01</display>
+                        <value>2019-08-01</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2020-08-01</display>
+                        <value>2020-08-01</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2021-01-01</display>
+                        <value>2021-01-01</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2021-04-01</display>
+                        <value>2021-04-01</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
             <attribute-definition attribute-id="extendCartUpsellSwitch">
                 <display-name xml:lang="x-default">Enable Up-sell in Cart</display-name>
                 <type>boolean</type>
@@ -183,6 +211,7 @@
                 <display-name xml:lang="x-default">Extend Configurations</display-name>
                 <attribute attribute-id="extendAccessToken"/>
                 <attribute attribute-id="extendStoreID"/>
+                <attribute attribute-id="extendAPIVersion"/>
                 <attribute attribute-id="extendImageViewType"/>
                 <attribute attribute-id="extendSDK"/>
                 <attribute attribute-id="extendGlobalSwitch"/>
