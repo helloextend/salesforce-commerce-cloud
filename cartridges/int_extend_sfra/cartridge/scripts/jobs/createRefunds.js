@@ -34,7 +34,7 @@ exports.create = function () {
             var extendContractIds;
             var statuses;
             var extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses) || {};
-            statuses = Object.keys(extendRefundStatuses);
+            var statuses = Object.keys(extendRefundStatuses);
 
             if (!pLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
                 continue;
