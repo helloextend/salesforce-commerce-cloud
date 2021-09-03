@@ -29,7 +29,7 @@ const server = require('server');
 function errorInRequest(RESPONSE, reqProduct, products, product, contracts, contract, reqContract, message) {
     if (products && product && reqProduct) {
         product.productID = reqProduct.productID;
-        product.error_details = message;
+        product["details"] = message;
         products.push(product);
         product = {};
         RESPONSE.products = products;
@@ -49,50 +49,9 @@ function errorInRequest(RESPONSE, reqProduct, products, product, contracts, cont
  * @param {string} reqProduct - product id
  * @param {array} products - array with products
  * @param {Object} product - object which contain product and quantity
- * @param {array} contracts - array with contracts
- * @param {Object} contract - object which contain contract
- * @param {string} contractId - contract id
  * @param {string} message - message with error details
  */
-function productResponse(RESPONSE, reqProduct, products, product, contracts, contract, contractId, message, status) {
-    product.productID = reqProduct.productID;
-    products.push(product);
-    contract[contractId] = status;
-    contracts.push(contract);
-    products.push(contracts);
-    RESPONSE.products = products;
-}
-
-/**
- * Function to create response
- * @param {Object} RESPONSE - object with response
- * @param {string} reqProduct - product id
- * @param {array} products - array with products
- * @param {Object} product - object which contain product and quantity
- * @param {array} contracts - array with contracts
- * @param {Object} contract - object which contain contract
- * @param {string} contractId - contract id
- * @param {string} message - message with error details
- */
-function handleProductResponse(RESPONSE, reqProduct, products, product, contracts, contract, contractId, message, status) {
-    contract[contractId]
-    contract[contractId] = message;
-    contracts.push(contract);
-    product.productID = reqProduct.productID;
-    product.contracts = contracts;
-    products.push(product);
-    RESPONSE.products = products;
-}
-
-/**
- * Function to create response
- * @param {Object} RESPONSE - object with response
- * @param {string} reqProduct - product id
- * @param {array} products - array with products
- * @param {Object} product - object which contain product and quantity
- * @param {string} message - message with error details
- */
-function refundedProduct(RESPONSE, reqProduct, products, product, message) {
+function responseProduct(RESPONSE, reqProduct, products, product, message) {
     product.productID = reqProduct.productID;
     product["details"] = message;
     products.push(product);
@@ -100,39 +59,16 @@ function refundedProduct(RESPONSE, reqProduct, products, product, message) {
 }
 
 /**
- * Function to get status from server
- * @param {Object} RESPONSE - object with response
- * @param {array} contracts - array with contracts
- * @param {Object} contract - object which contain contract
- * @param {string} extendContractId - contract id from BM
- * @param {Object} refundStatus - object with statuses
- * @param {string} message- message with error details
+ * Function which return status
+ * @param {string} status - status of request
+ * @param {string} message - message to describe details
+ * @returns {object}
  */
-function responseStatus(RESPONSE, contracts, contract, reqContract, refundStatus, message) {
-    contract[reqContract] = refundStatus;
-    contract["details"] = message;
-    contracts.push(contract)
-
-    RESPONSE.contracts = contracts;
-}
-
-/**
- * Function to get status from server
- * @param {Object} RESPONSE - object with response
- * @param {array} contracts - array with contracts
- * @param {Object} contract - object which contain contract
- * @param {string} extendContractId - contract id from BM
- * @param {Object} refundStatus - object with statuses
- * @param {string} message- message with error details
- */
-function responseStatusForProduct(RESPONSE, products, product, reqProduct, contracts, contract, contractId, refundStatus, message) {
-    product.productID = reqProduct.productID
-    contract[contractId] = refundStatus;
-    contract["details"] = message;
-    product.contracts = contract;
-    products.push(product);
-
-    RESPONSE.products = products;
+ function responseStatus (status, message) {
+    return {
+        "status" : status,
+        "details" : message
+    }
 }
 
 server.post('Refund', server.middleware.https, function (req, res, next) {
@@ -192,19 +128,19 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
     var RESPONSE = {};
     var products = [];
     var contracts = [];
+    var product = {};
+    var contract = {};
 
     if (data.products) {
         for (var i = 0; i < data.products.length; i += 1 ) {
             var reqProduct = data.products[i];
-            var product = {};
-            var contract = {};
 
             if (!reqProduct.productID) {
                 errorInRequest(RESPONSE, reqProduct, products, product, [], {}, '', 'no product id provided');
                 continue;
             }
 
-            if (!reqProduct.qty || reqProduct.qty == 0) {
+            if (!reqProduct.qty || reqProduct.qty === 0) {
                 errorInRequest(RESPONSE, reqProduct, products, product, [], {}, '', 'no product quantity');
                 continue;
             }
@@ -217,18 +153,9 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                 continue;
             }
 
-            for (var q = 0; q < pLi.length; q += 1) {
-                if (reqProduct.qty > pLi[q].quantity.value) {
-                    errorInRequest(RESPONSE, reqProduct, products, product, [], {}, '', 'quantity mismatch');
-                    continue;
-                }
-            }
-
-            for (var p = 0; p < pLi.length; p += 1) {
-                if (!pLi[p].custom.persistentUUID) {
-                    refundedProduct(RESPONSE, reqProduct, products, product, 'product has no extend');
-                    continue;
-                }
+            if (reqProduct.qty > pLi[0].quantity.value) {
+                errorInRequest(RESPONSE, reqProduct, products, product, [], {}, '', 'quantity mismatch');
+                continue;
             }
 
             for (var j = 0; j < apiOrder.productLineItems.length; j +=1 ) {
@@ -241,6 +168,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
             }
 
             if (!extendLi) {
+                responseProduct(RESPONSE, reqProduct, products, product, 'product has no extend');
                 continue;
             }
 
@@ -257,15 +185,26 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                 extendContractIds = extendLi.custom.extendContractId;
             }
 
+            product.productID = reqProduct.productID;
+            product.contracts = contracts;
+
             for (var k = 0; k < reqProduct.qty; k +=1 ) {
+
                 var extendContractId = extendContractIds[k];
+
+                if (!extendContractId) {
+                    extendContractId = extendLi.custom.extendContractId[k];
+                    if (!extendContractId) {
+                        contract[`number_${k}`] = responseStatus(refundStatus.ERROR, "contract not found");
+                    }
+                }
 
                 var isContractRefunded = extendRefundStatuses &&
                                         (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
                                         extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
                 if (isContractRefunded) {
-                    handleProductResponse(RESPONSE, reqProduct, products, product, contracts, contract, extendContractId, 'extend already refunded', '');
+                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend has been already refunded");
                     continue;
                 }
 
@@ -279,13 +218,13 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
                 if (responseFromExtend.error) {
                     extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    responseStatusForProduct(RESPONSE, products, product, reqProduct, contracts, contract, extendContractId, refundStatus.ERROR, 'service call error')
+                    contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
                     continue;
                 }
 
                 if (responseFromExtend.refundAmount.amount === 0) {
                     extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                    responseStatusForProduct(RESPONSE, products, product, reqProduct, contracts, contract, extendContractId, refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
+                    contract[extendContractId] = responseStatus(refundStatus.REJECT, "extend contract has not been refunded due to the refund amount");
                     continue;
                 } else if (responseFromExtend.refundAmount.amount > 0) {
                     paramObj.commit = true;
@@ -293,14 +232,20 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
                     if (responseFromExtend.id) {
                         extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                        responseStatusForProduct(RESPONSE, products, product, reqProduct, contracts, contract, extendContractId, refundStatus.SUCCESS, 'extend contract has been successfully refunded');
+                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend contract has been successfully refunded");
                     } else {
                         extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                        responseStatusForProduct(RESPONSE, products, product, reqProduct, contracts, contract, extendContractId, refundStatus.ERROR, 'service call error');
+                        contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
                         continue;
                     }
                 }
             }
+
+            contracts.push(contract);
+            product.contracts = contracts;
+            products.push(product);
+            RESPONSE.products = products;
+
             Transaction.wrap(function () {
                 extendLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
             });
@@ -361,7 +306,9 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                                     extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
             if (isContractRefunded) {
-                errorInRequest(RESPONSE, '', [], {}, contracts, contract, reqContract, 'contract has been already refunded');
+                contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend has been already refunded");
+                contracts.push(contract);
+                RESPONSE.contracts = contracts;
                 continue;
             }
 
@@ -374,13 +321,13 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
             if (responseFromExtend.error) {
                 extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                responseStatus(RESPONSE, contracts, contract, extendContractId, 'service call error')
+                contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
                 continue;
             }
 
             if (responseFromExtend.refundAmount.amount === 0 ) {
                 extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                responseStatus(RESPONSE, contracts, contract, extendContractId, 'extend contract has not been refunded due to the refund amount');
+                contract[extendContractId] = responseStatus(refundStatus.REJECT, "extend contract has not been refunded due to the refund amount");
                 continue;
             } else if (responseFromExtend.refundAmount.amount > 0) {
                 paramObj.commit = true;
@@ -388,13 +335,17 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
                 if (responseFromExtend.id) {
                     extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                    responseStatus(RESPONSE, contracts, contract, extendContractId, refundStatus.SUCCESS, 'extend contract has been successfully refunded');
+                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend contract has been successfully refunded");
                 } else {
                     extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    responseStatus(RESPONSE, contracts, contract, extendContractId, 'service call error');
+                    contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
                     continue;
                 }
             }
+
+            contracts.push(contract);
+            RESPONSE.contracts = contracts;
+
             Transaction.wrap(function () {
                 extendLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
             });
