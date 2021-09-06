@@ -193,7 +193,14 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                 var extendContractId = extendContractIds[k];
 
                 if (!extendContractId) {
-                    extendContractId = extendLi.custom.extendContractId[k];
+                    for (var n = 0; n < extendLi.custom.extendContractId.length; n++) {
+                        var currentApiContract = extendLi.custom.extendContractId[n];
+                        var isExists = extendContractIds.indexOf(currentApiContract);
+                        if (isExists === -1) {
+                            extendContractId = currentApiContract;
+                            break;
+                        }
+                    }
                     if (!extendContractId) {
                         contract[`number_${k}`] = responseStatus(refundStatus.ERROR, "contract not found");
                     }
