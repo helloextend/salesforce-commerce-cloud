@@ -1,0 +1,25 @@
+{
+    "include": {
+        "data": "./test/acceptance/metadata.json",
+        "homePage": "./test/acceptance/pages/home.page.js"
+    },
+    "gherkin_steps": [
+        "./test/acceptance/steps/homePage.steps.js"
+    ],
+    "pages": {
+        "homePage": "/on/demandware.store/Sites-RefArch-Site/en_US/Home-Show"
+    },
+    "product": {
+        "quantity": "2",
+        "size": "8"
+    },
+    "extendProduct": {
+        "name": "Extend Product Protection",
+        "quantity": "1",
+        "itemPrice": "$19.99",
+        "totalItemPrice": "$214.99",
+        "shipping": "$9.99",
+        "tax": "$11.25",
+        "estimatedTotal": "$236.23"
+    }
+}
