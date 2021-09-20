@@ -144,61 +144,61 @@ var offersResponseMock = JSON.stringify({
 });
 
 var refundsResponseMock = JSON.stringify({
-    id: "cc957cb3-3d5d-430b-90a2-9ec96ee4c3cf",
+    id: 'cc957cb3-3d5d-430b-90a2-9ec96ee4c3cf',
     createdAt: 1557267465,
     updatedAt: 1557267556,
-    transactionId: "99999999",
-    poNumber: "ABC-123",
+    transactionId: '99999999',
+    poNumber: 'ABC-123',
     transactionTotal: {
-        currencyCode: "USD",
+        currencyCode: 'USD',
         amount: 1999
     },
     customer: {
-        name: "Bob Ross",
-        email: "BobRoss@gmail.com",
-        phone: "123-456-7890",
+        name: 'Bob Ross',
+        email: 'BobRoss@gmail.com',
+        phone: '123-456-7890',
         billingAddress: {
-            address1: "535 Mission Street",
-            address2: "11th Floor",
-            city: "San Francisco",
-            countryCode: "US",
-            postalCode: "94526",
-            provinceCode: "CA"
+            address1: '535 Mission Street',
+            address2: '11th Floor',
+            city: 'San Francisco',
+            countryCode: 'US',
+            postalCode: '94526',
+            provinceCode: 'CA'
         },
         shippingAddress: {
-            address1: "535 Mission Street",
-            address2: "11th Floor",
-            city: "San Francisco",
-            countryCode: "US",
-            postalCode: "94526",
-            provinceCode: "CA"
+            address1: '535 Mission Street',
+            address2: '11th Floor',
+            city: 'San Francisco',
+            countryCode: 'US',
+            postalCode: '94526',
+            provinceCode: 'CA'
         }
     },
     product: {
-        referenceId: "SKU-123-456",
+        referenceId: 'SKU-123-456',
         purchasePrice: {
-            currencyCode: "USD",
+            currencyCode: 'USD',
             amount: 1999
         },
         manufacturerWarrantyLength: 12,
         manufacturerWarrantyLengthParts: 123456,
         manufacturerWarrantyLengthLabor: 123456,
-        serialNumber: "ABCD123456"
+        serialNumber: 'ABCD123456'
     },
-    currency: "USD",
+    currency: 'USD',
     transactionDate: 1563388069,
     plan: {
         purchasePrice: {
-            currencyCode: "USD",
+            currencyCode: 'USD',
             amount: 1999
         },
-        planId: "10001-misc-elec-adh-replace-1y"
+        planId: '10001-misc-elec-adh-replace-1y'
     },
     refundAmount: {
-        currencyCode: "USD",
+        currencyCode: 'USD',
         amount: 1999
     }
-})
+});
 
 
 /** Exports mocks objects */
