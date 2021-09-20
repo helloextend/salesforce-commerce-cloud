@@ -162,6 +162,13 @@
                 <min-length>0</min-length>
                 <default-value>https://sdk.helloextend.com/extend-sdk-client/v1/extend-sdk-client.min.js</default-value>
             </attribute-definition>
+            <attribute-definition attribute-id="extendSecretKey">
+                <display-name xml:lang="x-default">Extend Secret Key</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="extendStoreID">
                 <display-name xml:lang="x-default">Store ID</display-name>
                 <description xml:lang="x-default">Extend Store ID</description>
@@ -190,6 +197,7 @@
                 <attribute attribute-id="extendPDPUpsellSwitch"/>
                 <attribute attribute-id="extendCartUpsellSwitch"/>
 				<attribute attribute-id="isExtendProductionMode"/>
+                <attribute attribute-id="extendSecretKey"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
