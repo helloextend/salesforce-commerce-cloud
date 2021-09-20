@@ -90,11 +90,10 @@ class Order {
                 quantityValue: 2,
                 custom: {
                     extendContractId: '61234456',
-                    extendRefundStatuses: null
+                    extendRefundStatuses: '{"61234456":"ERROR"}'
                 }
             }),
         ]);
-        let alltest = this.productLineItems;
         this.defaultShipment = new Shipment({ ID: 'me' });
         this.allProductLineItems = this.productLineItems;
     }

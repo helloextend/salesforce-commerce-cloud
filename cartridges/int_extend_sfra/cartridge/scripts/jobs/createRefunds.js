@@ -34,10 +34,15 @@ exports.create = function () {
             var pLi = currentOrder.productLineItems[i];
             var extendContractIds;
             var statuses;
-            var extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses) || {};
+            var extendRefundStatuses;
+            if (pLi.custom.extendRefundStatuses) {
+                extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses);
+            } else {
+                extendRefundStatuses = {};
+            }
             statuses = Object.keys(extendRefundStatuses);
 
-            if (!pLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
+            if (!pLi.custom.extendContractId.length || !statuses) {
                 continue;
             } else if (statuses.length) {
                 extendContractIds = statuses;

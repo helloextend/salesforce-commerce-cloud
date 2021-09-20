@@ -58,6 +58,10 @@ class WebService {
             return {
                 error: true
             }
+        } else if (paramData.extendContractId === '2') {
+            return {
+                error: true
+            }
         } else {
             return {
                 id: paramData.extendContractId,

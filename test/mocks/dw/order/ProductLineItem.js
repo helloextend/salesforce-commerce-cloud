@@ -30,8 +30,12 @@ class ProductLineItem {
         }
         if (this.custom) {
             this.custom.bonusProductLineItemUUID =  this.custom.bonusProductLineItemUUID || '';
+            this.custom.extendRefundStatuses =  this.custom.extendRefundStatuses || '';
         } else {
-            this.custom = {bonusProductLineItemUUID: ''};
+            this.custom = {
+                bonusProductLineItemUUID: '',
+                extendRefundStatuses: '{}'
+            };
         }
 
     }
