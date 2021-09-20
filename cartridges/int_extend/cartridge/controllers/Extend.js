@@ -130,7 +130,7 @@ function isJsonValid(jsonString) {
 function errorInRequest(RESPONSE, reqProduct, products, product, contracts, contract, reqContract, message) {
     if (products && product && reqProduct) {
         product.productID = reqProduct.productID;
-        product["details"] = message;
+        product['details'] = message;
         products.push(product);
         product = {};
         RESPONSE.products = products;
@@ -154,7 +154,7 @@ function errorInRequest(RESPONSE, reqProduct, products, product, contracts, cont
  */
 function responseProduct(RESPONSE, reqProduct, products, product, message) {
     product.productID = reqProduct.productID;
-    product["details"] = message;
+    product['details'] = message;
     products.push(product);
     RESPONSE.products = products;
 }
@@ -167,8 +167,8 @@ function responseProduct(RESPONSE, reqProduct, products, product, message) {
  */
 function responseStatus (status, message) {
     return {
-        "status" : status,
-        "details" : message
+        'status' : status,
+        'details' : message
     }
 }
 
@@ -184,7 +184,7 @@ function refund() {
     var logger = require('dw/system/Logger');
     var extend = require('~/cartridge/scripts/extend');
     var jobHelpers = require('~/cartridge/scripts/jobHelpers');
-​    var headerKey = request.httpHeaders.get('extendsecretkey');
+    var headerKey = request.httpHeaders.get('extendsecretkey');
     var SECRET_KEY = Site.getCurrent().getCustomPreferenceValue('extendSecretKey');
 
     if (headerKey !== SECRET_KEY) {
@@ -307,7 +307,7 @@ function refund() {
                         }
                     }
                     if (!extendContractId) {
-                        contract[`number_${k}`] = responseStatus(refundStatus.ERROR, "contract not found");
+                        contract[`number_${k}`] = responseStatus(refundStatus.ERROR, 'contract not found');
                     }
                 }
 
@@ -316,7 +316,7 @@ function refund() {
                                         extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
                 if (isContractRefunded) {
-                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend has been already refunded");
+                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
                     continue;
                 }
 
@@ -330,13 +330,13 @@ function refund() {
 
                 if (responseFromExtend.error) {
                     extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                    contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                     continue;
                 }
 
                 if (responseFromExtend.refundAmount.amount === 0) {
                     extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                    contract[extendContractId] = responseStatus(refundStatus.REJECT, "extend contract has not been refunded due to the refund amount");
+                    contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
                     continue;
                 } else if (responseFromExtend.refundAmount.amount > 0) {
                     paramObj.commit = true;
@@ -344,10 +344,10 @@ function refund() {
 
                     if (responseFromExtend.id) {
                         extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend contract has been successfully refunded");
+                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
                     } else {
                         extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                        contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                        contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                         continue;
                     }
                 }
@@ -418,7 +418,7 @@ function refund() {
                                     extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
             if (isContractRefunded) {
-                contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend has been already refunded");
+                contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
                 contracts.push(contract);
                 RESPONSE.contracts = contracts;
                 continue;
@@ -433,13 +433,13 @@ function refund() {
 
             if (responseFromExtend.error) {
                 extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                 continue;
             }
 
             if (responseFromExtend.refundAmount.amount === 0 ) {
                 extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                contract[extendContractId] = responseStatus(refundStatus.REJECT, "extend contract has not been refunded due to the refund amount");
+                contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
                 continue;
             } else if (responseFromExtend.refundAmount.amount > 0) {
                 paramObj.commit = true;
@@ -447,10 +447,10 @@ function refund() {
 
                 if (responseFromExtend.id) {
                     extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend contract has been successfully refunded");
+                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
                 } else {
                     extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                    contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                     continue;
                 }
             }

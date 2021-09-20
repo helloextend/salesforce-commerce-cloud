@@ -1,13 +1,20 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-loop-func */
+/* eslint-disable no-redeclare */
+/* eslint-disable no-continue */
+/* eslint-disable block-scoped-var */
 'use strict';
 
-const server = require('server');
+var server = require('server');
 
 /**
  * Function to check whether json valid
  * @param {string} jsonString - json
  * @returns {boolean} - true whether valid, otherwise - false
  */
- function isJsonValid(jsonString) {
+function isJsonValid(jsonString) {
     try {
         return (JSON.parse(jsonString) && !!jsonString);
     } catch (e) {
@@ -29,7 +36,7 @@ const server = require('server');
 function errorInRequest(RESPONSE, reqProduct, products, product, contracts, contract, reqContract, message) {
     if (products && product && reqProduct) {
         product.productID = reqProduct.productID;
-        product["details"] = message;
+        product.details = message;
         products.push(product);
         product = {};
         RESPONSE.products = products;
@@ -53,7 +60,7 @@ function errorInRequest(RESPONSE, reqProduct, products, product, contracts, cont
  */
 function responseProduct(RESPONSE, reqProduct, products, product, message) {
     product.productID = reqProduct.productID;
-    product["details"] = message;
+    product.details = message;
     products.push(product);
     RESPONSE.products = products;
 }
@@ -62,13 +69,13 @@ function responseProduct(RESPONSE, reqProduct, products, product, message) {
  * Function which return status
  * @param {string} status - status of request
  * @param {string} message - message to describe details
- * @returns {object}
+ * @returns {Object}
  */
- function responseStatus (status, message) {
+function responseStatus(status, message) {
     return {
-        "status" : status,
-        "details" : message
-    }
+        status: status,
+        details: message
+    };
 }
 
 server.post('Refund', server.middleware.https, function (req, res, next) {
@@ -79,7 +86,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
     var logger = require('dw/system/Logger');
     var extend = require('~/cartridge/scripts/extend');
     var jobHelpers = require('~/cartridge/scripts/jobHelpers');
-​    var headerKey = req.httpHeaders.get('extendsecretkey');
+    var headerKey = req.httpHeaders.get('extendsecretkey');
     var SECRET_KEY = Site.getCurrent().getCustomPreferenceValue('extendSecretKey');
 
     if (headerKey !== SECRET_KEY) {
@@ -92,7 +99,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
     }
 
     var refundStatus = jobHelpers.refundStatus;
-​
+
     var data = req.body;
 
     if (!isJsonValid(data)) {
@@ -102,9 +109,9 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
             errorMessage: 'invalid JSON'
         });
         return next();
-    } else {
-        data = JSON.parse(req.body);
     }
+    data = JSON.parse(req.body);
+
 
     var apiOrder = OrderMgr.getOrder(data.orderID);
     if (!apiOrder) {
@@ -132,7 +139,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
     var contract = {};
 
     if (data.products) {
-        for (var i = 0; i < data.products.length; i += 1 ) {
+        for (var i = 0; i < data.products.length; i += 1) {
             var reqProduct = data.products[i];
 
             if (!reqProduct.productID) {
@@ -158,7 +165,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                 continue;
             }
 
-            for (var j = 0; j < apiOrder.productLineItems.length; j +=1 ) {
+            for (var j = 0; j < apiOrder.productLineItems.length; j += 1) {
                 var currentProduct = apiOrder.productLineItems[j];
                 for (var l = 0; l < pLi.length; l += 1) {
                     if (currentProduct.custom.parentLineItemUUID === pLi[l].custom.persistentUUID) {
@@ -188,8 +195,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
             product.productID = reqProduct.productID;
             product.contracts = contracts;
 
-            for (var k = 0; k < reqProduct.qty; k +=1 ) {
-
+            for (var k = 0; k < reqProduct.qty; k += 1) {
                 var extendContractId = extendContractIds[k];
 
                 if (!extendContractId) {
@@ -202,7 +208,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                         }
                     }
                     if (!extendContractId) {
-                        contract[`number_${k}`] = responseStatus(refundStatus.ERROR, "contract not found");
+                        contract[`number_${k}`] = responseStatus(refundStatus.ERROR, 'contract not found');
                     }
                 }
 
@@ -211,7 +217,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                                         extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
                 if (isContractRefunded) {
-                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend has been already refunded");
+                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
                     continue;
                 }
 
@@ -225,13 +231,13 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
                 if (responseFromExtend.error) {
                     extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                    contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                     continue;
                 }
 
                 if (responseFromExtend.refundAmount.amount === 0) {
                     extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                    contract[extendContractId] = responseStatus(refundStatus.REJECT, "extend contract has not been refunded due to the refund amount");
+                    contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
                     continue;
                 } else if (responseFromExtend.refundAmount.amount > 0) {
                     paramObj.commit = true;
@@ -239,10 +245,10 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
                     if (responseFromExtend.id) {
                         extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend contract has been successfully refunded");
+                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
                     } else {
                         extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                        contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                        contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                         continue;
                     }
                 }
@@ -269,7 +275,7 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
             for (var j = 0; j < pLi.length; j += 1) {
                 var currentContract = pLi[j];
-                for (var k = 0 ; k < currentContract.custom.extendContractId.length; k += 1) {
+                for (var k = 0; k < currentContract.custom.extendContractId.length; k += 1) {
                     if (reqContract === currentContract.custom.extendContractId[k]) {
                         extendLi = currentContract;
                     }
@@ -302,18 +308,18 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                 extendContractIds = extendLi.custom.extendContractId;
             }
 
-           for (var q = 0; q < extendContractIds.length; q +=1 ) {
-               if (reqContract === extendContractIds[q]) {
-                   extendContractId = reqContract;
-               }
-           }
+            for (var q = 0; q < extendContractIds.length; q += 1) {
+                if (reqContract === extendContractIds[q]) {
+                    extendContractId = reqContract;
+                }
+            }
 
             var isContractRefunded = extendRefundStatuses &&
                                     (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
                                     extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
             if (isContractRefunded) {
-                contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend has been already refunded");
+                contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
                 contracts.push(contract);
                 RESPONSE.contracts = contracts;
                 continue;
@@ -328,13 +334,13 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
             if (responseFromExtend.error) {
                 extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                 continue;
             }
 
-            if (responseFromExtend.refundAmount.amount === 0 ) {
+            if (responseFromExtend.refundAmount.amount === 0) {
                 extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                contract[extendContractId] = responseStatus(refundStatus.REJECT, "extend contract has not been refunded due to the refund amount");
+                contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
                 continue;
             } else if (responseFromExtend.refundAmount.amount > 0) {
                 paramObj.commit = true;
@@ -342,10 +348,10 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
                 if (responseFromExtend.id) {
                     extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, "extend contract has been successfully refunded");
+                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
                 } else {
                     extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    contract[extendContractId] = responseStatus(refundStatus.ERROR, "service call error");
+                    contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
                     continue;
                 }
             }
@@ -365,5 +371,5 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
     return next();
 });
-​
+
 module.exports = server.exports();
