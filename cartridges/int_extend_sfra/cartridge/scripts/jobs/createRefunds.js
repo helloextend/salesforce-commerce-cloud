@@ -1,4 +1,5 @@
 /* eslint-disable no-continue */
+/* eslint-disable no-loop-func */
 /* global module */
 
 var Status = require('dw/system/Status');
@@ -29,13 +30,12 @@ exports.create = function () {
     while (canceledOrders.hasNext()) {
         var currentOrder = canceledOrders.next();
 
-        Transaction.begin();
-
         for (var i = 0; i < currentOrder.productLineItems.length; i++) {
             var pLi = currentOrder.productLineItems[i];
             var extendContractIds;
+            var statuses;
             var extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses) || {};
-            var statuses = Object.keys(extendRefundStatuses);
+            statuses = Object.keys(extendRefundStatuses);
 
             if (!pLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
                 continue;
@@ -94,13 +94,15 @@ exports.create = function () {
                 }
             }
 
-            pLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
+            Transaction.wrap(function () {
+                pLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
+            });
         }
         var orderRefundStatus = jobHelpers.getRefundStatus(currentOrder);
 
-        currentOrder.custom.extendRefundStatus = orderRefundStatus;
-
-        Transaction.commit();
+        Transaction.wrap(function () {
+            currentOrder.custom.extendRefundStatus = orderRefundStatus;
+        });
     }
 
     canceledOrders.close();

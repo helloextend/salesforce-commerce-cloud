@@ -50,4 +50,12 @@ describe('rest services', () => {
         });
     });
 
+    describe('createRefundRequest()', () => {
+        it('should return response object with sync arrays of product by types', () => {
+            var result = rest.createRefundRequest(params.createRefundMock);
+            assert.exists(result.object);
+            assert.isTrue(result.ok);
+        });
+    });
+
 });

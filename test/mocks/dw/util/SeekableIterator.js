@@ -29,6 +29,10 @@ class SeekableIterator {
     asList() {
         return new Collection(this.items);
     }
+
+    getCount() {
+        return this.count;
+    }
 }
 
 module.exports = SeekableIterator;

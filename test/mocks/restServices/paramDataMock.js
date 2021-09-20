@@ -38,6 +38,20 @@ var productsRestMock = [
     new ProductLineItem(), notAllDataProduct
 ];
 
+var createRefundMock = {
+    extendContractId: '123456789',
+    commit: true
+};
+var createRefundWrongMock = {
+    extendContractId: '',
+    commit: true
+};
+
+var createMissedRefundMock = {
+    extendContractId: '61234456',
+    commit: true
+};
+
 module.exports = {
     contractMock: contractMock,
     contractWrongMock: contractWrongMock,
@@ -50,4 +64,7 @@ module.exports = {
     productsRestMock: productsRestMock,
     productWrongMock: productWrongMock,
     productMissedMock: productMissedMock,
+    createRefundMock: createRefundMock,
+    createRefundWrongMock: createRefundWrongMock,
+    createMissedRefundMock: createMissedRefundMock
 }

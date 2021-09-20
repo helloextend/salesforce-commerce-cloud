@@ -6,6 +6,10 @@ var proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 var cartridgePath = '../../../../../cartridges/int_extend_sfra/';
 var mockPath = './../../../../mocks/';
 
+var Collection = require( mockPath + 'dw/util/Collection');
+var ProductLineItem = require(mockPath + 'dw/order/ProductLineItem');
+var order = require(mockPath + 'dw/order/Order');
+
 var jobHelpers = proxyquire(cartridgePath + 'cartridge/scripts/jobHelpers.js', {});
 
 describe('jobHelpers Helpers', () => {
@@ -68,6 +72,87 @@ describe('jobHelpers Helpers', () => {
             };
 
             assert.deepEqual(result, loggerModel);
+        });
+    });
+
+    describe('getRefundStatus()', () => {
+        it('should return SUCCESS status', () => {
+            order.productLineItems = new Collection([
+                new ProductLineItem({
+                    productID: 'product1',
+                    quantityValue: 1,
+                    custom: {
+                        extendContractId: '1234567',
+                        extendRefundStatuses: null
+                    }
+                }),
+            ]);
+            var result = jobHelpers.getRefundStatus(order)
+
+            assert.deepEqual(result, 'SUCCESS');
+        });
+
+        it('should return ERROR status', () => {
+            order.productLineItems = new Collection([
+                new ProductLineItem({
+                    productID: 'product1',
+                    quantityValue: 1,
+                    custom: {
+                        extendContractId: '1234567',
+                        extendRefundStatuses: '{"1234567":"ERROR"}'
+                    }
+                }),
+            ]);
+            var result = jobHelpers.getRefundStatus(order)
+
+            assert.deepEqual(result, 'ERROR');
+        });
+
+        it('should return REJECT status', () => {
+            order.productLineItems = new Collection([
+                new ProductLineItem({
+                    productID: 'product1',
+                    quantityValue: 1,
+                    custom: {
+                        extendContractId: '1234567',
+                        extendRefundStatuses: '{"1234567":"REJECT"}'
+                    }
+                }),
+            ]);
+            var result = jobHelpers.getRefundStatus(order)
+
+            assert.deepEqual(result, 'REJECT');
+        });
+        
+        it('should return REJECT and ERROR status', () => {
+            order.productLineItems = new Collection([
+                new ProductLineItem({
+                    productID: 'product1',
+                    quantityValue: 1,
+                    custom: {
+                        extendContractId: '1234567',
+                        extendRefundStatuses: '{"1234567":"REJECT", "547864": "ERROR"}'
+                    }
+                }),
+            ]);
+            var result = jobHelpers.getRefundStatus(order)
+
+            assert.deepEqual(result, 'REJECT_AND_ERROR');
+        });
+        it('should return REJECT and ERROR status', () => {
+            order.productLineItems = new Collection([
+                new ProductLineItem({
+                    productID: 'product1',
+                    quantityValue: 1,
+                    custom: {
+                        extendContractId: '1234567',
+                        extendRefundStatuses: '{"1234567":"SUCCESS"}'
+                    }
+                }),
+            ]);
+            var result = jobHelpers.getRefundStatus(order)
+
+            assert.deepEqual(result, 'SUCCESS');
         });
     });
 

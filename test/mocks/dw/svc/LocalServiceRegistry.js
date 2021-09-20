@@ -11,6 +11,8 @@ function getResponse(url) {
         response.text = JSON.stringify(responseDataMock.getOfferResponseSuccessMock);
     } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/products') {
         response.text = JSON.stringify(responseDataMock.createProductResponseSuccessMock);
+    } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/contracts/123456789/refund') {
+        response.text = JSON.stringify(responseDataMock.responseCreateRefundSuccessMock);
     }
 
     return response

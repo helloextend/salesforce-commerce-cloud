@@ -8,15 +8,12 @@ var extend = require('~/cartridge/scripts/extend');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 
 /**
- * Returns status
  * @function create
  * @returns {dw.system.Status} - status
  */
 exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Order = require('dw/order/Order');
-    // eslint-disable-next-line no-unused-vars
-    var ArrayList = require('dw/util/ArrayList');
     var Transaction = require('dw/system/Transaction');
     var refundStatus = jobHelpers.refundStatus;
 
@@ -38,8 +35,7 @@ exports.create = function () {
             var extendContractIds;
             var statuses;
             var extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses) || {};
-            // eslint-disable-next-line no-redeclare
-            var statuses = Object.keys(extendRefundStatuses);
+            statuses = Object.keys(extendRefundStatuses);
 
             if (!pLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
                 continue;

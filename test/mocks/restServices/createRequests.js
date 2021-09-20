@@ -1,5 +1,6 @@
 'use strict';
 
+const { param } = require('jquery');
 var responseDataMock = require('./responseDataMock')
 
 class WebService {
@@ -30,6 +31,44 @@ class WebService {
         return responseDataMock.responseErrorMock;
     }
 
+    createRefundRequest(paramData) {
+        if (!paramData.extendContractId) {
+            return responseDataMock.responseErrorMock;
+        } else if (paramData.extendContractId === '61234456') {
+            return responseDataMock.responseErrorNoResultsMock;
+        } else if (paramData.extendContractId === '123456789') {
+            return responseDataMock.responseCreateRefundSuccessMock
+        } else if (paramData.extendContractId === '6') {
+            return {
+                id: paramData.extendContractId,
+                error: false,
+                refundAmount: {
+                    amount: 0
+                }
+            }
+        } else if (paramData.extendContractId === '1') {
+            return {
+                id: paramData.extendContractId,
+                error: false,
+                refundAmount: {
+                    amount: -10
+                }
+            }
+        } else if (paramData.extendContractId === '3' && paramData.commit) {
+            return {
+                error: true
+            }
+        } else {
+            return {
+                id: paramData.extendContractId,
+                error: false,
+                refundAmount: {
+                    amount: 10
+                }
+            }
+        }
+    }
+
     createContract(paramData) {
         var response = this.createContractRequest(paramData);
 
@@ -43,6 +82,11 @@ class WebService {
 
     createProduct(paramData) {
         var response = this.createProductRequest(paramData);
+        return response;
+    }
+
+    createRefund(paramData) {
+        var response = this.createRefundRequest(paramData);
         return response;
     }
 

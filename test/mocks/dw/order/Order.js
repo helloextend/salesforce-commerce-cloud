@@ -52,7 +52,11 @@ class Order {
                 productID: 'product1',
                 adjustedGrossPrice: new Money(15, 'USD'),
                 adjustedNetPrice: new Money(13, 'USD'),
-                quantityValue: 1
+                quantityValue: 1,
+                custom: {
+                    extendContractId: '1234567',
+                    extendRefundStatuses: '{}'
+                }
             }),
             new ProductLineItem({
                 bonusProductLineItem: false,
@@ -60,9 +64,37 @@ class Order {
                 productID: 'product2',
                 adjustedGrossPrice: new Money(30, 'USD'),
                 adjustedNetPrice: new Money(27, 'USD'),
-                quantityValue: 2
-            })
+                quantityValue: 2,
+                custom: {
+                    extendContractId: ''
+                }
+            }),
+            new ProductLineItem({
+                bonusProductLineItem: false,
+                bundledProductLineItem: false,
+                productID: 'product2',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
+                quantityValue: 2,
+                custom: {
+                    extendContractId: '13141516',
+                    extendRefundStatuses: '{}'
+                }
+            }),
+                new ProductLineItem({
+                bonusProductLineItem: false,
+                bundledProductLineItem: false,
+                productID: 'product2',
+                adjustedGrossPrice: new Money(30, 'USD'),
+                adjustedNetPrice: new Money(27, 'USD'),
+                quantityValue: 2,
+                custom: {
+                    extendContractId: '61234456',
+                    extendRefundStatuses: null
+                }
+            }),
         ]);
+        let alltest = this.productLineItems;
         this.defaultShipment = new Shipment({ ID: 'me' });
         this.allProductLineItems = this.productLineItems;
     }

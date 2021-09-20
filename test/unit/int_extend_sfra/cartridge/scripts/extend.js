@@ -85,4 +85,23 @@ describe('extend services', () => {
         });
     });
 
+    describe('createRefund()', () => {
+        it('should return response object with contract Id', () => {
+            var result = extend.createRefund(params.createRefundMock);
+            assert.exists(result.id);
+            assert.isNotTrue(result.error);
+        });
+
+        it('should return response error', () => {
+            var result = extend.createRefund(params.createRefundWrongMock);
+            assert.isTrue(result.error);
+        });
+
+        it('should return response error: No results found', () => {
+            var result = extend.createRefund(params.createMissedRefundMock);
+            assert.isTrue(result.error);
+            assert.equal(result.errorMessage, 'No results found.');
+        });
+    });
+
 });
