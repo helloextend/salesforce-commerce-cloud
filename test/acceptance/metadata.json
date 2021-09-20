@@ -1,25 +1,26 @@
 {
     "include": {
         "data": "./test/acceptance/metadata.json",
-        "homePage": "./test/acceptance/pages/home.page.js"
+        "productDetailPage": "./test/acceptance/pages/productDetail.page.js",
+        "cart": "./test/acceptance/pages/cart.page.js"
     },
     "gherkin_steps": [
-        "./test/acceptance/steps/homePage.steps.js"
+        "./test/acceptance/steps/productDetailPage/addExtendProduct.steps.js",
+        "./test/acceptance/steps/productDetailPage/popUpAddExtendProduct.steps.js",
+        "./test/acceptance/steps/productDetailPage/addProductWithoutExtend.steps.js",
+        "./test/acceptance/steps/cart/addExtend.steps.js",
+        "./test/acceptance/steps/cart/removeProduct.steps.js"
     ],
     "pages": {
-        "homePage": "/on/demandware.store/Sites-RefArch-Site/en_US/Home-Show"
+        "pdpPage": "/on/demandware.store/Sites-RefArch-Site/en_US/Product-Show?pid=25518058M"
     },
-    "product": {
+    "extend": {
+        "color": "Black",
+        "size": {
+            "label": "Select Size",
+            "value": "M"
+        },
         "quantity": "2",
-        "size": "8"
-    },
-    "extendProduct": {
-        "name": "Extend Product Protection",
-        "quantity": "1",
-        "itemPrice": "$19.99",
-        "totalItemPrice": "$214.99",
-        "shipping": "$9.99",
-        "tax": "$11.25",
-        "estimatedTotal": "$236.23"
+        "name": "Extend Product Protection: 1 years for Long Sleeve Ruffle Front Cardigan"
     }
 }

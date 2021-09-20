@@ -18,17 +18,17 @@ function normalizeCartQuantities(basket) {
 
     var productsWithWarranty = [];
     var warrantyItems = [];
- 
+
     collections.forEach(productLineItems, function (lineItem) {
-         
+
         var persistentUUID = lineItem.custom.persistentUUID || null;
         var parentLineItemUUID = lineItem.custom.parentLineItemUUID || null; 
-          
+
           // Is LineItem with warranty
-          if (persistentUUID && !parentLineItemUUID) { 
+          if (persistentUUID && !parentLineItemUUID) {
                 productsWithWarranty.push(lineItem);
-          } 
-          
+          }
+
           // Is warranty line item
           if (!persistentUUID && parentLineItemUUID) {
                 warrantyItems.push(lineItem);
@@ -40,7 +40,7 @@ function normalizeCartQuantities(basket) {
         Transaction.wrap(function () {
             applyQuantityLogic(mappedLineItemProducts);
         });
-         
+
     }
 }
 
@@ -50,30 +50,30 @@ function normalizeCartQuantities(basket) {
  * Entrypoint method that contains logic of normalization cart requirements
  *
  * @param {Array.<Object>} mappedProducts - mapped array with objects of ProductLineItem 
- * and all Warranty products linked with that product 
+ * and all Warranty products linked with that product
  */
 
 function applyQuantityLogic (mappedProducts) {
-    mappedProducts.forEach(function (mappedObject) { 
-        
-        var lineItem = mappedObject.lineItem; 
+    mappedProducts.forEach(function (mappedObject) {
+
+        var lineItem = mappedObject.lineItem;
         var warrantyProducts = mappedObject.warranties;
         var quantityOfProduct = lineItem.getQuantityValue();
-        
+
         var totalQuantityWarrantyProducts = warrantyProducts.reduce(function (prev, item) {
             return prev += item.getQuantityValue();
-        }, 0); 
+        }, 0);
 
-        // Make quantity equal if P quantities < W total quantities 
+        // Make quantity equal if P quantities < W total quantities
         if (quantityOfProduct < totalQuantityWarrantyProducts) {
-            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);   
+            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);
         }
 
         // Add quantity to the highest warranty product if P quantities > W quantities
         // this statetment related to Case 4 from ticket
-        
+
         // if (totalQuantityWarrantyProducts > quantityOfProduct) {
-        //     addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);  
+        //     addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);
         // }
     });
 }
@@ -82,29 +82,29 @@ function applyQuantityLogic (mappedProducts) {
  * @function addQuantityToHighestWarranty
  *
  * Provide logic to make Products quantity and Warranty product quantity equal
- * by increasing quantity with highest price of Extend ProductLineItem 
- * 
+ * by increasing quantity with highest price of Extend ProductLineItem
+ *
  * @param {Number} numberToAdd - Numbers of the quantity that should be increased
- * @param {Array.<{ProductLineItem}>} warrantyProducts - Collection of EXTEND ProductLineItem 
- * 
+ * @param {Array.<{ProductLineItem}>} warrantyProducts - Collection of EXTEND ProductLineItem
+ *
  */
 
 function addQuantityToHighestWarranty (numberToAdd, warrantyProducts) {
-    var countToAdd = numberToAdd;  
-    var warrantyProductsDESC = reverseArray(warrantyProducts); 
+    var countToAdd = numberToAdd;
+    var warrantyProductsDESC = reverseArray(warrantyProducts);
 
     warrantyProductsDESC.forEach(function (warrProduct) {
         var warrProductQuantity = warrProduct.getQuantityValue();
         var warrOptionProducts = warrProduct.optionProductLineItems[0];
-        
+
         if (countToAdd > 0) {
             while (countToAdd > 0) {
-                var warrProductQuantity = warrProduct.getQuantityValue(); 
+                var warrProductQuantity = warrProduct.getQuantityValue();
                 var warrOptionProducts = warrProduct.optionProductLineItems[0];
 
                 warrProduct.setQuantityValue(warrProductQuantity + 1);
                 warrOptionProducts.setQuantityValue(warrProductQuantity + 1);
-                
+
                 countToAdd--;
             }
         }
@@ -115,11 +115,11 @@ function addQuantityToHighestWarranty (numberToAdd, warrantyProducts) {
  * @function makeQuantityEqual
  *
  * Provide logic to make Products quantity and Warranty product quantity equal
- * by decreasing quantity with lowest price of Extend ProductLineItem 
- * 
+ * by decreasing quantity with lowest price of Extend ProductLineItem
+ *
  * @param {Number} numberToRemove - Numbers of the quantity that should be decreased
- * @param {Array.<{ProductLineItem}>} warrantyProducts - Collection of EXTEND ProductLineItem 
- * 
+ * @param {Array.<{ProductLineItem}>} warrantyProducts - Collection of EXTEND ProductLineItem
+ *
  */
 
 function makeQuantityEqual (numberToRemove, warrantyProducts) {
@@ -128,28 +128,28 @@ function makeQuantityEqual (numberToRemove, warrantyProducts) {
 
     warrantyProducts.forEach(function (warrProduct) {
         var warrProductQuantity = warrProduct.getQuantityValue();
-        
+
         if (countToRemove > 0) {
 
             while (countToRemove > 0) {
                 var warrProductQuantity = warrProduct.getQuantityValue();
-                
+
                 if (warrProductQuantity > 1) {
                     var warrOptionProducts = warrProduct.optionProductLineItems[0];
-        
+
                     warrProduct.setQuantityValue(warrProductQuantity - 1);
                     warrOptionProducts.setQuantityValue(warrProductQuantity - 1);
                 }
 
-                if (countToRemove >= warrProductQuantity && warrProductQuantity === 1) { 
+                if (countToRemove >= warrProductQuantity && warrProductQuantity === 1) {
                     currentBasket.removeProductLineItem(warrProduct);
                     normalizeCartQuantities(BasketMgr.getCurrentBasket());
                 }
-                
+
                 countToRemove--;
-            }  
-        } 
-    }); 
+            }
+        }
+    });
 
 }
 

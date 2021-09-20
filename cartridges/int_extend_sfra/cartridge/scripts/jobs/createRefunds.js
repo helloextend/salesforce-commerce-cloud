@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* global module */
 
 var Status = require('dw/system/Status');
@@ -7,12 +8,11 @@ var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 
 /**
  * @function create
- * @returns {dw.system.Status}
+ * @returns {dw.system.Status} - status
  */
 exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Order = require('dw/order/Order');
-    var ArrayList = require('dw/util/ArrayList');
     var Transaction = require('dw/system/Transaction');
     var refundStatus = jobHelpers.refundStatus;
 
@@ -29,10 +29,11 @@ exports.create = function () {
     while (canceledOrders.hasNext()) {
         var currentOrder = canceledOrders.next();
 
+        Transaction.begin();
+
         for (var i = 0; i < currentOrder.productLineItems.length; i++) {
             var pLi = currentOrder.productLineItems[i];
             var extendContractIds;
-            var statuses;
             var extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses) || {};
             var statuses = Object.keys(extendRefundStatuses);
 
@@ -64,7 +65,7 @@ exports.create = function () {
                 var paramObj = {
                     extendContractId: extendContractId,
                     commit: false
-                }
+                };
 
                 var response = extend.createRefund(paramObj);
 
@@ -77,7 +78,6 @@ exports.create = function () {
                 if (response.refundAmount.amount === 0) {
                     logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
                     extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-
                 } else if (response.refundAmount.amount > 0) {
                     // paramObj.commit = false for testing
                     paramObj.commit = true;
@@ -94,15 +94,13 @@ exports.create = function () {
                 }
             }
 
-            Transaction.wrap(function () {
-                pLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
-            });
+            pLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
         }
         var orderRefundStatus = jobHelpers.getRefundStatus(currentOrder);
 
-        Transaction.wrap(function () {
-            currentOrder.custom.extendRefundStatus = orderRefundStatus;
-        });
+        currentOrder.custom.extendRefundStatus = orderRefundStatus;
+
+        Transaction.commit();
     }
 
     canceledOrders.close();

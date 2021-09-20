@@ -2,7 +2,7 @@
 <script>
     // Trigger custom event to get know that minicart data loaded
     $('body').trigger('extend:minicart:loaded');
-</script> 
+</script>
 
 <div class="container cart">
     <isif condition="${pdict.reportingURLs && pdict.reportingURLs.length}">
@@ -23,7 +23,10 @@
             <isif condition="${pdict.valid.error && pdict.items.length !== 0}">
                 <div class="alert alert-danger alert-dismissible valid-cart-error fade show" role="alert">
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">
+                            <iscomment> delete character </iscomment>
+                            &times;
+                        </span>
                     </button>
                     ${pdict.valid.message}
                 </div>
@@ -55,9 +58,9 @@
             </isloop>
         </div>
     </div>
-    
+
     <isinclude template="cart/cartRemoveProductModal"/>
-    
+
     <div class="minicart-footer">
         <div class="row estimated-total">
             <div class="col-8">

@@ -1,10 +1,12 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 /* eslint-disable new-cap */
 'use strict';
 
 /* Module Imports */
 var Site = require('dw/system/Site').getCurrent();
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
-var mocks = require('./restMocks')
+var mocks = require('./restMocks');
 
 /**
  * Inits service instance for specific Extend operation
@@ -218,7 +220,7 @@ function Offers() {
  * Inits service instance for specific Extend operation
  * @returns {dw.svc.LocalServiceRegistry} - initialized service instance
  */
- function Refunds() {
+function Refunds() {
     return require('dw/svc/LocalServiceRegistry').createService('int_extend.http.Extend', {
         createRequest: function (service, requestData) {
             var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
@@ -234,7 +236,7 @@ function Offers() {
             service.setRequestMethod('POST');
 
             // Set query param
-            service.addParam('commit', requestData.commit)
+            service.addParam('commit', requestData.commit);
 
             // Set request endpoint
             service.setURL(credential.URL + 'stores/' + STORE_ID + '/contracts/' + requestData.extendContractId + '/refund');

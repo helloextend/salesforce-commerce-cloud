@@ -1,17 +1,29 @@
+/* eslint-disable camelcase */
+/* eslint-disable no-undef */
+/* eslint-disable no-continue */
 'use strict';
 
-function getPSTtime () {
+/**
+ * Returns current time
+ * @returns {string} - current time
+ */
+function getPSTtime() {
     var currentTime = new Date();
     var PST_offset = 8;
-    
+
     currentTime.setHours(currentTime.getHours() - PST_offset);
-    
+
     return currentTime;
 }
 
-function getProductLoggerModel (product) {
+/**
+ * Returns info about product
+ * @param {Object} product - some product
+ * @returns {Object} - product model
+ */
+function getProductLoggerModel(product) {
     var result = {};
-    
+
     result.ID = product.ID;
     result.title = product.name;
     result.price = product.priceModel.getPrice().getValue();
@@ -20,7 +32,12 @@ function getProductLoggerModel (product) {
     return result;
 }
 
-function getContractLoggerModel (order) {
+/**
+ * Returns model for contract
+ * @param {Object} order - order
+ * @returns {Object} - contract
+ */
+function getContractLoggerModel(order) {
     var result = {};
     var customerProfile = order.getCustomer().getProfile();
 
@@ -37,9 +54,14 @@ var refundStatus = {
     REJECT: 'REJECT',
     ERROR: 'ERROR',
     REJECT_AND_ERROR: 'REJECT_AND_ERROR'
-}
+};
 
-function getRefundStatus (order) {
+/**
+ * Returns status for refund
+ * @param {Object} order - order
+ * @returns {string} - status
+ */
+function getRefundStatus(order) {
     var error = false;
     var reject = false;
 
@@ -71,6 +93,7 @@ function getRefundStatus (order) {
         return refundStatus.ERROR;
     } else if (reject) {
         return refundStatus.REJECT;
+    // eslint-disable-next-line no-else-return
     } else {
         return refundStatus.SUCCESS;
     }
@@ -82,4 +105,4 @@ module.exports = {
     getContractLoggerModel: getContractLoggerModel,
     refundStatus: refundStatus,
     getRefundStatus: getRefundStatus
-}
+};

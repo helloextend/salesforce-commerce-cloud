@@ -32,9 +32,9 @@ function getWarrantedItem(basket,uuid) {
 	var warrantedPLI;
 	collections.forEach(basket.getAllProductLineItems(), function (lineItem) {
           // Is LineItem with warranty
-          if (lineItem.getUUID() === uuid) { 
+          if (lineItem.getUUID() === uuid) {
         	  warrantedPLI =  lineItem;
-          } 
+          }
     });
 	return warrantedPLI;
 }

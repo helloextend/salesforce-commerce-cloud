@@ -1,3 +1,5 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-continue */
 /* global module */
 
 var Status = require('dw/system/Status');
@@ -6,12 +8,14 @@ var extend = require('~/cartridge/scripts/extend');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 
 /**
+ * Returns status
  * @function create
- * @returns {dw.system.Status}
+ * @returns {dw.system.Status} - status
  */
 exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Order = require('dw/order/Order');
+    // eslint-disable-next-line no-unused-vars
     var ArrayList = require('dw/util/ArrayList');
     var Transaction = require('dw/system/Transaction');
     var refundStatus = jobHelpers.refundStatus;
@@ -34,6 +38,7 @@ exports.create = function () {
             var extendContractIds;
             var statuses;
             var extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses) || {};
+            // eslint-disable-next-line no-redeclare
             var statuses = Object.keys(extendRefundStatuses);
 
             if (!pLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
@@ -64,7 +69,7 @@ exports.create = function () {
                 var paramObj = {
                     extendContractId: extendContractId,
                     commit: false
-                }
+                };
 
                 var response = extend.createRefund(paramObj);
 
@@ -77,7 +82,6 @@ exports.create = function () {
                 if (response.refundAmount.amount === 0) {
                     logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
                     extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-
                 } else if (response.refundAmount.amount > 0) {
                     // paramObj.commit = false for testing
                     paramObj.commit = true;

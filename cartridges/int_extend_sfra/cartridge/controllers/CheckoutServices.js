@@ -1,8 +1,8 @@
 'use strict';
 
-const server = require('server');
+var server = require('server');
 
-const page = module.superModule;
+var page = module.superModule;
 server.extend(page);
 
 /**
@@ -17,8 +17,8 @@ function moneyToCents(value) {
 /**
  * Get SFCC product JSON object
  * @param {Order} order : API Order object
- * @param {String} UUID : UUID for the associated parent productLineItem
- * @return {String} stringified object
+ * @param {string} UUID : UUID for the associated parent productLineItem
+ * @return {string} stringified object
  */
 function getSFCCProduct(order, UUID) {
     var obj = {};
@@ -29,7 +29,7 @@ function getSFCCProduct(order, UUID) {
             obj = {
                 referenceId: pLi.productID,
                 purchasePrice: moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue))
-            }
+            };
             break;
         }
     }
@@ -40,7 +40,7 @@ function getSFCCProduct(order, UUID) {
 /**
  * Get Extend plan JSON object
  * @param {ProductLineItem} pLi : API ProductLineItem object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getExtendPlan(pLi) {
     var obj = {
@@ -54,7 +54,7 @@ function getExtendPlan(pLi) {
 /**
  * Get customer JSON object
  * @param {Order} order : API Order object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getCustomer(order) {
     var address = order.getBillingAddress();
@@ -96,6 +96,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
 
         if (pLi.custom.parentLineItemUUID) {
             for (var j = 1; j <= pLi.getQuantityValue(); j++) {
+                // eslint-disable-next-line no-loop-func
                 Transaction.wrap(function () {
                     var queueObj = CustomObjectMgr.createCustomObject('ExtendContractsQueue', pLi.UUID + '-' + j);
                     queueObj.custom.orderNo = viewData.orderID;
