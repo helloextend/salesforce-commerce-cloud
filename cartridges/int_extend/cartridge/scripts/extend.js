@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 'use strict';
 
 var Site = require('dw/system/Site').getCurrent();
@@ -52,7 +54,7 @@ function getContractsPayload(paramObj) {
     requestObject.transactionTotal = {
         currencyCode: contractCO.currency,
         amount: contractCO.orderTotal
-    }
+    };
 
     requestObject.customer.billingAddress = customer.address;
     requestObject.customer.shippingAddress = shippingAddress;
@@ -61,12 +63,12 @@ function getContractsPayload(paramObj) {
     requestObject.product.purchasePrice = {
         currencyCode: contractCO.currency,
         amount: product.purchasePrice
-    }
+    };
 
     requestObject.plan.purchasePrice = {
         currencyCode: contractCO.currency,
         amount: plan.purchasePrice
-    }
+    };
 
     if (apiVersion === '2021-04-01') {
         requestObject.isTest = true;
@@ -102,7 +104,7 @@ function getProductsPayload(productBatch) {
                 price = {
                     currencyCode: product.priceModel.price.getCurrencyCode(),
                     amount: price
-                }
+                };
             }
 
             var productObj = {};
@@ -113,7 +115,7 @@ function getProductsPayload(productBatch) {
             productObj.mfrWarranty = {
                 parts: product.custom.mfrWarrantyParts,
                 labor: product.custom.mfrWarrantyLabor
-            }
+            };
             productObj.price = price;
             productObj.title = product.getName();
             productObj.referenceId = product.getID();
@@ -121,15 +123,14 @@ function getProductsPayload(productBatch) {
             productObj.identifiers = {
                 sku: product.getID(),
                 upc: product.getUPC()
-            }
+            };
             requestObject.push(productObj);
-
         } catch (error) {
             logger.error('Request object could not be created. {0}', error);
         }
     }
 
-    return requestObject
+    return requestObject;
 }
 
 /**

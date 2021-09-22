@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable new-cap */
 'use strict';
 
@@ -5,7 +6,7 @@
 var Site = require('dw/system/Site').getCurrent();
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var LocalServiceRegistry = require('dw/svc/LocalServiceRegistry');
-var mocks = require('./restMocks')
+var mocks = require('./restMocks');
 
 /**
  * Inits service instance for specific Extend operation
@@ -60,7 +61,7 @@ function createServiceCall(configObj) {
 }
 
 /**
- * @param {String} endpoint - name of API endpoint
+ * @param {string} endpoint - name of API endpoint
  * @param {Object} requestObject - payload object for request
  * @returns {Object} configObj - configuration object
  */
@@ -101,7 +102,7 @@ function createRequestConfiguration(endpoint, requestObject) {
 }
 
 /**
- * @param {String} endpointName - name of API endpoint
+ * @param {string} endpointName - name of API endpoint
  * @param {Object} requestObject - payload object for request
  * @returns {Object} - response object
  */

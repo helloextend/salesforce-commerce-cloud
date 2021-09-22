@@ -1,3 +1,7 @@
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable one-var */
+/* eslint-disable no-undef */
 'use strict';
 
 /**
@@ -24,7 +28,8 @@ function isEligibleForWarranty() {
     var BasketMgr = require('dw/order/BasketMgr');
     var qs = request.httpParameters;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
-    var pid ,qty;
+    var pid,
+        qty;
     var response = require('*/cartridge/scripts/util/Response');
 
     // Query string parameter wasn't provided
@@ -39,12 +44,12 @@ function isEligibleForWarranty() {
     for (var i = 0; i < currentBasket.productLineItems.length; i++) {
         if (currentBasket.productLineItems[i].custom.parentLineItemUUID === qs.uuid[0] || (!empty(currentBasket.productLineItems[i].custom.parentLineItemUUID) && currentBasket.productLineItems[i].getUUID() === qs.uuid[0])) {
         	response.renderJSON({
-                isEligible: false
-            });
+            isEligible: false
+        });
             return;
         }
     }
-    
+
     for (var i = 0; i < currentBasket.productLineItems.length; i++) {
         if (currentBasket.productLineItems[i].UUID === qs.uuid[0]) {
             pid = currentBasket.productLineItems[i].productID;
@@ -64,7 +69,7 @@ function isEligibleForWarranty() {
     response.renderJSON({
     	isEligible: true,
         pid: pid,
-        qty:qty
+        qty: qty
     });
 }
 
