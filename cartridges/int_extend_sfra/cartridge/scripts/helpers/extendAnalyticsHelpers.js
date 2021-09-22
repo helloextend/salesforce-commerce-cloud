@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable consistent-return */
 'use strict';
 
 /**
@@ -119,7 +121,7 @@ function getProductAddedToCartData(addedProduct, form) {
         productId: addedProduct.productID,
         productQuantity: parseInt(form.quantity, 10),
         event: 'productAddedToCart'
-    }
+    };
 
     return productAddedToCart;
 }
@@ -138,7 +140,7 @@ function getOfferAddedToCartData(addedProduct, form) {
         offerTypeArea: form.area,
         offerTypeComponent: form.component,
         event: 'offerAddedToCart'
-    }
+    };
 
     return offerAddedToCart;
 }

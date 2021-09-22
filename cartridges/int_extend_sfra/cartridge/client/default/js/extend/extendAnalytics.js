@@ -1,3 +1,6 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-undef */
+/* eslint-disable require-jsdoc */
 'use strict';
 
 var ExtendAnalytics = window.ExtendAnalytics || undefined;
@@ -51,7 +54,7 @@ function trackOfferRemovedFromCart(data) {
 
 function trackProductRemovedFromCart(data) {
     ExtendAnalytics.trackProductRemovedFromCart({
-        productId: data.productId,
+        productId: data.productId
     });
 }
 
@@ -60,7 +63,7 @@ function trackProductUpdated(data) {
         productId: data.productId,
         updates: {
             productQuantity: +data.productQuantity
-        },
+        }
     });
 }
 
@@ -70,8 +73,8 @@ function trackOfferUpdated(data) {
         planId: data.planId,
         updates: {
             warrantyQuantity: +data.productQuantity,
-            productQuantity: +data.productQuantity,
-        },
+            productQuantity: +data.productQuantity
+        }
     });
 }
 
@@ -104,7 +107,7 @@ function trackExtendPDP(currentTarget) {
                 productId: productId,
                 LinkTypeArea: 'product_page',
                 LinkTypeComponent: 'learn_more_info_icon'
-            }
+            };
 
             trackLinkClicked(data);
         });
@@ -113,7 +116,7 @@ function trackExtendPDP(currentTarget) {
             clearTimeout(timer);
             $(currentTarget).contents().find('.info-button').removeClass('chained');
         }
-    }
+    };
     var timer = setInterval(addTrackEvent, 100);
 }
 
@@ -122,14 +125,14 @@ function addTrackEventUpsellCart(currentTarget) {
         $(currentTarget).contents().find('.simple-offer').on('click', function () {
             var pid = $(currentTarget).parents('.extend-upsell-style').data().pid;
             window.extendModalReferenceId = pid;
-            trackOfferViewedModal(pid, 'cart_page')
+            trackOfferViewedModal(pid, 'cart_page');
         });
         $(currentTarget).contents().find('.simple-offer').addClass('chained');
         if ($(currentTarget).contents().find('button').hasClass('chained')) {
             clearTimeout(timer);
             $(currentTarget).contents().find('.simple-offer').removeClass('chained');
         }
-    }
+    };
     var timer = setInterval(addTrackEvent, 100);
 }
 
@@ -153,7 +156,7 @@ function addTrackEventModal(currentTarget) {
                 productId: productId,
                 LinkTypeArea: area,
                 LinkTypeComponent: 'see_plan_details_link'
-            }
+            };
 
             trackLinkClicked(data);
         });
@@ -163,7 +166,7 @@ function addTrackEventModal(currentTarget) {
             clearTimeout(timer);
             $(currentTarget).contents().find('.link').removeClass('chained');
         }
-    }
+    };
     var timer = setInterval(addTrackEvent, 100);
 }
 
@@ -177,7 +180,7 @@ function trackModalLinkClicked(currentTarget) {
                 productId: productId,
                 LinkTypeArea: 'learn_more_modal',
                 LinkTypeComponent: 'see_plan_details_link'
-            }
+            };
 
             trackLinkClicked(data);
         });
@@ -187,7 +190,7 @@ function trackModalLinkClicked(currentTarget) {
             clearTimeout(timer);
             $(currentTarget).contents().find('.terms-link').removeClass('chained');
         }
-    }
+    };
     var timer = setInterval(addTrackEvent, 100);
 }
 
@@ -204,7 +207,7 @@ module.exports = {
     trackExtendDOMNodeInserted: function () {
         $(document).on('DOMNodeInserted', 'body', function (e) {
             if (!ExtendAnalytics) {
-                return
+                return;
             } else if (e.target.tagName && e.target.tagName.toLowerCase() !== 'iframe') {
                 return;
             }
@@ -292,7 +295,7 @@ module.exports = {
             ExtendAnalytics.trackCartCheckout({
                 cartTotal: +productAmmount
             });
-        })
-    },
+        });
+    }
 
 };

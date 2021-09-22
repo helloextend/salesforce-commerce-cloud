@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-unused-vars */
 /* eslint-disable new-cap */
 'use strict';
 

@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-concat */
+/* eslint-disable valid-jsdoc */
 'use strict';
 
 var Extend = window.Extend || undefined;
@@ -49,10 +51,11 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
 }
 
 /**
- * Renders an Extend upsell button under Mini Cart popup
+ * Renders an Extend upsell button in cart page
  * @param {string} uuid - line item uuid
- * @param {string} btnLabel - upsell button label
  * @param {string} pid - corresponding product id
+ * @param {string} qty- corresponding quantity
+ * @returns
  */
 function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
     var hasExtendUpsell = $('.minicart').find('.card.uuid-' + uuid).find('#extend-offer-' + uuid).length > 0;
@@ -92,6 +95,24 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
             });
     }
 }
+
+/**
+ * Produces the request for render upsell buttons
+ */
+function makeRequestForRender(uuid, renderUpsellBtnCallback) {
+    $.ajax({
+        url: window.EXT_CART_WARRANTYCHECK + '?uuid=' + uuid,
+        method: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            if (data.isEligible) {
+                renderUpsellBtnCallback(uuid, data.pid, data.qty);
+            }
+        },
+        error: function () { }
+    });
+}
+
 /**
  * Extend config is initialized
  */
@@ -143,31 +164,12 @@ function renderUpsellBtnsMiniCart() {
     });
 }
 
-
-/**
- * Produces the request for render upsell buttons
- */
-function makeRequestForRender(uuid, renderUpsellBtnCallback) {
-    $.ajax({
-        url: window.EXT_CART_WARRANTYCHECK + '?uuid=' + uuid,
-        method: 'GET',
-        dataType: 'json',
-        success: function (data) {
-            if (data.isEligible) {
-                renderUpsellBtnCallback(uuid, data.pid, data.qty);
-            }
-        },
-        error: function () { }
-    });
-}
-
-
 /**
  * Rerender the button after the warranty is deleted from cart
  */
 function updateUpsellBtns() {
     $('body').on('click', '.cart-delete-confirmation-btn', function () {
-        $('body').on("cart:update", function () {
+        $('body').on('cart:update', function () {
             renderUpsellBtns();
         });
     });

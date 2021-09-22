@@ -1,3 +1,11 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable no-undef */
+/* eslint-disable one-var */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-param-reassign */
+/* eslint-disable consistent-return */
 'use strict';
 
 /**
@@ -70,7 +78,7 @@ function getProductRemovedFromCartData(removedProduct) {
     var productRemovedFromCart = {
         productID: removedProduct.productID,
         event: 'productRemovedFromCart'
-    }
+    };
 
     return productRemovedFromCart;
 }
@@ -86,7 +94,7 @@ function getOfferRemovedFromCartData(removedProduct, removedPlan) {
         productID: removedProduct.productID,
         planId: removedPlan.manufacturerSKU,
         event: 'offerRemovedFromCart'
-    }
+    };
 
     return offerRemovedFromCart;
 }
@@ -100,7 +108,8 @@ function getOfferRemovedFromCartData(removedProduct, removedPlan) {
 function getItemsData(items, cart) {
     var itemsData = [];
     for (var i = 0; i < items.length; i++) {
-        var extendProduct, extendedProduct;
+        var extendProduct,
+            extendedProduct;
         var data = {};
         var current = items[i];
         var productLineItems = cart.object.shipments[current.shipment].productLineItems;
@@ -116,11 +125,9 @@ function getItemsData(items, cart) {
             if (!extendProduct) {
                 itemsData.push(getProductUpdatedData(product, data));
             }
-
         } else if (product.custom.parentLineItemUUID) {
-            extendedProduct = getExtendedProduct(productLineItems, product)
+            extendedProduct = getExtendedProduct(productLineItems, product);
             itemsData.push(getOfferUpdatedData(extendedProduct, product, data));
-
         } else {
             itemsData.push(getProductUpdatedData(product, data));
         }
@@ -148,12 +155,12 @@ function getUpdateCartData(cart) {
                 shipment: paramValues[0],
                 position: paramValues[1],
                 newQuantity: params[params.parameterNames[i]].value
-            }
+            };
             itemsToChangeInfo.push(itemToChange);
         }
     }
 
-    var data = getItemsData(itemsToChangeInfo, cart)
+    var data = getItemsData(itemsToChangeInfo, cart);
 
     var strData = JSON.stringify(data);
     session.custom.analyticsPayload = strData;
@@ -175,7 +182,8 @@ function setUpdateCartPayload(cart) {
     var itemsData = [];
 
     for (var i = 0; i < productsToUpdate.length; i++) {
-        var extendProduct, extendedProduct;
+        var extendProduct,
+            extendedProduct;
         var data = {};
         var product = productsToUpdate[i];
         var productLineItems = cart.productLineItems;
@@ -186,26 +194,23 @@ function setUpdateCartPayload(cart) {
             if (item.UUID === product.UUID) {
                 isProductExist = true;
                 if (product.quantityValue !== item.quantityValue) {
-
                     if (item.custom.persistentUUID) {
                         extendProduct = getExtendProduct(productLineItems, item);
 
                         if (!extendProduct) {
-                            data.event = 'productUpdated'
+                            data.event = 'productUpdated';
                             itemsData.push(getProductUpdatedData(item, data));
                         }
-
                     } else if (item.custom.parentLineItemUUID) {
                         extendedProduct = getExtendedProduct(productLineItems, item);
-                        data.event = 'offerUpdated'
-                        var newData = getOfferUpdatedData(extendedProduct, item, data)
+                        data.event = 'offerUpdated';
+                        var newData = getOfferUpdatedData(extendedProduct, item, data);
 
                         if (product.quantityValue !== newData.warrantyQuantity) {
                             itemsData.push(newData);
                         }
-
                     } else {
-                        data.event = 'productUpdated'
+                        data.event = 'productUpdated';
                         itemsData.push(getProductUpdatedData(item, data));
                     }
                 }
@@ -216,17 +221,16 @@ function setUpdateCartPayload(cart) {
             data.productID = product.productID;
             if (product.planId) {
                 data.planId = product.planId;
-                data.event = 'offerRemovedFromCart'
+                data.event = 'offerRemovedFromCart';
             } else {
-                data.event = 'productRemovedFromCart'
+                data.event = 'productRemovedFromCart';
             }
             itemsData.push(data);
         }
-
     }
     var newData = {
         array: itemsData
-    }
+    };
 
     var strData = JSON.stringify(newData);
 
@@ -240,28 +244,27 @@ function setUpdateCartPayload(cart) {
  * @returns {void}
  */
 function setDeleteProductPayload(cart, object) {
-    var extendProduct, extendedProduct;
+    var extendProduct,
+        extendedProduct;
     var itemsData = [];
     var data = {};
 
     if (object.custom.parentLineItemUUID) {
         extendedProduct = getExtendedProduct(cart.object.productLineItems, object);
         itemsData.push(getOfferRemovedFromCartData(extendedProduct, object));
-
     } else if (object.custom.persistentUUID) {
         extendProduct = getExtendProduct(cart.object.productLineItems, object);
 
         if (!extendProduct) {
             itemsData.push(getProductRemovedFromCartData(object));
         }
-
     } else {
         itemsData.push(getProductRemovedFromCartData(object));
     }
 
     var newData = {
         array: itemsData
-    }
+    };
 
     var strData = JSON.stringify(newData);
 
@@ -270,7 +273,7 @@ function setDeleteProductPayload(cart, object) {
 
 /**
  * Get extend analytics data and clear session
- * @returns {Object} extend analytics data 
+ * @returns {Object} extend analytics data
  */
 function getAnalyticsPayload() {
     var payload = session.custom.analyticsPayload || '';
@@ -285,5 +288,5 @@ module.exports = {
     getUpdateCartData: getUpdateCartData,
     setUpdateCartPayload: setUpdateCartPayload,
     setDeleteProductPayload: setDeleteProductPayload,
-    getAnalyticsPayload: getAnalyticsPayload,
+    getAnalyticsPayload: getAnalyticsPayload
 };
