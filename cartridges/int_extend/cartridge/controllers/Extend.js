@@ -1,3 +1,8 @@
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable one-var */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 'use strict';
 
 /**
@@ -26,7 +31,9 @@ function isEligibleForWarranty() {
 
     var qs = request.httpParameters;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
-    var pid ,qty, lead;
+    var pid,
+        qty,
+        lead;
     var response = require('*/cartridge/scripts/util/Response');
 
     // Query string parameter wasn't provided
@@ -41,12 +48,12 @@ function isEligibleForWarranty() {
     for (var i = 0; i < currentBasket.productLineItems.length; i++) {
         if (currentBasket.productLineItems[i].custom.parentLineItemUUID === qs.uuid[0] || (!empty(currentBasket.productLineItems[i].custom.parentLineItemUUID) && currentBasket.productLineItems[i].getUUID() === qs.uuid[0])) {
         	response.renderJSON({
-                isEligible: false
-            });
+            isEligible: false
+        });
             return;
         }
     }
-    
+
     for (var i = 0; i < currentBasket.productLineItems.length; i++) {
         if (currentBasket.productLineItems[i].UUID === qs.uuid[0]) {
             pid = currentBasket.productLineItems[i].productID;
@@ -64,14 +71,14 @@ function isEligibleForWarranty() {
         return;
     }
 
-    Transaction.wrap(function() {
+    Transaction.wrap(function () {
         lead.custom.isWarrantable = true;
     });
 
     response.renderJSON({
-    	isEligible: true,
+        isEligible: true,
         pid: pid,
-        qty:qty
+        qty: qty
     });
 }
 

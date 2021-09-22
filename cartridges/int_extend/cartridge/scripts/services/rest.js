@@ -1,3 +1,6 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 /* eslint-disable new-cap */
 'use strict';
 
@@ -347,7 +350,7 @@ function Offers() {
  * Inits service instance for specific Extend operation
  * @returns {dw.svc.LocalServiceRegistry} - initialized service instance
  */
- function Leads() {
+function Leads() {
     return require('dw/svc/LocalServiceRegistry').createService('int_extend.http.Extend', {
         createRequest: function (service, requestData) {
             var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');

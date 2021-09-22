@@ -1,8 +1,9 @@
+/* eslint-disable no-loop-func */
 'use strict';
 
-const server = require('server');
+var server = require('server');
 
-const page = module.superModule;
+var page = module.superModule;
 server.extend(page);
 
 /**
@@ -17,8 +18,8 @@ function moneyToCents(value) {
 /**
  * Get SFCC product JSON object
  * @param {Order} order : API Order object
- * @param {String} UUID : UUID for the associated parent productLineItem
- * @return {String} stringified object
+ * @param {string} UUID : UUID for the associated parent productLineItem
+ * @return {string} stringified object
  */
 function getSFCCProduct(order, UUID) {
     var obj = {};
@@ -29,7 +30,7 @@ function getSFCCProduct(order, UUID) {
             obj = {
                 referenceId: pLi.productID,
                 purchasePrice: moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue))
-            }
+            };
             break;
         }
     }
@@ -40,7 +41,7 @@ function getSFCCProduct(order, UUID) {
 /**
  * Get Extend plan JSON object
  * @param {ProductLineItem} pLi : API ProductLineItem object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getExtendPlan(pLi) {
     var obj = {
@@ -54,7 +55,7 @@ function getExtendPlan(pLi) {
 /**
  * Get customer JSON object
  * @param {Order} order : API Order object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getCustomer(order) {
     var address = order.getBillingAddress();
@@ -95,7 +96,7 @@ function getExtendPlansParents(order) {
  * Get is product line item has extend protection plan
  * @param {ProductLineItem} pLi : API ProductLineItem object
  * @param {Array} plans : an array of parentLineItemUUID of extended plans.
- * @returns {Boolean} true if product line item has extend protection plan.
+ * @returns {boolean} true if product line item has extend protection plan.
  */
 function getIsProductLineItemExtended(pLi, plans) {
     var isExtendedLI = false;
@@ -131,8 +132,8 @@ function getLeadObject(pLi, order) {
             referenceId: pLi.productID,
             transactionDate: Date.now(),
             transactionId: order.currentOrderNo
-        },
-    }
+        }
+    };
 
     return lead;
 }

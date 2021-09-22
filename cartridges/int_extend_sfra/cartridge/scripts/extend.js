@@ -104,7 +104,7 @@ function createProduct(paramData) {
  * @param {Object} paramData - query params
  * @returns {Object} - response object
  */
- function createLead(paramData) {
+function createLead(paramData) {
     var serviceResponse = null;
 
     serviceResponse = webService.createLeadRequest(paramData);

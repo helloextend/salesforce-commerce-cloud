@@ -1,3 +1,8 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable radix */
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable no-loop-func */
 'use strict';
 
 /**
@@ -10,7 +15,7 @@
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
-    
+
     if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty()) {
         return;
     }
@@ -35,14 +40,14 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
     for (var i = 0; i < warrantyLis.length; i++) {
         if (warrantyLis[i].custom.parentLineItemUUID === parentLineItem.UUID) {
             currentWarrantyLi = warrantyLis[i];
-            break; 
+            break;
         }
     }
 
     if (currentWarrantyLi) {
         var quantityInCart = currentWarrantyLi.getQuantity();
 
-        Transaction.wrap(function() {
+        Transaction.wrap(function () {
             currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(quantity, 10));
         });
 
@@ -197,7 +202,7 @@ function addContractToQueue(order) {
  * @param {Order} order : API Order object
  * @returns {Array} an array of parentLineItemUUID of extended plans.
  */
- function getExtendPlansParents(order) {
+function getExtendPlansParents(order) {
     var plans = [];
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
@@ -214,7 +219,7 @@ function addContractToQueue(order) {
  * @param {Array} plans : an array of parentLineItemUUID of extended plans.
  * @returns {Boolean} true if product line item has extend protection plan.
  */
- function getIsProductLineItemExtended(pLi, plans) {
+function getIsProductLineItemExtended(pLi, plans) {
     var isExtendedLI = false;
     if (pLi.custom.persistentUUID) {
         for (var n = 0; n < plans.length; n++) {
@@ -248,8 +253,8 @@ function getLeadObject(pLi, order) {
             referenceId: pLi.productID,
             transactionDate: Date.now(),
             transactionId: order.currentOrderNo
-        },
-    }
+        }
+    };
 
     return lead;
 }
@@ -260,7 +265,7 @@ function getLeadObject(pLi, order) {
  */
 function createLeads(order) {
     var Transaction = require('dw/system/Transaction');
-    var extend = require('~/cartridge/scripts/extend'); 
+    var extend = require('~/cartridge/scripts/extend');
 
     var plans = getExtendPlansParents(order);
 

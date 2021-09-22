@@ -32,9 +32,9 @@ function getWarrantedItem(basket,uuid) {
 	var warrantedPLI;
 	collections.forEach(basket.getAllProductLineItems(), function (lineItem) {
           // Is LineItem with warranty
-          if (lineItem.getUUID() === uuid) { 
+          if (lineItem.getUUID() === uuid) {
         	  warrantedPLI =  lineItem;
-          } 
+          }
     });
 	return warrantedPLI;
 }
@@ -44,31 +44,31 @@ function getWarrantedItem(basket,uuid) {
  *
  * Entrypoint method that contains logic of normalization cart requirements
  *
- * @param {Array.<Object>} mappedProducts - mapped array with objects of ProductLineItem 
- * and all Warranty products linked with that product 
+ * @param {Array.<Object>} mappedProducts - mapped array with objects of ProductLineItem
+ * and all Warranty products linked with that product
  */
 
 function applyQuantityLogic (mappedProducts) {
     mappedProducts.forEach(function (mappedObject) {
-        
-        var lineItem = mappedObject.lineItem; 
+
+        var lineItem = mappedObject.lineItem;
         var warrantyProducts = mappedObject.warranties;
         var quantityOfProduct = lineItem.getQuantityValue();
-        
+
         var totalQuantityWarrantyProducts = warrantyProducts.reduce(function (prev, item) {
             return prev += item.getQuantityValue();
         }, 0);
 
-        // Make quantity equal if P quantities < W total quantities 
+        // Make quantity equal if P quantities < W total quantities
         if (quantityOfProduct < totalQuantityWarrantyProducts) {
-            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);   
+            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);
         }
 
         // Add quantity to the highest warranty product if P quantities > W quantities
         // this statetment related to Case 4 from ticket
-        
+
         // if (quantityOfProduct > totalQuantityWarrantyProducts) {
-        //     addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);  
+        //     addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);
         // }
     });
 }
@@ -79,28 +79,28 @@ function applyQuantityLogic (mappedProducts) {
  *
  * Provide logic to make Products quantity and Warranty product quantity equal
  * by increasing quantity with highest price of Extend ProductLineItem 
- * 
+ *
  * @param {Number} numberToAdd - Numbers of the quantity that should be increased
  * @param {Array.<{ProductLineItem}>} warrantyProducts - Collection of EXTEND ProductLineItem 
- * 
+ *
  */
 
 function addQuantityToHighestWarranty (numberToAdd, warrantyProducts) {
-    var countToAdd = numberToAdd;  
-    var warrantyProductsDESC = reverseArray(warrantyProducts); 
+    var countToAdd = numberToAdd;
+    var warrantyProductsDESC = reverseArray(warrantyProducts);
 
     warrantyProductsDESC.forEach(function (warrProduct) {
         var warrProductQuantity = warrProduct.getQuantityValue();
         var warrOptionProducts = warrProduct.optionProductLineItems[0];
-        
+
         if (countToAdd > 0) {
             while (countToAdd > 0) {
-                var warrProductQuantity = warrProduct.getQuantityValue(); 
+                var warrProductQuantity = warrProduct.getQuantityValue();
                 var warrOptionProducts = warrProduct.optionProductLineItems[0];
 
                 warrProduct.setQuantityValue(warrProductQuantity + 1);
                 warrOptionProducts.setQuantityValue(warrProductQuantity + 1);
-                
+
                 countToAdd--;
             }
         }
@@ -111,11 +111,11 @@ function addQuantityToHighestWarranty (numberToAdd, warrantyProducts) {
  * @function makeQuantityEqual
  *
  * Provide logic to make Products quantity and Warranty product quantity equal
- * by decreasing quantity with lowest price of Extend ProductLineItem 
- * 
+ * by decreasing quantity with lowest price of Extend ProductLineItem
+ *
  * @param {Number} numberToRemove - Numbers of the quantity that should be decreased
- * @param {Array.<{ProductLineItem}>} warrantyProducts - Collection of EXTEND ProductLineItem 
- * 
+ * @param {Array.<{ProductLineItem}>} warrantyProducts - Collection of EXTEND ProductLineItem
+ *
  */
 
 function makeQuantityEqual (numberToRemove, warrantyProducts) {
@@ -124,15 +124,15 @@ function makeQuantityEqual (numberToRemove, warrantyProducts) {
 
     warrantyProducts.forEach(function (warrProduct) {
         var warrProductQuantity = warrProduct.getQuantityValue();
-        
+
         if (countToRemove > 0) {
 
             while (countToRemove > 0) {
                 var warrProductQuantity = warrProduct.getQuantityValue();
-                
+
                 if (warrProductQuantity > 1) {
                     var warrOptionProducts = warrProduct.optionProductLineItems[0];
-        
+
                     warrProduct.setQuantityValue(warrProductQuantity - 1);
                     warrOptionProducts.setQuantityValue(warrProductQuantity - 1);
                 }
@@ -141,32 +141,32 @@ function makeQuantityEqual (numberToRemove, warrantyProducts) {
                     currentBasket.removeProductLineItem(warrProduct);
                     normalizeCartQuantities(BasketMgr.getCurrentBasket());
                 }
-                
+
                 countToRemove--;
-            }  
-        } 
-    }); 
+            }
+        }
+    });
 
 }
 
 /**
  * @function mapProductWithWarranties
  *
- * Creates mapped array with object that contains mapped ProductLineItem 
- * with all warranties that added to this ProductLineItem 
- * 
+ * Creates mapped array with object that contains mapped ProductLineItem
+ * with all warranties that added to this ProductLineItem
+ *
  * @param {Array.<{ProductLineItem}>} productLineItems - Collection of all products that has warranty products
  * @param {Array.<{ProductLineItem}>} warrantyItems - Collection of all EXTEND products that has added to cart
- * 
+ *
  * @returns {Array.<Object>} - mapped array with objects of ProductLineItem and all Warranty products linked with that product
  */
 
 function mapProductWithWarranties (productLineItems, warrantyItems) {
     var result = [];
-    
+
     productLineItems.forEach(function (lineItem) {
         var UUID = lineItem.getUUID();
-        
+
         var warrantyProductByPriceASC = warrantyItems.filter (function (warrantyProduct) {
             return warrantyProduct.custom.parentLineItemUUID === UUID;
         }).sort(function (a, b) {
@@ -174,15 +174,15 @@ function mapProductWithWarranties (productLineItems, warrantyItems) {
             var basePriceB = b.basePrice.decimalValue;
             return basePriceA - basePriceB;
         });
-         
+
         result.push({
             UUID: UUID,
             lineItem: lineItem,
             warranties: warrantyProductByPriceASC
         });
- 
-    }); 
-    
+
+    });
+
     return result;
 }
 
@@ -190,9 +190,9 @@ function mapProductWithWarranties (productLineItems, warrantyItems) {
  * @function reverseArray
  *
  * Creates new reversed Array
- * 
+ *
  * @param {Array>} warrantyArr - Array that should be reversed
- * 
+ *
  * @returns {Array} - new reversed Array
  */
 function reverseArray (warrantyArr) {
