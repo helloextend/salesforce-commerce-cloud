@@ -1,13 +1,16 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable new-cap */
+/* eslint-disable no-continue */
 /* global module */
 
 var Status = require('dw/system/Status');
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var extend = require('~/cartridge/scripts/extend');
-var jobHelpers = require('~/cartridge/scripts/jobHelpers'); 
+var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 
 /**
  * @function create
- * @returns {dw.system.Status}
+ * @returns {dw.system.Status} - status
  */
 exports.create = function () {
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
@@ -32,7 +35,7 @@ exports.create = function () {
 
             if (order) {
                 var orderLogObject = jobHelpers.getContractLoggerModel(order);
-                logger.info(JSON.stringify(orderLogObject));    
+                logger.info(JSON.stringify(orderLogObject));
             }
 
             for (var i = 0; i < order.productLineItems.length; i++) {

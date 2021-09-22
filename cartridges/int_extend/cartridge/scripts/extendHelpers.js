@@ -1,3 +1,8 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable radix */
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable valid-jsdoc */
 'use strict';
 
 /**
@@ -10,7 +15,7 @@
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
-    
+
     if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty()) {
         return;
     }
@@ -35,14 +40,14 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
     for (var i = 0; i < warrantyLis.length; i++) {
         if (warrantyLis[i].custom.parentLineItemUUID === parentLineItem.UUID) {
             currentWarrantyLi = warrantyLis[i];
-            break; 
+            break;
         }
     }
 
     if (currentWarrantyLi) {
         var quantityInCart = currentWarrantyLi.getQuantity();
 
-        Transaction.wrap(function() {
+        Transaction.wrap(function () {
             currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(quantity, 10));
         });
 
@@ -129,7 +134,7 @@ function getSFCCProduct(order, UUID) {
 /**
  * Get Extend plan JSON object
  * @param {dw.order.ProductLineItem} pLi : API ProductLineItem object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getExtendPlan(pLi) {
     var obj = {
@@ -143,7 +148,7 @@ function getExtendPlan(pLi) {
 /**
  * Get customer JSON object
  * @param {dw.order.Order} order : API Order object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getCustomer(order) {
     var address = order.getBillingAddress();
