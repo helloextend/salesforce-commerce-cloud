@@ -28,6 +28,12 @@ function normalizeCartQuantities(basket) {
 	}
 }
 
+/**
+ * The function returns product with/or without warranty
+ * @param {object} basket basket - The current basket containing all added products and warranties
+ * @param {string} uuid uuid - The uuid of current warranty
+ * @returns {object} warrantyPLI
+ */
 function getWarrantedItem(basket,uuid) {
 	var warrantedPLI;
 	collections.forEach(basket.getAllProductLineItems(), function (lineItem) {

@@ -4,6 +4,10 @@
 /* eslint-disable require-jsdoc */
 'use strict';
 
+/**
+ * The function returns current time
+ * @returns {Date} - current tima
+ */
 function getPSTtime() {
     var currentTime = new Date();
     var PST_offset = 8;
@@ -13,6 +17,11 @@ function getPSTtime() {
     return currentTime;
 }
 
+/**
+ * The function returns product with additional properties
+ * @param {Object} product - some product items
+ * @returns {Object} product with additional additional properties
+ */
 function getProductLoggerModel(product) {
     var result = {};
 
@@ -24,6 +33,11 @@ function getProductLoggerModel(product) {
     return result;
 }
 
+/**
+ * The function returns info about order
+ * @param {Object} order - the current order
+ * @returns {Object} info about order
+ */
 function getContractLoggerModel(order) {
     var result = {};
     var customerProfile = order.getCustomer().getProfile();
@@ -43,6 +57,11 @@ var refundStatus = {
     REJECT_AND_ERROR: 'REJECT_AND_ERROR'
 };
 
+/**
+ * The funtion returns order status after refund
+ * @param {Object} order - the current order
+ * @returns {string} returns the order status after refund
+ */
 function getRefundStatus(order) {
     var error = false;
     var reject = false;
