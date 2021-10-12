@@ -1,3 +1,8 @@
+/* eslint-disable radix */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable no-loop-func */
 'use strict';
 
 /**
@@ -10,7 +15,7 @@
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
-    
+
     if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty()) {
         return;
     }
@@ -35,14 +40,14 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
     for (var i = 0; i < warrantyLis.length; i++) {
         if (warrantyLis[i].custom.parentLineItemUUID === parentLineItem.UUID) {
             currentWarrantyLi = warrantyLis[i];
-            break; 
+            break;
         }
     }
 
     if (currentWarrantyLi) {
         var quantityInCart = currentWarrantyLi.getQuantity();
 
-        Transaction.wrap(function() {
+        Transaction.wrap(function () {
             currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(quantity, 10));
         });
 
@@ -106,8 +111,8 @@ function moneyToCents(value) {
 /**
  * Get SFCC product JSON object
  * @param {dw.order.Order} order : API Order object
- * @param {String} UUID : UUID for the associated parent productLineItem
- * @return {String} stringified object
+ * @param {string} UUID : UUID for the associated parent productLineItem
+ * @return {string} stringified object
  */
 function getSFCCProduct(order, UUID) {
     var obj = {};
@@ -129,7 +134,7 @@ function getSFCCProduct(order, UUID) {
 /**
  * Get Extend plan JSON object
  * @param {dw.order.ProductLineItem} pLi : API ProductLineItem object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getExtendPlan(pLi) {
     var obj = {
@@ -143,7 +148,7 @@ function getExtendPlan(pLi) {
 /**
  * Get customer JSON object
  * @param {dw.order.Order} order : API Order object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getCustomer(order) {
     var address = order.getBillingAddress();
@@ -162,6 +167,25 @@ function getCustomer(order) {
     };
 
     return JSON.stringify(obj);
+}
+
+/**
+ * Get customer shipping address JSON object
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @return {String} stringified object
+ */
+function getShippingAddress(pLi) {
+    var address = pLi.getShipment().getShippingAddress();
+    var shippingAddress = {
+        address1: address.getAddress1(),
+        address2: address.getAddress2(),
+        city: address.getCity(),
+        countryCode: address.getCountryCode().toString(),
+        postalCode: address.getPostalCode(),
+        provinceCode: address.getStateCode()
+    };
+
+    return JSON.stringify(shippingAddress);
 }
 
 /**
@@ -186,6 +210,7 @@ function addContractToQueue(order) {
                     queueObj.custom.plan = getExtendPlan(pLi);
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);
+                    queueObj.custom.shippingAddress = getShippingAddress(pLi);
                 });
             }
         }
