@@ -1,6 +1,7 @@
-/* eslint-disable no-redeclare */
-/* eslint-disable no-continue */
 /* eslint-disable no-loop-func */
+/* eslint-disable no-continue */
+/* eslint-disable no-redeclare */
+/* eslint-disable no-unused-vars */
 /* global module */
 
 var Status = require('dw/system/Status');
