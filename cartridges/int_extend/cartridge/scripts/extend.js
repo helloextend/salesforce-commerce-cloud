@@ -146,8 +146,8 @@ function exportProducts(productBatch) {
 }
 
 /**
- * Get contracts payload and make call on contracts endpoint
- * @param {dw.object.CustomObject} paramObj - instance of ExtendContractsQueue object
+ * Make call on contract endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
  * @returns {Object} - response object
  */
 function createContracts(paramObj) {
