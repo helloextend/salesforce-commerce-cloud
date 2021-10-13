@@ -1,6 +1,7 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable new-cap */
 /* eslint-disable no-continue */
+/* eslint-disable valid-jsdoc */
 /* global module */
 
 var Status = require('dw/system/Status');
@@ -22,7 +23,7 @@ exports.create = function () {
 
     while (extendContractsCO.hasNext()) {
         var contractCO = extendContractsCO.next();
-        var contract = extend.createContract(contractCO);
+        var contract = extend.createContracts(contractCO);
 
         if (!contract.id) {
             continue;
@@ -60,7 +61,6 @@ exports.create = function () {
             });
         } else {
             logger.debug(JSON.stringify({ errorCode: contract.errorCode, errorMessage: contract.errorMessage }));
-
             Transaction.wrap(function () {
                 contractCO.custom.log = contract.errorCode + ' ' + contract.errorMessage;
             });

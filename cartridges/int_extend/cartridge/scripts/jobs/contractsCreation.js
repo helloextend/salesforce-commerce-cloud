@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 /* eslint-disable no-continue */
 /* eslint-disable new-cap */
 /* eslint-disable no-loop-func */
@@ -22,7 +23,7 @@ exports.create = function () {
 
     while (extendContractsCO.hasNext()) {
         var contractCO = extendContractsCO.next();
-        var contract = extend.createContract(contractCO);
+        var contract = extend.createContracts(contractCO);
 
         if (!contract.id) {
             continue;
@@ -31,12 +32,13 @@ exports.create = function () {
         if (!contract.error) {
             // Update corresponding order line item with the contract number
             var order = OrderMgr.getOrder(contractCO.custom.orderNo);
-            var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
 
             if (order) {
                 var orderLogObject = jobHelpers.getContractLoggerModel(order);
                 logger.info(JSON.stringify(orderLogObject));
             }
+
+            var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
 
             for (var i = 0; i < order.productLineItems.length; i++) {
                 var pLi = order.productLineItems[i];
