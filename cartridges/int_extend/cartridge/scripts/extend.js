@@ -146,34 +146,6 @@ function exportProducts(productBatch) {
 }
 
 /**
- * Get contracts payload and make call on contracts endpoint
- * @param {dw.object.CustomObject} paramData - instance of ExtendContractsQueue object
- * @returns {Object} - response object
- */
-function createRefund(paramData) {
-    var serviceResponse = null;
-
-    serviceResponse = webService.createRefundRequest(paramData);
-
-    if (!serviceResponse.ok) {
-        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
-        logger.error(
-            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}stores/{3}/contracts/{4}/refund',
-            serviceResponse.errorMessage,
-            serviceResponse.error,
-            serviceURL,
-            Site.getCustomPreferenceValue('extendStoreID'),
-            paramData.extendContractId
-        );
-        return {
-            error: true,
-            errorMessage: serviceResponse.errorMessage || 'No results found.',
-            errorCode: serviceResponse.error
-        };
-    }
-}
-
-/**
  * Make call on contract endpoint
  * @param {Object} paramObj - object with id of contract and commit type
  * @returns {Object} - response object
