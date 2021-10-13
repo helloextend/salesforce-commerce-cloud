@@ -8,6 +8,13 @@ class HashMap {
             valueOrNull: product.price
         }
     }
+
+    entrySet() {
+        return [{
+            key: 'key',
+            value: 'value'
+        }]
+    }
 }
 
 module.exports = HashMap;

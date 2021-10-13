@@ -26,7 +26,6 @@ class ProductLineItem {
             persistentUUID: '24851custom',
             parentLineItemUUID: '111custom'
         }
-
         this.length = {};
 
         // rewrite properties to incoming values if any exists

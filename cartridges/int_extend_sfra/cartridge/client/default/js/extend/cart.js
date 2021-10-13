@@ -51,11 +51,10 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
 }
 
 /**
- * Renders an Extend upsell button in cart page
+ * Renders an Extend upsell button under Mini Cart popup
  * @param {string} uuid - line item uuid
+ * @param {string} btnLabel - upsell button label
  * @param {string} pid - corresponding product id
- * @param {string} qty- corresponding quantity
- * @returns
  */
 function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
     var hasExtendUpsell = $('.minicart').find('.card.uuid-' + uuid).find('#extend-offer-' + uuid).length > 0;

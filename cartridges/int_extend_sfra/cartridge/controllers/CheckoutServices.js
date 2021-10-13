@@ -45,7 +45,7 @@ function getSFCCProduct(order, UUID) {
  */
 function getExtendPlan(pLi) {
     var obj = {
-        purchasePrice: moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)),
+        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue))),
         planId: pLi.getManufacturerSKU()
     };
 
@@ -77,6 +77,25 @@ function getCustomer(order) {
 }
 
 /**
+ * Get customer shipping address JSON object
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @return {string} stringified object
+ */
+function getShippingAddress(pLi) {
+    var address = pLi.getShipment().getShippingAddress();
+    var shippingAddress = {
+        address1: address.getAddress1(),
+        address2: address.getAddress2(),
+        city: address.getCity(),
+        countryCode: address.getCountryCode().toString(),
+        postalCode: address.getPostalCode(),
+        provinceCode: address.getStateCode()
+    };
+
+    return JSON.stringify(shippingAddress);
+}
+
+/**
  * Add Extend products to Contracts queue
  */
 server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
@@ -105,6 +124,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
                     queueObj.custom.plan = getExtendPlan(pLi);
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);
+                    queueObj.custom.shippingAddress = getShippingAddress(pLi);
                 });
             }
         }

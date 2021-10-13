@@ -246,3 +246,4 @@ class CustomObjectMgr {
 }
 
 module.exports = new CustomObjectMgr;
+

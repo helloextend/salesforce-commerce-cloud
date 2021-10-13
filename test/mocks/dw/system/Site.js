@@ -38,7 +38,10 @@ var preferenceMap = {
     sitesListBasic: '[{ "countryCode": "BE", "siteID": "PJG-BE", "locales": ["en_BE"], "currencyCode": "EUR" }, { "countryCode": "DE", "siteID": "PJG-DE", "locales": ["de_DE"], "currencyCode": "EUR" }]',
     extendStoreID: '123456789O12',
     extendGlobalSwitch: true,
-    extendImageViewType: 'large'
+    extendImageViewType: 'large',
+    extendAPIVersion: {
+        value:  'default'
+    }
 };
 
 
@@ -88,5 +91,6 @@ function getCurrent() {
 
 module.exports = {
     getCurrent: getCurrent,
-    current: getCurrent()
+    current: getCurrent(),
+    preferenceMap: preferenceMap
 };

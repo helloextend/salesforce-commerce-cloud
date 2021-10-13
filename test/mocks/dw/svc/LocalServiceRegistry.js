@@ -11,8 +11,17 @@ function getResponse(url) {
         response.text = JSON.stringify(responseDataMock.getOfferResponseSuccessMock);
     } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/products') {
         response.text = JSON.stringify(responseDataMock.createProductResponseSuccessMock);
+    } else if (url === 'https://api-demo.helloextend.com/offers?storeId=123456789O12&productId=1234567') {
+        response.text = JSON.stringify(responseDataMock.offersResponseMock);
+    } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/products') {
+        response.text = JSON.stringify(responseDataMock.productsResponseMock);
+    } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/contracts/123456/refund') {
+        response.text = JSON.stringify(responseDataMock.refundsResponseMock);
+    } else if (url === 'https://api-demo.helloextend.com/undefined') {
+        response.text = JSON.stringify(responseDataMock.responseErrorMock);
+    } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/contracts/undefined/refund') {
+        response.text = JSON.stringify(responseDataMock.responseErrorNoResultsMock);
     }
-
     return response
 }
 
@@ -32,6 +41,11 @@ class LocalServiceRegistry {
 
                 configObj.getResponseLogMessage();
                 configObj.mockFull();
+
+                if (service.url !== 'https://api-demo.helloextend.com/undefined') {
+                    configObj.getResponseLogMessage();
+                    configObj.mockFull();
+                }
 
                 return parsedResponse
             },

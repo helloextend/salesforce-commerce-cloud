@@ -14,6 +14,7 @@ var contractMissedMock = ContractQueueObjects.items[2];
 
 //Mock object for and rest.js
 var contractReqData = ContractQueueObjects.items[3];
+var contractReqAdvData = ContractQueueObjects.items[3];
 
 //Mock strings for extend.js
 var getOfferMock = '1234567';
@@ -33,8 +34,8 @@ notAllDataProduct.priceModel.price.available = false;
 
 //Mock arrays for rest.js
 var productsRestMock = [
-    new Variant(), new Variant({ noCategory: true }), 
-    new Master(), new Master({ noCategory: true }), 
+    new Variant(), new Variant({ noCategory: true }),
+    new Master(), new Master({ noCategory: true }),
     new ProductLineItem(), notAllDataProduct
 ];
 

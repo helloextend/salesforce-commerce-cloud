@@ -3,8 +3,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-redeclare */
 /* eslint-disable block-scoped-var */
-/* eslint-disable no-param-reassign */
 /* eslint-disable radix */
+/* eslint-disable no-param-reassign */
 /* eslint-disable valid-jsdoc */
 'use strict';
 
@@ -122,7 +122,6 @@ server.append('AddProduct', function (req, res, next) {
  */
 server.get('DoesWarrantyExists', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
-    var extend = require('~/cartridge/scripts/extend');
     var qs = req.querystring;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     var pid,

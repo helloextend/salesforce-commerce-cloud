@@ -52,6 +52,10 @@ class Money {
     getValue() {
         return this.value;
     }
+
+    getCurrencyCode() {
+        return this.currencyCode;
+    }
 }
 
 module.exports = Money;
