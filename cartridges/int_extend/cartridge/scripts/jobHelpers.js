@@ -27,6 +27,7 @@ function getProductLoggerModel(product) {
     result.ID = product.ID;
     result.title = product.name;
     result.price = product.priceModel.getPrice().getValue();
+    result.currencyCode = product.priceModel.getPrice().getCurrencyCode();
     result.timestampPST = getPSTtime().getTime();
 
     return result;

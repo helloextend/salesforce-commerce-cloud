@@ -3,6 +3,11 @@
 /* eslint-disable no-redeclare */
 /* eslint-disable block-scoped-var */
 /* eslint-disable valid-jsdoc */
+/* eslint-disable radix */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable no-loop-func */
 'use strict';
 
 /**
@@ -111,8 +116,8 @@ function moneyToCents(value) {
 /**
  * Get SFCC product JSON object
  * @param {dw.order.Order} order : API Order object
- * @param {String} UUID : UUID for the associated parent productLineItem
- * @return {String} stringified object
+ * @param {string} UUID : UUID for the associated parent productLineItem
+ * @return {string} stringified object
  */
 function getSFCCProduct(order, UUID) {
     var obj = {};
@@ -138,7 +143,7 @@ function getSFCCProduct(order, UUID) {
  */
 function getExtendPlan(pLi) {
     var obj = {
-        purchasePrice: moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)),
+        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue))),
         planId: pLi.getManufacturerSKU()
     };
 
@@ -170,6 +175,25 @@ function getCustomer(order) {
 }
 
 /**
+ * Get customer shipping address JSON object
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @return {String} stringified object
+ */
+function getShippingAddress(pLi) {
+    var address = pLi.getShipment().getShippingAddress();
+    var shippingAddress = {
+        address1: address.getAddress1(),
+        address2: address.getAddress2(),
+        city: address.getCity(),
+        countryCode: address.getCountryCode().toString(),
+        postalCode: address.getPostalCode(),
+        provinceCode: address.getStateCode()
+    };
+
+    return JSON.stringify(shippingAddress);
+}
+
+/**
  * Add Extend products to Contracts queue, from a provided order
  * @param {dw.order.Order} order : order that's just been placed
  */
@@ -191,6 +215,7 @@ function addContractToQueue(order) {
                     queueObj.custom.plan = getExtendPlan(pLi);
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);
+                    queueObj.custom.shippingAddress = getShippingAddress(pLi);
                 });
             }
         }
