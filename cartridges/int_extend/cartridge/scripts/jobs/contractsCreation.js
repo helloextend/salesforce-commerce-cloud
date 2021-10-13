@@ -1,6 +1,7 @@
-/* eslint-disable no-loop-func */
-/* eslint-disable new-cap */
+/* eslint-disable valid-jsdoc */
 /* eslint-disable no-continue */
+/* eslint-disable new-cap */
+/* eslint-disable no-loop-func */
 /* global module */
 
 var Status = require('dw/system/Status');
@@ -10,7 +11,7 @@ var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 
 /**
  * @function create
- * @returns {dw.system.Status} - status
+ * @returns {dw.system.Status}
  */
 exports.create = function () {
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
@@ -32,12 +33,10 @@ exports.create = function () {
             // Update corresponding order line item with the contract number
             var order = OrderMgr.getOrder(contractCO.custom.orderNo);
 
-            if (!order) {
-                continue;
+            if (order) {
+                var orderLogObject = jobHelpers.getContractLoggerModel(order);
+                logger.info(JSON.stringify(orderLogObject));
             }
-
-            var orderLogObject = jobHelpers.getContractLoggerModel(order);
-            logger.info(JSON.stringify(orderLogObject));
 
             var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
 

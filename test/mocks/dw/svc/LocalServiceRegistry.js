@@ -6,7 +6,11 @@ var responseDataMock = require('./../../restServices/responseDataMock')
 function getResponse(url) {
     var response = {}
     if (url === 'https://api-demo.helloextend.com/stores/123456789O12/contracts') {
-        response.text = JSON.stringify(responseDataMock.contractsResponseMock);
+        response.text = JSON.stringify(responseDataMock.createContractResponseSuccessMock);
+    } else if (url === 'https://api-demo.helloextend.com/offers?storeId=123456789O12&productId=1234567') {
+        response.text = JSON.stringify(responseDataMock.getOfferResponseSuccessMock);
+    } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/products') {
+        response.text = JSON.stringify(responseDataMock.createProductResponseSuccessMock);
     } else if (url === 'https://api-demo.helloextend.com/offers?storeId=123456789O12&productId=1234567') {
         response.text = JSON.stringify(responseDataMock.offersResponseMock);
     } else if (url === 'https://api-demo.helloextend.com/stores/123456789O12/products') {
@@ -35,10 +39,14 @@ class LocalServiceRegistry {
                 var response = getResponse(service.url);
                 var parsedResponse = configObj.parseResponse(service, response);
 
+                configObj.getResponseLogMessage();
+                configObj.mockFull();
+
                 if (service.url !== 'https://api-demo.helloextend.com/undefined') {
                     configObj.getResponseLogMessage();
                     configObj.mockFull();
                 }
+
                 return parsedResponse
             },
             getConfiguration: function () {

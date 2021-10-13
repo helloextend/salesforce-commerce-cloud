@@ -7,6 +7,8 @@ class ProductLineItem {
     constructor(arg) {
         this.ID = '0045001';
         this.bonusProductLineItem = false;
+        this.bundledProductLineItem = true;
+        this.optionProductLineItem = false;
         this.gift = false;
         this.UUID = '24851';
         this.proratedPrice = new Money(17,'USD');
@@ -17,9 +19,13 @@ class ProductLineItem {
         this.quantityValue = 1;
         this.productID = '1234567';
         this.catalogProduct = true;
+        this.manufacturerSKU = 'test';
         this.product = new Product();
         this.priceModel = new ProductPriceModel();
-
+        this.custom = {
+            persistentUUID: '24851custom',
+            parentLineItemUUID: '111custom'
+        }
         this.length = {};
 
         // rewrite properties to incoming values if any exists

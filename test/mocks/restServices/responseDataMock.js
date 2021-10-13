@@ -1,6 +1,6 @@
 'use strict';
 
-var contractsResponseMock = {
+var createContractResponseSuccessMock = {
     'error': 0,
     'errorMessage': null,
     'object': {
@@ -42,7 +42,7 @@ var contractsResponseMock = {
     'status': 'SUCCESS'
 }
 
-var offersResponseMock = {
+var getOfferResponseSuccessMock = {
     'error': 0,
     'errorMessage': null,
     'object': {
@@ -69,7 +69,7 @@ var offersResponseMock = {
     'status': 'SUCCESS'
 }
 
-var productsResponseMock = {
+var createProductResponseSuccessMock = {
     'error': 0,
     'errorMessage': null,
     'object': {
@@ -108,69 +108,6 @@ var productsResponseMock = {
     'status': 'SUCCESS'
 }
 
-var refundsResponseMock = {
-    'error': 0,
-    'errorMessage': null,
-    'object': {
-        'id': "cc957cb3-3d5d-430b-90a2-9ec96ee4c3cf",
-        'createdAt': 1557267465,
-        'updatedAt': 1557267556,
-        'transactionId': "99999999",
-        'poNumber': "ABC-123",
-        'transactionTotal': {
-            'currencyCode': "USD",
-            'amount': 1999
-        },
-        'customer': {
-            'name': "Bob Ross",
-            'email': "BobRoss@gmail.com",
-            'phone': "123-456-7890",
-            'billingAddress': {
-                'address1': "535 Mission Street",
-                'address2': "11th Floor",
-                'city': "San Francisco",
-                'countryCode': "US",
-                'postalCode': "94526",
-                'provinceCode': "CA"
-            },
-            'shippingAddress': {
-                'address1': "535 Mission Street",
-                'address2': "11th Floor",
-                'city': "San Francisco",
-                'countryCode': "US",
-                'postalCode': "94526",
-                'provinceCode': "CA"
-            }
-        },
-        'product': {
-            'referenceId': "SKU-123-456",
-            'purchasePrice': {
-                'currencyCode': "USD",
-                'amount': 1999
-            },
-            'manufacturerWarrantyLength': 12,
-            'manufacturerWarrantyLengthParts': 123456,
-            'manufacturerWarrantyLengthLabor': 123456,
-            'serialNumber': "ABCD123456"
-        },
-        'currency': "USD",
-        'transactionDate': 1563388069,
-        'plan': {
-            'purchasePrice': {
-                'currencyCode': "USD",
-                'amount': 1999
-            },
-            'planId': "10001-misc-elec-adh-replace-1y"
-        },
-        'refundAmount': {
-            'currencyCode': "USD",
-            'amount': 1999
-        }
-    },
-    'ok': true,
-    'status': 'SUCCESS'
-}
-
 var responseErrorMock = {
     'error': 400,
     'errorMessage': 'Error',
@@ -188,10 +125,9 @@ var responseErrorNoResultsMock = {
 }
 
 module.exports = {
-    contractsResponseMock: contractsResponseMock,
-    offersResponseMock: offersResponseMock,
-    productsResponseMock: productsResponseMock,
-    refundsResponseMock: refundsResponseMock,
+    createContractResponseSuccessMock: createContractResponseSuccessMock,
+    getOfferResponseSuccessMock: getOfferResponseSuccessMock,
+    createProductResponseSuccessMock: createProductResponseSuccessMock,
     responseErrorMock: responseErrorMock,
     responseErrorNoResultsMock: responseErrorNoResultsMock
 }

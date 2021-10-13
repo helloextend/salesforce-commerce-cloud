@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable valid-jsdoc */
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-vars */
 /* eslint-disable new-cap */

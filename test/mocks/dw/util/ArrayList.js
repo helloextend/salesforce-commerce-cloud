@@ -6,6 +6,7 @@ function toArrayList(params) {
     return new Collection(params)
 }
 
+
 class ArrayList {
     constructor() {
         this.items = [];

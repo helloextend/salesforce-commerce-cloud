@@ -15,7 +15,6 @@ class HashMap {
             value: 'value'
         }]
     }
-
 }
 
 module.exports = HashMap;

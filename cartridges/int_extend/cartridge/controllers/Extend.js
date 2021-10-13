@@ -1,6 +1,7 @@
-/* eslint-disable no-redeclare */
-/* eslint-disable block-scoped-var */
+/* eslint-disable no-unused-vars */
 /* eslint-disable one-var */
+/* eslint-disable block-scoped-var */
+/* eslint-disable no-redeclare */
 /* eslint-disable no-undef */
 'use strict';
 
@@ -43,9 +44,9 @@ function isEligibleForWarranty() {
     // Check if there's already an Extend product attached to this line item or current product is Extend Product
     for (var i = 0; i < currentBasket.productLineItems.length; i++) {
         if (currentBasket.productLineItems[i].custom.parentLineItemUUID === qs.uuid[0] || (!empty(currentBasket.productLineItems[i].custom.parentLineItemUUID) && currentBasket.productLineItems[i].getUUID() === qs.uuid[0])) {
-        	response.renderJSON({
-            isEligible: false
-        });
+            response.renderJSON({
+                isEligible: false
+            });
             return;
         }
     }
@@ -67,7 +68,7 @@ function isEligibleForWarranty() {
     }
 
     response.renderJSON({
-    	isEligible: true,
+        isEligible: true,
         pid: pid,
         qty: qty
     });

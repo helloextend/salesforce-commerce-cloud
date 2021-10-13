@@ -11,7 +11,7 @@ var objects = {
                 orderTotal: 30000,
                 currency: 'USD',
                 plan: {
-                    planId: '10001-misc-elec-adh-replace-1y',
+                    planId:'10001-misc-elec-adh-replace-1y',
                     purchasePrice: 499,
                 },
                 product: {
@@ -41,7 +41,7 @@ var objects = {
                 orderTotal: 30000,
                 currency: 'USD',
                 plan: {
-                    planId: '10001-misc-elec-adh-replace-1y',
+                    planId:'10001-misc-elec-adh-replace-1y',
                     purchasePrice: 499,
                 },
                 product: {
@@ -70,7 +70,7 @@ var objects = {
                 orderTotal: 30000,
                 currency: 'USD',
                 plan: {
-                    planId: '10001-misc-elec-adh-replace-1y',
+                    planId:'10001-misc-elec-adh-replace-1y',
                     purchasePrice: 499,
                 },
                 product: {
@@ -126,7 +126,7 @@ var objects = {
                 orderTotal: 30000,
                 currency: 'USD',
                 plan: {
-                    planId: '10001-misc-elec-adh-replace-1y',
+                    planId:'10001-misc-elec-adh-replace-1y',
                     purchasePrice: 499,
                 },
                 product: {
@@ -155,7 +155,7 @@ var objects = {
                 'orderTotal': 30000,
                 'currency': 'USD',
                 'plan': JSON.stringify({
-                    "planId": '10001-misc-elec-adh-replace-1y',
+                    "planId":'10001-misc-elec-adh-replace-1y',
                     "purchasePrice": 499,
                 }),
                 'product': JSON.stringify({
@@ -175,14 +175,6 @@ var objects = {
                         'postalCode': "94526",
                         'provinceCode': "CA"
                     }
-                }),
-                'shippingAddress': JSON.stringify({
-                    'address1': '535 Mission Street',
-                    'address2': "11th Floor",
-                    'city': 'Nevercity',
-                    'countryCode': "US",
-                    'postalCode': "94526",
-                    'provinceCode': "CA"
                 })
             },
             getCreationDate() {
@@ -244,7 +236,7 @@ class CustomObjectMgr {
             objects[type]['customConfigMissed'],
             objects[type]['customConfigReq'],
             objects[type]['customConfig2'],
-            objects[type]['customConfig3']
+            objects[type]['customConfig3'],
         ])
     }
 
@@ -254,3 +246,4 @@ class CustomObjectMgr {
 }
 
 module.exports = new CustomObjectMgr;
+

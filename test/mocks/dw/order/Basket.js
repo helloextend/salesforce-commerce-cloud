@@ -43,18 +43,21 @@ class Basket {
                 adjustedGrossPrice: new Money(30, 'USD'),
                 adjustedNetPrice: new Money(27, 'USD'),
                 quantityValue: 2,
-                UUID: '123456U'
+                UUID: '123456U',
+                custom: {
+                    persistentUUID: '111custom'
+                }
             }),
             new ProductLineItem({
                 bonusProductLineItem: false,
                 bundledProductLineItem: false,
-                productID: 'product3',
+                productID: '1234567',
                 adjustedGrossPrice: new Money(30, 'USD'),
                 adjustedNetPrice: new Money(27, 'USD'),
                 quantityValue: 2,
                 UUID: '7891011U',
                 custom: {
-                    parentLineItemUUID: '123456U'
+                    parentLineItemUUID: '24851custom'
                 }
             }),
             new ProductLineItem({
@@ -65,7 +68,7 @@ class Basket {
                 adjustedGrossPrice: new Money(30, 'USD'),
                 adjustedNetPrice: new Money(27, 'USD'),
                 quantityValue: 2,
-                UUID: '7891011U'
+                UUID: '67891011U'
             }),
             new ProductLineItem({
                 bonusProductLineItem: true,
