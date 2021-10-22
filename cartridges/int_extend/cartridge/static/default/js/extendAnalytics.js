@@ -1,6 +1,6 @@
 'use strict';
 
-var ExtendAnalytics = window.ExtendAnalytics || undefined;
+var Extend = window.Extend || undefined;
 
 function createAddToCartAnalytics(form) {
     var payload = {};
@@ -18,7 +18,7 @@ function createAddToCartAnalytics(form) {
 }
 
 function trackOfferViewedPDP(productId) {
-    ExtendAnalytics.trackOfferViewed({
+    Extend.trackOfferViewed({
         productId: productId,
         offerType: {
             area: 'product_page',
@@ -28,7 +28,7 @@ function trackOfferViewedPDP(productId) {
 }
 
 function trackOfferViewedModal(productId, area) {
-    ExtendAnalytics.trackOfferViewed({
+    Extend.trackOfferViewed({
         productId: productId,
         offerType: {
             area: area,
@@ -40,7 +40,7 @@ function trackOfferViewedModal(productId, area) {
 function trackAddToCart(data) {
     if (data.extendPlanId) {
         if (data.area === 'product_page' || data.area === 'cart_page') {
-            ExtendAnalytics.trackOfferAddedToCart({
+            Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
                 warrantyQuantity: +data.quantity,
@@ -51,7 +51,7 @@ function trackAddToCart(data) {
                 }
             });
         } else {
-            ExtendAnalytics.trackOfferAddedToCart({
+            Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
                 planId: data.extendPlanId,
@@ -62,7 +62,7 @@ function trackAddToCart(data) {
             });
         }
     } else {
-        ExtendAnalytics.trackProductAddedToCart({
+        Extend.trackProductAddedToCart({
             productId: data.productId,
             productQuantity: +data.quantity
         });
@@ -71,20 +71,20 @@ function trackAddToCart(data) {
 
 
 function trackOfferRemovedFromCart(data) {
-    ExtendAnalytics.trackOfferRemovedFromCart({
+    Extend.trackOfferRemovedFromCart({
         productId: data.productID,
         planId: data.planId
     });
 }
 
 function trackProductRemovedFromCart(data) {
-    ExtendAnalytics.trackProductRemovedFromCart({
+    Extend.trackProductRemovedFromCart({
         productId: data.productID,
     });
 }
 
 function trackProductUpdated(data) {
-    ExtendAnalytics.trackProductUpdated({
+    Extend.trackProductUpdated({
         productId: data.productID,
         updates: {
             productQuantity: +data.productQuantity
@@ -93,7 +93,7 @@ function trackProductUpdated(data) {
 }
 
 function trackOfferUpdated(data) {
-    ExtendAnalytics.trackOfferUpdated({
+    Extend.trackOfferUpdated({
         productId: data.productID,
         planId: data.planId,
         updates: {
@@ -104,7 +104,7 @@ function trackOfferUpdated(data) {
 }
 
 function trackLinkClicked(data) {
-    ExtendAnalytics.trackLinkClicked({
+    Extend.trackLinkClicked({
         linkEvent: data.linkEvent,
         productId: data.productId,
         linkType: {
@@ -278,7 +278,7 @@ function trackCheckoutBtn() {
         productAmmount = productAmmount.slice(1);
         productAmmount = productAmmount.replace(',', '');
 
-        ExtendAnalytics.trackCartCheckout({
+        Extend.trackCartCheckout({
             cartTotal: +productAmmount
         });
     })
@@ -286,7 +286,7 @@ function trackCheckoutBtn() {
 
 function initExtendAnalytics() {
     var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
-    ExtendAnalytics.config({ storeId: EXT_STORE_ID });
+    Extend.config({ storeId: EXT_STORE_ID });
 }
 
 $(document).ready(function () {

@@ -3,10 +3,10 @@
 /* eslint-disable require-jsdoc */
 'use strict';
 
-var ExtendAnalytics = window.ExtendAnalytics || undefined;
+var Extend = window.Extend || undefined;
 
 function trackOfferViewedPDP(productId) {
-    ExtendAnalytics.trackOfferViewed({
+    Extend.trackOfferViewed({
         productId: productId,
         offerType: {
             area: 'product_page',
@@ -16,7 +16,7 @@ function trackOfferViewedPDP(productId) {
 }
 
 function trackOfferViewedModal(productId, area) {
-    ExtendAnalytics.trackOfferViewed({
+    Extend.trackOfferViewed({
         productId: productId,
         offerType: {
             area: area,
@@ -26,7 +26,7 @@ function trackOfferViewedModal(productId, area) {
 }
 
 function trackOfferAddedToCart(data) {
-    ExtendAnalytics.trackOfferAddedToCart({
+    Extend.trackOfferAddedToCart({
         productId: data.productId,
         productQuantity: data.productQuantity,
         warrantyQuantity: data.productQuantity,
@@ -39,27 +39,27 @@ function trackOfferAddedToCart(data) {
 }
 
 function trackProductAddedToCart(data) {
-    ExtendAnalytics.trackProductAddedToCart({
+    Extend.trackProductAddedToCart({
         productId: data.productId,
         productQuantity: data.productQuantity
     });
 }
 
 function trackOfferRemovedFromCart(data) {
-    ExtendAnalytics.trackOfferRemovedFromCart({
+    Extend.trackOfferRemovedFromCart({
         productId: data.referenceId,
         planId: data.planId
     });
 }
 
 function trackProductRemovedFromCart(data) {
-    ExtendAnalytics.trackProductRemovedFromCart({
+    Extend.trackProductRemovedFromCart({
         productId: data.productId
     });
 }
 
 function trackProductUpdated(data) {
-    ExtendAnalytics.trackProductUpdated({
+    Extend.trackProductUpdated({
         productId: data.productId,
         updates: {
             productQuantity: +data.productQuantity
@@ -68,7 +68,7 @@ function trackProductUpdated(data) {
 }
 
 function trackOfferUpdated(data) {
-    ExtendAnalytics.trackOfferUpdated({
+    Extend.trackOfferUpdated({
         productId: data.productId,
         planId: data.planId,
         updates: {
@@ -79,7 +79,7 @@ function trackOfferUpdated(data) {
 }
 
 function trackLinkClicked(data) {
-    ExtendAnalytics.trackLinkClicked({
+    Extend.trackLinkClicked({
         linkEvent: data.linkEvent,
         productId: data.productId,
         linkType: {
@@ -98,7 +98,8 @@ function trackExtendPDP(currentTarget) {
     } else {
         productId = $('.product-detail').data('pid');
     }
-    trackOfferViewedPDP(productId);
+
+    // trackOfferViewedPDP(productId);
 
     var addTrackEvent = function () {
         $(currentTarget).contents().find('.info-button').on('click', function () {
@@ -125,7 +126,7 @@ function addTrackEventUpsellCart(currentTarget) {
         $(currentTarget).contents().find('.simple-offer').on('click', function () {
             var pid = $(currentTarget).parents('.extend-upsell-style').data().pid;
             window.extendModalReferenceId = pid;
-            trackOfferViewedModal(pid, 'cart_page');
+            // trackOfferViewedModal(pid, 'cart_page');
         });
         $(currentTarget).contents().find('.simple-offer').addClass('chained');
         if ($(currentTarget).contents().find('button').hasClass('chained')) {
@@ -195,18 +196,9 @@ function trackModalLinkClicked(currentTarget) {
 }
 
 module.exports = {
-    initExtendAnalytics: function () {
-        if (!ExtendAnalytics) {
-            return;
-        }
-
-        var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
-        ExtendAnalytics.config({ storeId: EXT_STORE_ID });
-    },
-
     trackExtendDOMNodeInserted: function () {
         $(document).on('DOMNodeInserted', 'body', function (e) {
-            if (!ExtendAnalytics) {
+            if (!Extend) {
                 return;
             } else if (e.target.tagName && e.target.tagName.toLowerCase() !== 'iframe') {
                 return;
@@ -234,7 +226,7 @@ module.exports = {
 
     trackCartUpdate: function () {
         $('body').on('cart:update', function (e, data) {
-            if (!data.extendAnalytics || !ExtendAnalytics) {
+            if (!data.extendAnalytics || !Extend) {
                 return;
             }
 
@@ -255,7 +247,7 @@ module.exports = {
 
     trackAddToCart: function () {
         $('body').on('product:afterAddToCart', function (e, data) {
-            if (!ExtendAnalytics || !data.extendAnalytics) {
+            if (!Extend || !data.extendAnalytics) {
                 return;
             }
 
@@ -272,17 +264,17 @@ module.exports = {
 
     trackModalView: function () {
         $('body').on('extend:modal:viewed', function (e, data) {
-            if (!ExtendAnalytics) {
+            if (!Extend) {
                 return;
             }
 
-            trackOfferViewedModal(data.productId, data.area);
+            // trackOfferViewedModal(data.productId, data.area);
         });
     },
 
     trackCheckoutBtn: function () {
         $('body').on('click', '.checkout-btn', function () {
-            if (!ExtendAnalytics) {
+            if (!Extend) {
                 return;
             }
 
@@ -292,10 +284,10 @@ module.exports = {
             productAmmount = productAmmount.slice(1);
             productAmmount = productAmmount.replace(',', '');
 
-            ExtendAnalytics.trackCartCheckout({
+            Extend.trackCartCheckout({
                 cartTotal: +productAmmount
             });
         });
     }
-
 };
+
