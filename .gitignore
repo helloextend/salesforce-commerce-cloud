@@ -4,13 +4,4 @@
 .DS_Store
 dw.json
 node_modules/
-cartridges/int_extend_sfra/cartridge/static
 cartridges/*/cartridge/static/default/fonts/
-cartridges/app_storefront_base
-cartridges/app_storefront_core
-cartridges/app_storefront_pipelines
-cartridges/app_storefront_controllers
-cartridges/bm_app_storefront_base
-cartridges/modules
-.vscode
-coverage
