@@ -179,6 +179,10 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
 
+        if (pLi.custom.isWarranty) {
+            return next();
+        }
+
         if (pLi.custom.parentLineItemUUID) {
             for (var j = 1; j <= pLi.getQuantityValue(); j++) {
                 Transaction.wrap(function () {

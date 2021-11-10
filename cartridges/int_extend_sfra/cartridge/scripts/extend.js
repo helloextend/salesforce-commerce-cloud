@@ -5,6 +5,7 @@
 var Site = require('dw/system/Site').getCurrent();
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var webService = require('~/cartridge/scripts/services/rest');
+var LocalServiceRegistry = require('dw/svc/LocalServiceRegistry');
 
 /**
  * Get contracts payload for default API version
