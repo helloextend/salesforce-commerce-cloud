@@ -6,6 +6,69 @@
 'use strict';
 
 /**
+ * Return used plan for added extend product
+ * @param {Object} plans - object with plans get from extend API
+ * @param {Object} extendPlanId - id of used plan for added extend product
+ * @returns {Object} - current plan in plans object
+ */
+function getUsedPlan(plans, extendPlanId) {
+    var plansKeys = Object.keys(plans);
+    for (var i = 0; i < plansKeys.length; i++) {
+        var currentPlanType = plans[plansKeys[i]];
+        if (!empty(currentPlanType)) {
+            for (var j = 0; j < currentPlanType.length; j++) {
+                var currentPlan = currentPlanType[j];
+                if (currentPlan.id === extendPlanId) {
+                    return currentPlan;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Return is offer valid
+ * @param {Object} params - http params with offer information
+ * @returns {boolean} - is offer price valid
+ */
+function validateOffer(params) {
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var extend = require('~/cartridge/scripts/extend');
+    var isValid = false;
+
+    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.pid.isEmpty()) {
+        return isValid;
+    }
+
+    var extendPlanId = params.extendPlanId.value;
+    var extendPrice = params.extendPrice.value;
+    var pid = params.pid.value;
+
+    var paramOjb = {
+        pid: pid
+    };
+
+    var offer = extend.getOffer(paramOjb);
+    var usedPlan = getUsedPlan(offer.plans, extendPlanId);
+
+    if (!usedPlan) {
+        logger.error('Extend warranty plan with id "{0}" could not be found.', extendPlanId);
+        return isValid;
+    }
+
+    if (+extendPrice !== usedPlan.price) {
+        logger.error('Wrong price for the warranty plan with id "{0}". Wrong: {1}. Correct: {2} ',
+            extendPlanId,
+            +extendPrice,
+            usedPlan.price
+        );
+        return isValid;
+    }
+
+    return true;
+}
+
+/**
 * Adds Extend warranty product line items to cart
 *
 * @transactional
@@ -15,8 +78,9 @@
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
+    var isValid = validateOffer(params);
 
-    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty()) {
+    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty() || !isValid) {
         return;
     }
 
@@ -220,5 +284,6 @@ function addContractToQueue(order) {
 module.exports = {
     createOrUpdateExtendLineItem: createOrUpdateExtendLineItem,
     checkForWarrantyLI: checkForWarrantyLI,
-    addContractToQueue: addContractToQueue
+    addContractToQueue: addContractToQueue,
+    validateOffer: validateOffer
 };
