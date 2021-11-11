@@ -1,5 +1,7 @@
 'use strict';
+
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+var Site = require('dw/system/Site').getCurrent();
 
 /**
  * Return used plan for added extend product
@@ -8,14 +10,24 @@ var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
  * @returns {Object} - current plan in plans object
  */
 function getUsedPlan(plans, extendPlanId) {
-    var plansKeys = Object.keys(plans);
-    for (var i = 0; i < plansKeys.length; i++) {
-        var currentPlanType = plans[plansKeys[i]];
-        if (!empty(currentPlanType)) {
-            for (var j = 0; j < currentPlanType.length; j++) {
-                var currentPlan = currentPlanType[j];
-                if (currentPlan.id === extendPlanId) {
-                    return currentPlan;
+    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
+    if (apiVersion === 'default' || apiVersion === '2019-08-01') {
+        for (var j = 0; j < plans.length; j++) {
+            var currentPlan = plans[j];
+            if (currentPlan.id === extendPlanId) {
+                return currentPlan;
+            }
+        }
+    } else {
+        var plansKeys = Object.keys(plans);
+        for (var i = 0; i < plansKeys.length; i++) {
+            var currentPlanType = plans[plansKeys[i]];
+            if (!empty(currentPlanType)) {
+                for (var j = 0; j < currentPlanType.length; j++) {
+                    var currentPlan = currentPlanType[j];
+                    if (currentPlan.id === extendPlanId) {
+                        return currentPlan;
+                    }
                 }
             }
         }
