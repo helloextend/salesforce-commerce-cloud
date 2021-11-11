@@ -168,8 +168,20 @@ function createRefund(paramObj) {
     return response;
 }
 
+/**
+ * Make call on offer endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+ function getOffer(paramObj) {
+    var endpointName = 'offer';
+    var response = webService.makeServiceCall(endpointName, paramObj);
+    return response;
+}
+
 module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
-    createRefund: createRefund
+    createRefund: createRefund,
+    getOffer: getOffer
 };

@@ -95,6 +95,12 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.mock = mocks.refundsResponseMock;
             break;
 
+        case 'offer':
+            configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
+            configObj.method = 'GET';
+            configObj.mock = mocks.offersResponseMock;
+            break;
+
         default:
             break;
     }
