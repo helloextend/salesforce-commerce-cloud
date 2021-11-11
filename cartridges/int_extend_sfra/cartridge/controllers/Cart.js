@@ -73,15 +73,13 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
 server.append('AddProduct', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var ProductMgr = require('dw/catalog/ProductMgr');
-    var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
+
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
 
     var form = req.form;
     var viewData = res.getViewData(); // pliUUID
 
-    var isOfferValide = extendHelpers.validateOffer(form);
-
-    if (isOfferValide && form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
+    if (form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
         var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
         var parentLineItem;
 
@@ -188,7 +186,6 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
     var Transaction = require('dw/system/Transaction');
     var CartModel = require('*/cartridge/models/cart');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
-    var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
 
     var form = req.form;
     var currentBasket = BasketMgr.getCurrentBasket();
@@ -198,16 +195,6 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
         res.json({
             error: true,
             redirectUrl: URLUtils.url('Cart-Show').toString()
-        });
-
-        return next();
-    }
-
-    var isOfferValide = extendHelpers.validateOffer(form);
-
-    if (!isOfferValide) {
-        res.json({
-            error: true
         });
 
         return next();

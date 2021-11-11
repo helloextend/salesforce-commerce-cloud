@@ -97,12 +97,6 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.endpoint = 'stores/' + STORE_ID + '/contracts/' + requestObject.extendContractId + '/refund';
             break;
 
-        case 'offer':
-            configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
-            configObj.method = 'GET';
-            configObj.mock = mocks.offersResponseMock;
-            break;
-
         default:
             break;
     }
