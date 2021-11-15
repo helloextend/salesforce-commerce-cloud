@@ -96,21 +96,14 @@ function getShippingAddress(pLi) {
 }
 
 /**
- * Add Extend products to Contracts queue
+ * Create contracts CO
+ * @param {dw.order.Order} order : API order
+ * @param {string} orderID : id of the order
  */
-server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
-    var Site = require('dw/system/Site');
-    var OrderMgr = require('dw/order/OrderMgr');
-    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+function createContractsCO(order, orderID) {
     var Transaction = require('dw/system/Transaction');
-    var viewData = res.getViewData();
-
-    if (viewData.error) {
-        return next();
-    }
-
-    var order = OrderMgr.getOrder(viewData.orderID);
-
+    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+    var Site = require('dw/system/Site');
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
 
@@ -118,7 +111,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
             for (var j = 1; j <= pLi.getQuantityValue(); j++) {
                 Transaction.wrap(function () {
                     var queueObj = CustomObjectMgr.createCustomObject('ExtendContractsQueue', pLi.UUID + '-' + j);
-                    queueObj.custom.orderNo = viewData.orderID;
+                    queueObj.custom.orderNo = orderID;
                     queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
                     queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
                     queueObj.custom.plan = getExtendPlan(pLi);
@@ -129,6 +122,33 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
             }
         }
     }
+}
+
+/**
+ * Add Extend products to Contracts queue
+ */
+server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
+    var Site = require('dw/system/Site').getCurrent();
+    var OrderMgr = require('dw/order/OrderMgr');
+    var extend = require('~/cartridge/scripts/extend');
+
+    var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
+    var viewData = res.getViewData();
+
+    if (viewData.error) {
+        return next();
+    }
+
+    var order = OrderMgr.getOrder(viewData.orderID);
+
+    if (apiMethod === 'contractsAPI') {
+        createContractsCO(order, viewData.orderID);
+    } else {
+        var customer = getCustomer(order);
+        extend.createOrders({ order: order, customer: customer });
+    }
+
 
     return next();
 });
