@@ -5,6 +5,7 @@
 var Site = require('dw/system/Site').getCurrent();
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var webService = require('~/cartridge/scripts/services/rest');
+var ProductMgr = require('dw/catalog/ProductMgr');
 
 /**
  * Get contracts payload for default API version
@@ -174,11 +175,18 @@ function getSFCCProduct(order, UUID) {
  * @param {ProductLineItem} pLi : API ProductLineItem object
  * @return {string} stringified object
  */
-function getExtendPlan(pLi) {
+function getExtendPlan(pLi, order) {
     var obj = {
-        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue))),
-        planToken: createEnhancedOffer(pLi)
+        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)))
     };
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var productLi = order.productLineItems[i];
+        if (productLi.custom.persistentUUID) {
+            // obj.planToken = createEnhancedOffer(productLi);
+            obj.id = createEnhancedOffer(productLi);
+            break;
+        }
+    }
 
     return obj;
 }
@@ -196,9 +204,9 @@ function getLineItems(order) {
         if (pLi.custom.parentLineItemUUID) {
             for (var j = 1; j <= pLi.getQuantityValue(); j++) {
                 var pliObj = {};
-                pliObj.stats = 'fulfilled';
+                pliObj.status = 'fulfilled';
                 pliObj.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
-                pliObj.plan = getExtendPlan(pLi);
+                pliObj.plan = getExtendPlan(pLi, order);
                 lineItems.push(pliObj);
             }
         }
@@ -218,10 +226,12 @@ function getOrdersPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
     var requestObject = {};
 
-    requestObject.sellerId = STORE_ID;
+    // requestObject.sellerId = STORE_ID;
+    requestObject.storeId = STORE_ID;
 
     // What is the sellerName?
-    requestObject.sellerName = 'SFCC';
+    // requestObject.sellerName = 'SFCC';
+    requestObject.storeName = 'SFCC';
 
     requestObject.currency = order.getCurrencyCode();
     requestObject.customer = {};
@@ -249,6 +259,39 @@ function getOrdersPayload(paramObj) {
     requestObject.total = moneyToCents(order.getTotalGrossPrice());
     requestObject.transactionId = order.orderNo;
     requestObject.lineItems = getLineItems(order);
+    return requestObject;
+}
+
+/**
+ * Get Enhanced Offers endpoind Payload
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - request object
+ */
+function getEnhancedOffers(pLi) {
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var masterProduct = null;
+    var category = null;
+    var requestObject = {};
+
+    requestObject.storeId = STORE_ID;
+    requestObject.productId = pLi.productID;
+    requestObject.product = {};
+
+    var product = ProductMgr.getProduct(pLi.productID);
+    if (product.isVariant()) {
+        masterProduct = product.getMasterProduct();
+        category = masterProduct.getPrimaryCategory();
+    } else {
+        category = product.getPrimaryCategory();
+    }
+
+    requestObject.product.title = pLi.productName;
+    requestObject.product.category = category.displayName;
+    requestObject.product.price = {};
+
+    requestObject.product.price.currencyCode = pLi.adjustedNetPrice.getCurrencyCode();
+    requestObject.product.price.amount = Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)));
+
     return requestObject;
 }
 
@@ -316,11 +359,12 @@ function createOrders(paramObj) {
  * @param {dw.order.ProductLineItem} pli - object with id of contract and commit type
  * @returns {Object} - response object
  */
-function createEnhancedOffer(pli) {
+function createEnhancedOffer(pLi) {
+    var requestObject = getEnhancedOffers(pLi);
     var endpointName = 'enhancedOffer';
     var apiMethod = 'orders';
-    // var response = webService.makeServiceCall(endpointName, requestObject, apiMethod);
-    // return response;
+    var response = webService.makeServiceCall(endpointName, requestObject, apiMethod);
+    return response.offerId;
 }
 
 module.exports = {
@@ -328,5 +372,6 @@ module.exports = {
     createContracts: createContracts,
     createRefund: createRefund,
     getOffer: getOffer,
-    createOrders: createOrders
+    createOrders: createOrders,
+    createEnhancedOffer: createEnhancedOffer
 };

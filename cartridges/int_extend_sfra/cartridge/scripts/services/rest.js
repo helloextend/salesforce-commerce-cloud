@@ -117,6 +117,14 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.mock = mocks.contractsResponseMock;
             break;
 
+        case 'enhancedOffer':
+            configObj.endpoint = 'offers';
+            configObj.method = 'POST';
+            configObj.extendMethod = 'orders';
+            configObj.API_VERSION = '2021-07-01';
+            configObj.mock = mocks.createEnhancedOffer;
+            break;
+
         default:
             break;
     }
