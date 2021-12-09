@@ -125,6 +125,41 @@ function createContractsCO(order, orderID) {
 }
 
 /**
+ * Process Orders Response
+ * @param {Object} ordersResponse : API response from orders endpoint
+ * @param {dw.order.Order} order : API order
+ */
+function processOrdersResponse(ordersResponse, order) {
+    var Transaction = require('dw/system/Transaction');
+    var ArrayList = require('dw/util/ArrayList');
+    var responseLI = ordersResponse.lineItems;
+
+    for (var i = 0; i < responseLI.length; i++) {
+        var apiCurrentLI = responseLI[i];
+        var apiPid = apiCurrentLI.product.id;
+        var matchedLI = null;
+
+        for (var j = 0; j < order.productLineItems.length; j++) {
+            var pLi = order.productLineItems[j];
+            var pid = pLi.productID;
+            if (apiPid === pid) {
+                matchedLI = pLi;
+                break;
+            }
+        }
+        Transaction.wrap(function () {
+            if (apiCurrentLI.contractId) {
+                var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
+                extendContractIds.add(apiCurrentLI.contractId);
+                matchedLI.custom.extendContractId = extendContractIds;
+            } else if (apiCurrentLI.leadToken) {
+                matchedLI.custom.leadToken = apiCurrentLI.leadToken;
+            }
+        });
+    }
+}
+
+/**
  * Add Extend products to Contracts queue
  */
 server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
@@ -146,7 +181,8 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
         createContractsCO(order, viewData.orderID);
     } else {
         var customer = getCustomer(order);
-        extend.createOrders({ order: order, customer: customer });
+        var ordersResponse = extend.createOrders({ order: order, customer: customer });
+        processOrdersResponse(ordersResponse, order);
     }
 
 

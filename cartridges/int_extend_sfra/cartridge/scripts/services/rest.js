@@ -31,8 +31,8 @@ function createServiceCall(configObj) {
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
 
-            if (configObj.extendMethod === 'orders') {
-                service.addHeader('X-Idempotency-Key', ACCESS_TOKEN);
+            if (configObj.XIdempotencyKey) {
+                service.addHeader('X-Idempotency-Key', configObj.XIdempotencyKey);
             }
 
             // Set request params
@@ -78,6 +78,7 @@ function createServiceCall(configObj) {
 function createRequestConfiguration(endpoint, requestObject) {
     var HashMap = require('dw/util/HashMap');
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var UUIDUtils = require('dw/util/UUIDUtils');
 
     var configObj = {};
     configObj.params = new HashMap();
@@ -114,15 +115,8 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.method = 'POST';
             configObj.extendMethod = 'orders';
             configObj.API_VERSION = '2021-07-01';
-            configObj.mock = mocks.contractsResponseMock;
-            break;
-
-        case 'enhancedOffer':
-            configObj.endpoint = 'offers';
-            configObj.method = 'POST';
-            configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
-            configObj.mock = mocks.createEnhancedOffer;
+            configObj.XIdempotencyKey = UUIDUtils.createUUID();
+            configObj.mock = mocks.ordersResponseMock;
             break;
 
         default:

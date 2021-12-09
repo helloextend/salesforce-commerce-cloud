@@ -200,50 +200,82 @@ var refundsResponseMock = JSON.stringify({
     }
 });
 
-/**
- * Mock response object for offers service call
- */
-var createEnhancedOffer = JSON.stringify({
-    storeId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
-    productId: 'string',
-    locale: 'en-US',
-    region: 'US',
-    product: {
-        title: 'Drum Pedals',
-        price: {
-            currencyCode: 'USD',
-            amount: 1999
+var ordersResponseMock = JSON.stringify({
+    analytics: {
+        contractPlanCategory: 'string',
+        customerStatus: 'string',
+        customerType: 'string',
+        discountSource: 'string',
+        loyaltyStatus: 'string',
+        paymentMethod: 'string',
+        paymentInstrument: 'string',
+        totalDiscounts: 0,
+        marketingOptIn: true
+    },
+    currency: 'USD',
+    customer: {
+        billingAddress: {
+            address1: '535 Mission Street',
+            address2: '11th Floor',
+            city: 'San Francisco',
+            countryCode: 'USA',
+            postalCode: '94526',
+            province: 'CA'
         },
-        category: 'Arts & Entertainment',
-        subCategories: ['Hobbies & Creative Arts', 'Musical Instrument & Orchestra Accessories', 'Percussion Accessories', 'Drum Kit Hardware', 'Drum Pedals'],
-        brand: 'GAMESMUSIC',
-        description: 'This is the best musical instrument on the market!',
-        imageUrl: 'https://sdk.helloextend.com/extend_icon.png',
-        mfrWarranty: {
-            parts: 12,
-            labor: 12,
-            url: 'http://example.com'
-        },
-        parentReferenceId: '2324f800-7575-4c65-bd2c-588c89e8ab7f',
-        modelNumber: 'string',
-        itemWeight: {
-            value: 20,
-            unit: 'ounce'
-        },
-        itemDimensions: {
-            height: 6,
-            width: 12,
-            length: 24,
-            unit: 'inch'
-        },
-        identifiers: {
-            sku: 'KS944RUR',
-            gtin: '012345678901234',
-            upc: '0123456789012',
-            asin: '0123456789',
-            barcode: '123'
+        email: 'customer@gmail.com',
+        locale: 'en-us',
+        name: 'John Smith',
+        phone: '123-456-7890',
+        shippingAddress: {
+            address1: '535 Mission Street',
+            address2: '11th Floor',
+            city: 'San Francisco',
+            countryCode: 'USA',
+            postalCode: '94526',
+            province: 'CA'
         }
-    }
+    },
+    isTest: true,
+    lineItems: [
+        {
+            lineItemTransactionId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
+            orderId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
+            quantity: 0,
+            status: 'canceled',
+            storeId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
+            transactionId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
+            warrantable: true,
+            plan: {
+                id: '10001-misc-elec-adh-replace-1y',
+                purchasePrice: 0,
+                termsVersion: 'string',
+                version: 'string'
+            },
+            product: {
+                deliveryStatus: 'awaiting_shipment',
+                id: 'SKU-123-456',
+                listPrice: 0,
+                name: 'string',
+                purchasePrice: 0,
+                serialNumber: 'string',
+                variantId: 'string'
+            }
+        }
+    ],
+    poNumber: 'string',
+    saleOrigin: {
+        agentId: 'sales agent',
+        channel: 'web',
+        integratorId: 'string',
+        locationId: 'Store #123',
+        platform: 'BigCommerce'
+    },
+    status: 'pending',
+    storeId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
+    storeName: 'string',
+    total: 'string',
+    transactionId: 'string',
+    waitPeriod: 0
 });
 
 /** Exports mocks objects */
@@ -252,5 +284,5 @@ module.exports = {
     contractsResponseMock: contractsResponseMock,
     offersResponseMock: offersResponseMock,
     refundsResponseMock: refundsResponseMock,
-    createEnhancedOffer: createEnhancedOffer
+    ordersResponseMock: ordersResponseMock
 };

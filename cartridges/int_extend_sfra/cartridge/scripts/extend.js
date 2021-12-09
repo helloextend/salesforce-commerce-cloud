@@ -144,104 +144,81 @@ function moneyToCents(value) {
 }
 
 /**
- * Get SFCC product JSON object
- * @param {Order} order : API Order object
- * @param {string} UUID : UUID for the associated parent productLineItem
- * @return {string} stringified object
+ * Get SFCC product object
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @return {Object} object that represents product
  */
-function getSFCCProduct(order, UUID) {
-    var obj = {};
+function getSFCCProduct(pLi, UUID) {
+    var dividedPurchasePrice = pLi.adjustedNetPrice.divide(pLi.quantityValue);
+    var dividedListPrice = pLi.price.divide(pLi.quantityValue);
 
-    for (var i = 0; i < order.productLineItems.length; i++) {
-        var pLi = order.productLineItems[i];
-        if (pLi.custom.persistentUUID === UUID) {
-            var dividedPurchasePrice = pLi.adjustedNetPrice.divide(pLi.quantityValue);
-            var dividedListPrice = pLi.price.divide(pLi.quantityValue);
-            obj = {
-                id: pLi.productID,
-                purchasePrice: moneyToCents(dividedPurchasePrice),
-                listPrice: moneyToCents(dividedListPrice),
-                name: pLi.productName
-            };
-            break;
-        }
-    }
+    var obj = {
+        id: pLi.productID,
+        purchasePrice: Math.ceil(moneyToCents(dividedPurchasePrice)),
+        listPrice: Math.ceil(moneyToCents(dividedListPrice)),
+        name: pLi.productName
+    };
 
     return obj;
 }
 
 /**
- * Get Extend plan JSON object
+ * Get Extend plan object
  * @param {ProductLineItem} pLi : API ProductLineItem object
  * @return {string} stringified object
  */
 function getExtendPlan(pLi, order) {
-    var obj = {
-        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)))
-    };
-    for (var i = 0; i < order.productLineItems.length; i++) {
-        var productLi = order.productLineItems[i];
-        if (productLi.custom.persistentUUID) {
-            // obj.planToken = createEnhancedOffer(productLi);
-            obj.id = createEnhancedOffer(productLi);
-            break;
+    var productLineItems = order.productLineItems;
+    var planObj = {};
+    for (var i = 0; i < productLineItems.length; i++) {
+        if (pLi.custom.persistentUUID === productLineItems[i].custom.parentLineItemUUID) {
+            var warrantyItem = productLineItems[i];
+            planObj.purchasePrice = Math.ceil(moneyToCents(warrantyItem.adjustedNetPrice.divide(warrantyItem.quantityValue)));
+            planObj.id = warrantyItem.getManufacturerSKU();
         }
     }
-
-    return obj;
+    return planObj;
 }
 
 /**
- * Make call on orders endpoint
+ * Get Order`s line items objects
  * @param {dw.order.Order} order : API order
- * @return {Array<Object>} array of products objects
+ * @return {Array<Object>} array of line items objects
  */
 function getLineItems(order) {
     var lineItems = [];
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
+        if (!pLi.custom.parentLineItemUUID) {
+            var pliObj = {};
+            pliObj.warrantable = false;
+            pliObj.quantity = pLi.quantityValue;
+            pliObj.product = getSFCCProduct(pLi);
 
-        if (pLi.custom.parentLineItemUUID) {
-            for (var j = 1; j <= pLi.getQuantityValue(); j++) {
-                var pliObj = {};
-                pliObj.status = 'fulfilled';
-                pliObj.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
+            if (pLi.custom.persistentUUID) {
+                pliObj.warrantable = true;
                 pliObj.plan = getExtendPlan(pLi, order);
-                lineItems.push(pliObj);
+            } else if (pLi.custom.isWarrantable) {
+                pliObj.warrantable = true;
             }
+            lineItems.push(pliObj);
         }
     }
     return lineItems;
 }
 
 /**
- * Get Orders Create endpoint Payload
- * @param {Object} paramObj - object with id of contract and commit type
- * @returns {Object} - request object
+ * Get customer object
+ * @param {Object} customer : object with customer information
+ * @param {Object} address : default shipping address
+ * @return {Object} object that customer product
  */
-function getOrdersPayload(paramObj) {
-    var order = paramObj.order;
-    var customer = JSON.parse(paramObj.customer);
-    var defaultShipment = order.getDefaultShipment();
-    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var requestObject = {};
-
-    // requestObject.sellerId = STORE_ID;
-    requestObject.storeId = STORE_ID;
-
-    // What is the sellerName?
-    // requestObject.sellerName = 'SFCC';
-    requestObject.storeName = 'SFCC';
-
-    requestObject.currency = order.getCurrencyCode();
-    requestObject.customer = {};
-
-    requestObject.customer.billingAddress = customer.address;
-    requestObject.customer.email = customer.email;
-    requestObject.customer.name = customer.name;
-    requestObject.customer.phone = customer.phone;
-
-    var address = defaultShipment.getShippingAddress();
+function getCustomer(customer, address) {
+    var customerObj = {};
+    customerObj.billingAddress = customer.address;
+    customerObj.email = customer.email;
+    customerObj.name = customer.name;
+    customerObj.phone = customer.phone;
 
     var shippingAddress = {
         address1: address.getAddress1(),
@@ -252,46 +229,35 @@ function getOrdersPayload(paramObj) {
         provinceCode: address.getStateCode()
     };
 
-    requestObject.isTest = true;
-
-    requestObject.customer.shippingAddress = shippingAddress;
-
-    requestObject.total = moneyToCents(order.getTotalGrossPrice());
-    requestObject.transactionId = order.orderNo;
-    requestObject.lineItems = getLineItems(order);
-    return requestObject;
+    customerObj.shippingAddress = shippingAddress;
+    return customerObj;
 }
 
+
 /**
- * Get Enhanced Offers endpoind Payload
+ * Get Orders Create endpoint Payload
  * @param {Object} paramObj - object with id of contract and commit type
  * @returns {Object} - request object
  */
-function getEnhancedOffers(pLi) {
+function getOrdersPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var masterProduct = null;
-    var category = null;
+    var order = paramObj.order;
+    var customer = JSON.parse(paramObj.customer);
+    var defaultShipment = order.getDefaultShipment();
+    var defaultShippingAddress = defaultShipment.getShippingAddress();
     var requestObject = {};
 
     requestObject.storeId = STORE_ID;
-    requestObject.productId = pLi.productID;
-    requestObject.product = {};
+    requestObject.storeName = 'SFCC';
 
-    var product = ProductMgr.getProduct(pLi.productID);
-    if (product.isVariant()) {
-        masterProduct = product.getMasterProduct();
-        category = masterProduct.getPrimaryCategory();
-    } else {
-        category = product.getPrimaryCategory();
-    }
+    requestObject.currency = order.getCurrencyCode();
+    requestObject.customer = getCustomer(customer, defaultShippingAddress);
 
-    requestObject.product.title = pLi.productName;
-    requestObject.product.category = category.displayName;
-    requestObject.product.price = {};
+    requestObject.isTest = true;
 
-    requestObject.product.price.currencyCode = pLi.adjustedNetPrice.getCurrencyCode();
-    requestObject.product.price.amount = Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)));
-
+    requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
+    requestObject.transactionId = order.orderNo;
+    requestObject.lineItems = getLineItems(order);
     return requestObject;
 }
 
@@ -354,24 +320,10 @@ function createOrders(paramObj) {
     return response;
 }
 
-/**
- * Make call on enhanced offer endpoint
- * @param {dw.order.ProductLineItem} pli - object with id of contract and commit type
- * @returns {Object} - response object
- */
-function createEnhancedOffer(pLi) {
-    var requestObject = getEnhancedOffers(pLi);
-    var endpointName = 'enhancedOffer';
-    var apiMethod = 'orders';
-    var response = webService.makeServiceCall(endpointName, requestObject, apiMethod);
-    return response.offerId;
-}
-
 module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
     getOffer: getOffer,
-    createOrders: createOrders,
-    createEnhancedOffer: createEnhancedOffer
+    createOrders: createOrders
 };
