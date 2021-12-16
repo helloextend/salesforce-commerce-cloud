@@ -5,26 +5,6 @@
 
 var Extend = window.Extend || undefined;
 
-function trackOfferViewedPDP(productId) {
-    Extend.trackOfferViewed({
-        productId: productId,
-        offerType: {
-            area: 'product_page',
-            component: 'buttons'
-        }
-    });
-}
-
-function trackOfferViewedModal(productId, area) {
-    Extend.trackOfferViewed({
-        productId: productId,
-        offerType: {
-            area: area,
-            component: 'modal'
-        }
-    });
-}
-
 function trackOfferAddedToCart(data) {
     Extend.trackOfferAddedToCart({
         productId: data.productId,
@@ -89,44 +69,11 @@ function trackLinkClicked(data) {
     });
 }
 
-function trackExtendPDP(currentTarget) {
-    var productId;
-    var extendComponent = Extend.buttons.instance('#extend-offer');
-
-    if (extendComponent) {
-        productId = extendComponent.getActiveProduct().id;
-    } else {
-        productId = $('.product-detail').data('pid');
-    }
-
-    // trackOfferViewedPDP(productId);
-
-    var addTrackEvent = function () {
-        $(currentTarget).contents().find('.info-button').on('click', function () {
-            var data = {
-                linkEvent: 'learn_more_clicked',
-                productId: productId,
-                LinkTypeArea: 'product_page',
-                LinkTypeComponent: 'learn_more_info_icon'
-            };
-
-            trackLinkClicked(data);
-        });
-        $(currentTarget).contents().find('.info-button').addClass('chained');
-        if ($(currentTarget).contents().find('.info-button').hasClass('chained')) {
-            clearTimeout(timer);
-            $(currentTarget).contents().find('.info-button').removeClass('chained');
-        }
-    };
-    var timer = setInterval(addTrackEvent, 100);
-}
-
 function addTrackEventUpsellCart(currentTarget) {
     var addTrackEvent = function () {
         $(currentTarget).contents().find('.simple-offer').on('click', function () {
             var pid = $(currentTarget).parents('.extend-upsell-style').data().pid;
             window.extendModalReferenceId = pid;
-            // trackOfferViewedModal(pid, 'cart_page');
         });
         $(currentTarget).contents().find('.simple-offer').addClass('chained');
         if ($(currentTarget).contents().find('button').hasClass('chained')) {
@@ -205,12 +152,8 @@ module.exports = {
             }
             var currentTarget = $(e.target);
 
-            // trackOfferViewedPDPButtons and trackLinkClicked
-            if ($(e.target).parents('#extend-offer').length) {
-                trackExtendPDP(currentTarget);
-
                 // trackOfferViewedModal and trackLinkClicked
-            } else if ($(e.target).parents('.extend-upsell-style').length) {
+            if ($(e.target).parents('.extend-upsell-style').length) {
                 addTrackEventUpsellCart(currentTarget);
 
                 // trackLinkClicked
@@ -259,34 +202,6 @@ module.exports = {
             } else if (event === 'productAddedToCart') {
                 trackProductAddedToCart(eventData);
             }
-        });
-    },
-
-    trackModalView: function () {
-        $('body').on('extend:modal:viewed', function (e, data) {
-            if (!Extend) {
-                return;
-            }
-
-            // trackOfferViewedModal(data.productId, data.area);
-        });
-    },
-
-    trackCheckoutBtn: function () {
-        $('body').on('click', '.checkout-btn', function () {
-            if (!Extend) {
-                return;
-            }
-
-            var productAmmount = $('.minicart').find('.sub-total').html()
-                || $('.cart').find('.sub-total').html();
-
-            productAmmount = productAmmount.slice(1);
-            productAmmount = productAmmount.replace(',', '');
-
-            Extend.trackCartCheckout({
-                cartTotal: +productAmmount
-            });
         });
     }
 };
