@@ -96,21 +96,14 @@ function getShippingAddress(pLi) {
 }
 
 /**
- * Add Extend products to Contracts queue
+ * Create contracts CO
+ * @param {dw.order.Order} order : API order
+ * @param {string} orderID : id of the order
  */
-server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
-    var Site = require('dw/system/Site');
-    var OrderMgr = require('dw/order/OrderMgr');
-    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+function createContractsCO(order, orderID) {
     var Transaction = require('dw/system/Transaction');
-    var viewData = res.getViewData();
-
-    if (viewData.error) {
-        return next();
-    }
-
-    var order = OrderMgr.getOrder(viewData.orderID);
-
+    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+    var Site = require('dw/system/Site');
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
 
@@ -118,7 +111,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
             for (var j = 1; j <= pLi.getQuantityValue(); j++) {
                 Transaction.wrap(function () {
                     var queueObj = CustomObjectMgr.createCustomObject('ExtendContractsQueue', pLi.UUID + '-' + j);
-                    queueObj.custom.orderNo = viewData.orderID;
+                    queueObj.custom.orderNo = orderID;
                     queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
                     queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
                     queueObj.custom.plan = getExtendPlan(pLi);
@@ -129,6 +122,69 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
             }
         }
     }
+}
+
+/**
+ * Process Orders Response
+ * @param {Object} ordersResponse : API response from orders endpoint
+ * @param {dw.order.Order} order : API order
+ */
+function processOrdersResponse(ordersResponse, order) {
+    var Transaction = require('dw/system/Transaction');
+    var ArrayList = require('dw/util/ArrayList');
+    var responseLI = ordersResponse.lineItems;
+
+    for (var i = 0; i < responseLI.length; i++) {
+        var apiCurrentLI = responseLI[i];
+        var apiPid = apiCurrentLI.product.id;
+        var matchedLI = null;
+
+        for (var j = 0; j < order.productLineItems.length; j++) {
+            var pLi = order.productLineItems[j];
+            var pid = pLi.productID;
+            if (apiPid === pid) {
+                matchedLI = pLi;
+                break;
+            }
+        }
+        Transaction.wrap(function () {
+            if (apiCurrentLI.contractId) {
+                var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
+                extendContractIds.add(apiCurrentLI.contractId);
+                matchedLI.custom.extendContractId = extendContractIds;
+            } else if (apiCurrentLI.leadToken) {
+                matchedLI.custom.leadToken = apiCurrentLI.leadToken;
+            }
+        });
+    }
+}
+
+/**
+ * Add Extend products to Contracts queue
+ */
+server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
+    var Site = require('dw/system/Site').getCurrent();
+    var OrderMgr = require('dw/order/OrderMgr');
+    var extend = require('~/cartridge/scripts/extend');
+
+    var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
+    var viewData = res.getViewData();
+
+    if (viewData.error) {
+        return next();
+    }
+
+    var order = OrderMgr.getOrder(viewData.orderID);
+
+    if (apiMethod === 'contractsAPI') {
+        createContractsCO(order, viewData.orderID);
+    } else {
+        var customer = getCustomer(order);
+        var ordersResponse = extend.createOrders({ order: order, customer: customer });
+        processOrdersResponse(ordersResponse, order);
+    }
+
 
     return next();
 });
