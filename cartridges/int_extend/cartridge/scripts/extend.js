@@ -100,6 +100,11 @@ function getProductsPayload(productBatch) {
 
             var price = product.priceModel.price.available && product.priceModel.price.value > 0 ? Math.round(product.priceModel.price.value * 100) : 0;
 
+            if (!price) {
+                logger.info('Product {0} needed to configure price book', product.getID());
+                continue;
+            }
+
             if (apiVersion !== 'default') {
                 price = {
                     currencyCode: product.priceModel.price.getCurrencyCode(),
@@ -173,7 +178,7 @@ function createRefund(paramObj) {
  * @param {Object} paramObj - object with id of contract and commit type
  * @returns {Object} - response object
  */
- function getOffer(paramObj) {
+function getOffer(paramObj) {
     var endpointName = 'offer';
     var response = webService.makeServiceCall(endpointName, paramObj);
     return response;
