@@ -21,21 +21,12 @@ function createServiceCall(configObj) {
         createRequest: function (service, requestData) {
             var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
             var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion').value;
-
-            if (configObj.API_VERSION) {
-                API_VERSION = configObj.API_VERSION;
-            }
-
             var credential = service.configuration.credential;
 
             // Set request headers
             service.addHeader('Accept', 'application/json; version=' + API_VERSION);
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
-
-            if (configObj.XIdempotencyKey) {
-                service.addHeader('X-Idempotency-Key', configObj.XIdempotencyKey);
-            }
 
             // Set request params
             var params = configObj.params.entrySet();
@@ -79,7 +70,6 @@ function createServiceCall(configObj) {
  */
 function createRequestConfiguration(endpoint, requestObject) {
     var HashMap = require('dw/util/HashMap');
-    var UUIDUtils = require('dw/util/UUIDUtils');
     var mocks = require('~/cartridge/scripts/services/restMocks');
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
 
@@ -111,15 +101,6 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
             configObj.method = 'GET';
             configObj.mock = mocks.offersResponseMock;
-            break;
-
-        case 'orders':
-            configObj.endpoint = 'orders';
-            configObj.method = 'POST';
-            configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
-            configObj.XIdempotencyKey = UUIDUtils.createUUID();
-            configObj.mock = mocks.ordersResponseMock;
             break;
 
         default:

@@ -200,89 +200,10 @@ var refundsResponseMock = JSON.stringify({
     }
 });
 
-var ordersResponseMock = JSON.stringify({
-    analytics: {
-        contractPlanCategory: 'string',
-        customerStatus: 'string',
-        customerType: 'string',
-        discountSource: 'string',
-        loyaltyStatus: 'string',
-        paymentMethod: 'string',
-        paymentInstrument: 'string',
-        totalDiscounts: 0,
-        marketingOptIn: true
-    },
-    currency: 'USD',
-    customer: {
-        billingAddress: {
-            address1: '535 Mission Street',
-            address2: '11th Floor',
-            city: 'San Francisco',
-            countryCode: 'USA',
-            postalCode: '94526',
-            province: 'CA'
-        },
-        email: 'customer@gmail.com',
-        locale: 'en-us',
-        name: 'John Smith',
-        phone: '123-456-7890',
-        shippingAddress: {
-            address1: '535 Mission Street',
-            address2: '11th Floor',
-            city: 'San Francisco',
-            countryCode: 'USA',
-            postalCode: '94526',
-            province: 'CA'
-        }
-    },
-    isTest: true,
-    lineItems: [
-        {
-            lineItemTransactionId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
-            orderId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
-            quantity: 0,
-            status: 'canceled',
-            storeId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
-            transactionId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
-            warrantable: true,
-            plan: {
-                id: '10001-misc-elec-adh-replace-1y',
-                purchasePrice: 0,
-                termsVersion: 'string',
-                version: 'string'
-            },
-            product: {
-                deliveryStatus: 'awaiting_shipment',
-                id: 'SKU-123-456',
-                listPrice: 0,
-                name: 'string',
-                purchasePrice: 0,
-                serialNumber: 'string',
-                variantId: 'string'
-            }
-        }
-    ],
-    poNumber: 'string',
-    saleOrigin: {
-        agentId: 'sales agent',
-        channel: 'web',
-        integratorId: 'string',
-        locationId: 'Store #123',
-        platform: 'BigCommerce'
-    },
-    status: 'pending',
-    storeId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
-    storeName: 'string',
-    total: 'string',
-    transactionId: 'string',
-    waitPeriod: 0
-});
-
 /** Exports mocks objects */
 module.exports = {
     productsResponseMock: productsResponseMock,
     contractsResponseMock: contractsResponseMock,
     offersResponseMock: offersResponseMock,
-    refundsResponseMock: refundsResponseMock,
-    ordersResponseMock: ordersResponseMock
+    refundsResponseMock: refundsResponseMock
 };

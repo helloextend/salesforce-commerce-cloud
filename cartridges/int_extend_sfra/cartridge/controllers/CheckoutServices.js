@@ -96,14 +96,21 @@ function getShippingAddress(pLi) {
 }
 
 /**
- * Create contracts CO
- * @param {dw.order.Order} order : API order
- * @param {string} orderID : id of the order
+ * Add Extend products to Contracts queue
  */
-function createContractsCO(order, orderID) {
-    var Transaction = require('dw/system/Transaction');
-    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     var Site = require('dw/system/Site');
+    var OrderMgr = require('dw/order/OrderMgr');
+    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+    var Transaction = require('dw/system/Transaction');
+    var viewData = res.getViewData();
+
+    if (viewData.error) {
+        return next();
+    }
+
+    var order = OrderMgr.getOrder(viewData.orderID);
+
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
 
@@ -111,7 +118,7 @@ function createContractsCO(order, orderID) {
             for (var j = 1; j <= pLi.getQuantityValue(); j++) {
                 Transaction.wrap(function () {
                     var queueObj = CustomObjectMgr.createCustomObject('ExtendContractsQueue', pLi.UUID + '-' + j);
-                    queueObj.custom.orderNo = orderID;
+                    queueObj.custom.orderNo = viewData.orderID;
                     queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
                     queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
                     queueObj.custom.plan = getExtendPlan(pLi);
@@ -122,6 +129,7 @@ function createContractsCO(order, orderID) {
             }
         }
     }
+<<<<<<< HEAD
 }
 
 /**
@@ -203,6 +211,8 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
         processOrdersResponse(ordersResponse, order);
     }
 
+=======
+>>>>>>> parent of 81b25c5 (Merge pull request #31 from helloextend/SFCC/EX-121)
 
     return next();
 });
