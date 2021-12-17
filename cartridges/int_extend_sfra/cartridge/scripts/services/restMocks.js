@@ -200,64 +200,10 @@ var refundsResponseMock = JSON.stringify({
     }
 });
 
-<<<<<<< HEAD
-=======
-/**
- * Mock response object for offers service call
- */
-var createEnhancedOffer = JSON.stringify({
-    storeId: 'c57ed096-24ef-49a4-a20a-d1b8bf770980',
-    productId: 'string',
-    locale: 'en-US',
-    region: 'US',
-    product: {
-        title: 'Drum Pedals',
-        price: {
-            currencyCode: 'USD',
-            amount: 1999
-        },
-        category: 'Arts & Entertainment',
-        subCategories: ['Hobbies & Creative Arts', 'Musical Instrument & Orchestra Accessories', 'Percussion Accessories', 'Drum Kit Hardware', 'Drum Pedals'],
-        brand: 'GAMESMUSIC',
-        description: 'This is the best musical instrument on the market!',
-        imageUrl: 'https://sdk.helloextend.com/extend_icon.png',
-        mfrWarranty: {
-            parts: 12,
-            labor: 12,
-            url: 'http://example.com'
-        },
-        parentReferenceId: '2324f800-7575-4c65-bd2c-588c89e8ab7f',
-        modelNumber: 'string',
-        itemWeight: {
-            value: 20,
-            unit: 'ounce'
-        },
-        itemDimensions: {
-            height: 6,
-            width: 12,
-            length: 24,
-            unit: 'inch'
-        },
-        identifiers: {
-            sku: 'KS944RUR',
-            gtin: '012345678901234',
-            upc: '0123456789012',
-            asin: '0123456789',
-            barcode: '123'
-        }
-    }
-});
-
->>>>>>> parent of 029111e (EX-121: ADD: orders api for SG and SFRA)
 /** Exports mocks objects */
 module.exports = {
     productsResponseMock: productsResponseMock,
     contractsResponseMock: contractsResponseMock,
     offersResponseMock: offersResponseMock,
-<<<<<<< HEAD
     refundsResponseMock: refundsResponseMock
-=======
-    refundsResponseMock: refundsResponseMock,
-    createEnhancedOffer: createEnhancedOffer
->>>>>>> parent of 029111e (EX-121: ADD: orders api for SG and SFRA)
 };
