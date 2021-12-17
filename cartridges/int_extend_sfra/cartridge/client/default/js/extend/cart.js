@@ -5,22 +5,6 @@
 var Extend = window.Extend || undefined;
 
 /**
- * Tracking adding offers to cart via cart/minicart
- */
-function trackOfferAddedToCart(data) {
-    Extend.trackOfferAddedToCart({
-        productId: data.pid,
-        productQuantity: data.quantity,
-        warrantyQuantity: data.quantity,
-        planId: data.extendPlanId,
-        offerType: {
-            area: 'cart_page',
-            component: 'modal'
-        }
-    });
-}
-
-/**
  * Renders an Extend upsell button in cart page
  * @param {string} uuid - line item uuid
  * @param {string} pid - corresponding product id
@@ -46,8 +30,6 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
                                 form.pid = pid;
                                 form.pliUUID = uuid;
                                 form.quantity = qty;
-                                trackOfferAddedToCart(form);
-
                                 $.spinner().start();
 
                                 $.ajax({
@@ -93,8 +75,6 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
                                 form.pid = pid;
                                 form.pliUUID = uuid;
                                 form.quantity = qty;
-                                trackOfferAddedToCart(form);
-
                                 $.spinner().start();
 
                                 $.ajax({
@@ -102,7 +82,6 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
                                     method: 'POST',
                                     data: form,
                                     success: function () {
-                                        /** extend analytics integration */
                                         location.reload();
                                     },
                                     error: function () {

@@ -6,22 +6,6 @@
 /* eslint-disable no-console */
 'use strict';
 
-/**
- * Tracking adding offers to cart via cart/minicart
- */
-function trackOfferAddedToCart(data) {
-    Extend.trackOfferAddedToCart({
-        productId: data.pid,
-        productQuantity: data.quantity,
-        warrantyQuantity: data.quantity,
-        planId: data.extendPlanId,
-        offerType: {
-            area: 'cart_page',
-            component: 'modal'
-        }
-    });
-}
-
 function extendInit() {
     var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
     var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
@@ -103,7 +87,7 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
             $('.extend-form-data').remove();
         }
     } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected) {
-        // trackOfferViewedModal(form.find('input[name="pid"]').val(), 'product_modal');
+        trackOfferViewedModal(form.find('input[name="pid"]').val(), 'product_modal');
         window.Extend.modal.open({
             referenceId: $('.product-number span').text().trim(),
             onClose: function (plan) {
@@ -124,7 +108,6 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
         return;
     }
 }
-
 
 function upsellModal(uuid) {
     $('body').on('click', '[data-pliuuid=' + uuid + '].extend-upsell-btn', function (e) {
@@ -178,8 +161,6 @@ function addExtendUpsellBtn(uuid, pid, qty) {
                             form.pid = pid;
                             form.pliUUID = uuid;
                             form.quantity = qty;
-                            trackOfferAddedToCart(form);
-
                             $.ajax({
                                 url: window.EXT_CART_ADDTOCART,
                                 method: 'POST',
@@ -219,4 +200,4 @@ $(document).ready(function () {
     extendInit();
     extendPDP();
     if ($('.pt_cart').length) { renderUpsellBtns(); }
-})
+});

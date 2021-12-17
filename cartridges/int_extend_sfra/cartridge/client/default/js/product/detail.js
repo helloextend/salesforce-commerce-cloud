@@ -147,7 +147,7 @@ module.exports = {
         var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
         var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
         if ($('#extend-offer').length) {
-            Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+            Extend.config({ storeId: EXT_STORE_ID, environment:EXT_ENVIRONMENT});
             Extend.buttons.render('#extend-offer', {
                 referenceId: $('.product-detail').data('pid')
             });
