@@ -134,6 +134,170 @@ function getProductsPayload(productBatch) {
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * Converts Money object to integer cents value
+ * @param {Money} value : API Money object
+ * @return {Integer} cents value
+ */
+function moneyToCents(value) {
+    return value.decimalValue * 100;
+}
+
+/**
+ * Get SFCC product JSON object
+ * @param {Order} order : API Order object
+ * @param {string} UUID : UUID for the associated parent productLineItem
+ * @return {string} stringified object
+ */
+function getSFCCProduct(order, UUID) {
+    var obj = {};
+
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+        if (pLi.custom.persistentUUID === UUID) {
+            var dividedPurchasePrice = pLi.adjustedNetPrice.divide(pLi.quantityValue);
+            var dividedListPrice = pLi.price.divide(pLi.quantityValue);
+            obj = {
+                id: pLi.productID,
+                purchasePrice: moneyToCents(dividedPurchasePrice),
+                listPrice: moneyToCents(dividedListPrice),
+                name: pLi.productName
+            };
+            break;
+        }
+    }
+
+    return obj;
+}
+
+/**
+ * Get Extend plan JSON object
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @return {string} stringified object
+ */
+function getExtendPlan(pLi, order) {
+    var obj = {
+        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)))
+    };
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var productLi = order.productLineItems[i];
+        if (productLi.custom.persistentUUID) {
+            // obj.planToken = createEnhancedOffer(productLi);
+            obj.id = createEnhancedOffer(productLi);
+            break;
+        }
+    }
+
+    return obj;
+}
+
+/**
+ * Make call on orders endpoint
+ * @param {dw.order.Order} order : API order
+ * @return {Array<Object>} array of products objects
+ */
+function getLineItems(order) {
+    var lineItems = [];
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+
+        if (pLi.custom.parentLineItemUUID) {
+            for (var j = 1; j <= pLi.getQuantityValue(); j++) {
+                var pliObj = {};
+                pliObj.status = 'fulfilled';
+                pliObj.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
+                pliObj.plan = getExtendPlan(pLi, order);
+                lineItems.push(pliObj);
+            }
+        }
+    }
+    return lineItems;
+}
+
+/**
+ * Get Orders Create endpoint Payload
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - request object
+ */
+function getOrdersPayload(paramObj) {
+    var order = paramObj.order;
+    var customer = JSON.parse(paramObj.customer);
+    var defaultShipment = order.getDefaultShipment();
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var requestObject = {};
+
+    // requestObject.sellerId = STORE_ID;
+    requestObject.storeId = STORE_ID;
+
+    // What is the sellerName?
+    // requestObject.sellerName = 'SFCC';
+    requestObject.storeName = 'SFCC';
+
+    requestObject.currency = order.getCurrencyCode();
+    requestObject.customer = {};
+
+    requestObject.customer.billingAddress = customer.address;
+    requestObject.customer.email = customer.email;
+    requestObject.customer.name = customer.name;
+    requestObject.customer.phone = customer.phone;
+
+    var address = defaultShipment.getShippingAddress();
+
+    var shippingAddress = {
+        address1: address.getAddress1(),
+        address2: address.getAddress2(),
+        city: address.getCity(),
+        countryCode: address.getCountryCode().toString(),
+        postalCode: address.getPostalCode(),
+        provinceCode: address.getStateCode()
+    };
+
+    requestObject.isTest = true;
+
+    requestObject.customer.shippingAddress = shippingAddress;
+
+    requestObject.total = moneyToCents(order.getTotalGrossPrice());
+    requestObject.transactionId = order.orderNo;
+    requestObject.lineItems = getLineItems(order);
+    return requestObject;
+}
+
+/**
+ * Get Enhanced Offers endpoind Payload
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - request object
+ */
+function getEnhancedOffers(pLi) {
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var masterProduct = null;
+    var category = null;
+    var requestObject = {};
+
+    requestObject.storeId = STORE_ID;
+    requestObject.productId = pLi.productID;
+    requestObject.product = {};
+
+    var product = ProductMgr.getProduct(pLi.productID);
+    if (product.isVariant()) {
+        masterProduct = product.getMasterProduct();
+        category = masterProduct.getPrimaryCategory();
+    } else {
+        category = product.getPrimaryCategory();
+    }
+
+    requestObject.product.title = pLi.productName;
+    requestObject.product.category = category.displayName;
+    requestObject.product.price = {};
+
+    requestObject.product.price.currencyCode = pLi.adjustedNetPrice.getCurrencyCode();
+    requestObject.product.price.amount = Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)));
+
+    return requestObject;
+}
+
+/**
+>>>>>>> parent of 029111e (EX-121: ADD: orders api for SG and SFRA)
  * Get products payload and make call on products endpoint
  * @param {Array<Product>} productBatch - array of products
  * @returns {Object} - response object
@@ -179,9 +343,44 @@ function getOffer(paramObj) {
     return response;
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * Make call on orders endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+function createOrders(paramObj) {
+    var requestObject = getOrdersPayload(paramObj);
+    var endpointName = 'orders';
+    var apiMethod = 'orders';
+    var response = webService.makeServiceCall(endpointName, requestObject, apiMethod);
+    return response;
+}
+
+/**
+ * Make call on enhanced offer endpoint
+ * @param {dw.order.ProductLineItem} pli - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+function createEnhancedOffer(pLi) {
+    var requestObject = getEnhancedOffers(pLi);
+    var endpointName = 'enhancedOffer';
+    var apiMethod = 'orders';
+    var response = webService.makeServiceCall(endpointName, requestObject, apiMethod);
+    return response.offerId;
+}
+
+>>>>>>> parent of 029111e (EX-121: ADD: orders api for SG and SFRA)
 module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
+<<<<<<< HEAD
     getOffer: getOffer
+=======
+    getOffer: getOffer,
+    createOrders: createOrders,
+    createEnhancedOffer: createEnhancedOffer
+>>>>>>> parent of 029111e (EX-121: ADD: orders api for SG and SFRA)
 };

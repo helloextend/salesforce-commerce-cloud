@@ -26,6 +26,13 @@ function createServiceCall(configObj) {
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
 
+<<<<<<< HEAD
+=======
+            if (configObj.extendMethod === 'orders') {
+                service.addHeader('X-Idempotency-Key', ACCESS_TOKEN);
+            }
+
+>>>>>>> parent of 029111e (EX-121: ADD: orders api for SG and SFRA)
             // Set request params
             var params = configObj.params.entrySet();
             for (var i = 0; i < params.length; i++) {
@@ -101,6 +108,25 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.mock = mocks.offersResponseMock;
             break;
 
+<<<<<<< HEAD
+=======
+        case 'orders':
+            configObj.endpoint = 'orders';
+            configObj.method = 'POST';
+            configObj.extendMethod = 'orders';
+            configObj.API_VERSION = '2021-07-01';
+            configObj.mock = mocks.contractsResponseMock;
+            break;
+
+        case 'enhancedOffer':
+            configObj.endpoint = 'offers';
+            configObj.method = 'POST';
+            configObj.extendMethod = 'orders';
+            configObj.API_VERSION = '2021-07-01';
+            configObj.mock = mocks.createEnhancedOffer;
+            break;
+
+>>>>>>> parent of 029111e (EX-121: ADD: orders api for SG and SFRA)
         default:
             break;
     }
