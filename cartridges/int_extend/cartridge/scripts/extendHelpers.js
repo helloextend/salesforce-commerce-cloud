@@ -5,6 +5,81 @@
 /* eslint-disable no-loop-func */
 'use strict';
 
+var Site = require('dw/system/Site').getCurrent();
+
+/**
+ * Return used plan for added extend product
+ * @param {Object} plans - object with plans get from extend API
+ * @param {Object} extendPlanId - id of used plan for added extend product
+ * @returns {Object} - current plan in plans object
+ */
+function getUsedPlan(plans, extendPlanId) {
+    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
+    if (apiVersion === 'default' || apiVersion === '2019-08-01') {
+        for (var j = 0; j < plans.length; j++) {
+            var currentPlan = plans[j];
+            if (currentPlan.id === extendPlanId) {
+                return currentPlan;
+            }
+        }
+    } else {
+        var plansKeys = Object.keys(plans);
+        for (var i = 0; i < plansKeys.length; i++) {
+            var currentPlanType = plans[plansKeys[i]];
+            if (!empty(currentPlanType)) {
+                for (var j = 0; j < currentPlanType.length; j++) {
+                    var currentPlan = currentPlanType[j];
+                    if (currentPlan.id === extendPlanId) {
+                        return currentPlan;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Return is offer valid
+ * @param {Object} params - http params with offer information
+ * @returns {boolean} - is offer price valid
+ */
+function validateOffer(params) {
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var extend = require('~/cartridge/scripts/extend');
+    var isValid = false;
+
+    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.pid.isEmpty()) {
+        return isValid;
+    }
+
+    var extendPlanId = params.extendPlanId.value;
+    var extendPrice = params.extendPrice.value;
+    var pid = params.pid.value;
+
+    var paramOjb = {
+        pid: pid
+    };
+
+    var offer = extend.getOffer(paramOjb);
+    var usedPlan = getUsedPlan(offer.plans, extendPlanId);
+
+    if (!usedPlan) {
+        logger.error('Extend warranty plan with id "{0}" could not be found.', extendPlanId);
+        return isValid;
+    }
+
+    if (+extendPrice !== usedPlan.price) {
+        logger.error('Wrong price for the warranty plan with id "{0}". Wrong: {1}. Correct: {2} ',
+            extendPlanId,
+            +extendPrice,
+            usedPlan.price
+        );
+        return isValid;
+    }
+
+    return true;
+}
+
 /**
 * Adds Extend warranty product line items to cart
 *
@@ -15,8 +90,9 @@
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
+    var isValid = validateOffer(params);
 
-    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty()) {
+    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty() || !isValid) {
         return;
     }
 
@@ -192,7 +268,7 @@ function getShippingAddress(pLi) {
  * Add Extend products to Contracts queue, from a provided order
  * @param {dw.order.Order} order : order that's just been placed
  */
-function addContractToQueue(order) {
+function createContractsCO(order) {
     var Site = require('dw/system/Site');
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
     var Transaction = require('dw/system/Transaction');
@@ -217,8 +293,65 @@ function addContractToQueue(order) {
     }
 }
 
+/**
+ * Process Orders Response
+ * @param {Object} ordersResponse : API response from orders endpoint
+ * @param {dw.order.Order} order : API order
+ */
+function processOrdersResponse(ordersResponse, order) {
+    var Transaction = require('dw/system/Transaction');
+    var ArrayList = require('dw/util/ArrayList');
+    var responseLI = ordersResponse.lineItems;
+
+    for (var i = 0; i < responseLI.length; i++) {
+        var apiCurrentLI = responseLI[i];
+        var apiPid = apiCurrentLI.product.id;
+        var matchedLI = null;
+
+        for (var j = 0; j < order.productLineItems.length; j++) {
+            var pLi = order.productLineItems[j];
+            var pid = pLi.productID;
+            if (apiPid === pid) {
+                matchedLI = pLi;
+                break;
+            }
+        }
+        Transaction.wrap(function () {
+            if (apiCurrentLI.contractId) {
+                var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
+                extendContractIds.add(apiCurrentLI.contractId);
+                matchedLI.custom.extendContractId = extendContractIds;
+            } else if (apiCurrentLI.leadToken) {
+                matchedLI.custom.leadToken = apiCurrentLI.leadToken;
+            }
+        });
+    }
+}
+
+/**
+ * Add Extend products to Contracts queue, from a provided order
+ * @param {dw.order.Order} order : order that's just been placed
+ */
+function addContractToQueue(order) {
+    var OrderMgr = require('dw/order/OrderMgr');
+    var extend = require('~/cartridge/scripts/extend');
+
+    var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
+    if (apiMethod === 'contractsAPI') {
+        createContractsCO(order);
+    } else {
+        var customer = getCustomer(order);
+        var ordersResponse = extend.createOrders({ order: order, customer: customer });
+        processOrdersResponse(ordersResponse, order);
+    }
+
+    return;
+}
+
 module.exports = {
     createOrUpdateExtendLineItem: createOrUpdateExtendLineItem,
     checkForWarrantyLI: checkForWarrantyLI,
-    addContractToQueue: addContractToQueue
+    addContractToQueue: addContractToQueue,
+    validateOffer: validateOffer
 };

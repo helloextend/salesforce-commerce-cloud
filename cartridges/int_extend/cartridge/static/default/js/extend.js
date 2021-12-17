@@ -1,3 +1,8 @@
+/* eslint-disable newline-per-chained-call */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+/* eslint-disable require-jsdoc */
 /* eslint-disable no-console */
 'use strict';
 
@@ -31,7 +36,7 @@ function extendInit() {
 }
 
 function disableLinkForExtendInMiniCart() {
-    $('.mini-cart-product a[data-is-extend-product="true"]').attr('href', "#");
+    $('.mini-cart-product a[data-is-extend-product="true"]').attr('href', '#');
     $('body').on('click', '.mini-cart-product a[data-is-extend-product="true"]', function (e) {
         e.preventDefault();
     });
@@ -75,24 +80,30 @@ function addItemToCartHandler(form, page, minicart, dialog, addItemToCart) {
 
 function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
     var EXT_PDP_UPSELL_SWITCH = window.EXT_PDP_UPSELL_SWITCH || undefined;
-    var extendComponent = window.Extend.buttons.instance('#extend-offer');
+    var isPlanSelected = false;
 
-    if (!extendComponent) {
-        addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
-        return;
-    }
+    if ($('#extend-offer').length) {
+        var extendComponent = window.Extend.buttons.instance('#extend-offer');
 
-    var extendPlan = extendComponent.getPlanSelection();
+        if (!extendComponent) {
+            addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
+            return;
+        }
 
-    if (extendPlan) {
-        form.append('<input class="extend-form-data" type="hidden" name="extendPlanId" value="' + extendPlan.planId + '" />');
-        form.append('<input class="extend-form-data" type="hidden" name="extendPrice" value="' + extendPlan.price + '" />');
-        form.append('<input class="extend-form-data" type="hidden" name="extendTerm" value="' + extendPlan.term + '" />');
-        form.append('<input class="extend-form-data" type="hidden" name="eventArea" value="product_page" />');
-        form.append('<input class="extend-form-data" type="hidden" name="eventType" value="buttons" />');
-        addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
-        $('.extend-form-data').remove();
-    } else if (EXT_PDP_UPSELL_SWITCH) {
+        var extendPlan = extendComponent.getPlanSelection();
+
+        if (extendPlan) {
+            form.append('<input class="extend-form-data" type="hidden" name="extendPlanId" value="' + extendPlan.planId + '" />');
+            form.append('<input class="extend-form-data" type="hidden" name="extendPrice" value="' + extendPlan.price + '" />');
+            form.append('<input class="extend-form-data" type="hidden" name="extendTerm" value="' + extendPlan.term + '" />');
+            form.append('<input class="extend-form-data" type="hidden" name="eventArea" value="product_page" />');
+            form.append('<input class="extend-form-data" type="hidden" name="eventType" value="buttons" />');
+            isPlanSelected = true;
+            addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
+            $('.extend-form-data').remove();
+        }
+    } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected) {
+        // trackOfferViewedModal(form.find('input[name="pid"]').val(), 'product_modal');
         window.Extend.modal.open({
             referenceId: $('.product-number span').text().trim(),
             onClose: function (plan) {
@@ -102,13 +113,18 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
                     form.append('<input type="hidden" name="extendTerm" value="' + plan.term + '" />');
                     form.append('<input class="extend-form-data" type="hidden" name="eventArea" value="product_modal" />');
                     form.append('<input class="extend-form-data" type="hidden" name="eventType" value="modal" />');
+                    isPlanSelected = true;
                 }
                 addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
                 $('.extend-form-data').remove();
             }
         });
+    } else if (!isPlanSelected) {
+        addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
+        return;
     }
 }
+
 
 function upsellModal(uuid) {
     $('body').on('click', '[data-pliuuid=' + uuid + '].extend-upsell-btn', function (e) {
@@ -189,7 +205,7 @@ function renderUpsellBtns() {
             method: 'GET',
             dataType: 'json',
             success: function (data) {
-                if (data.isEligible) {
+                if (data.isEligible && window.EXT_CART_UPSELL_SWITCH) {
                     addExtendUpsellBtn(uuid, data.pid, data.qty);
                 }
             },
@@ -203,4 +219,4 @@ $(document).ready(function () {
     extendInit();
     extendPDP();
     if ($('.pt_cart').length) { renderUpsellBtns(); }
-});
+})
