@@ -138,15 +138,33 @@ function processOrdersResponse(ordersResponse, order) {
         var apiCurrentLI = responseLI[i];
         var apiPid = apiCurrentLI.product.id;
         var matchedLI = null;
-
-        for (var j = 0; j < order.productLineItems.length; j++) {
-            var pLi = order.productLineItems[j];
-            var pid = pLi.productID;
-            if (apiPid === pid) {
-                matchedLI = pLi;
+        var pLi = null;
+        if (apiCurrentLI.plan) {
+            for (var j = 0; j < order.productLineItems.length; j++) {
+                pLi = order.productLineItems[j];
+                if (pLi.productID !== apiPid) {
+                    continue;
+                }
+                for (var k = 0; k < order.productLineItems.length; k++) {
+                    var productLi = order.productLineItems[k];
+                    if (pLi.custom.persistentUUID === productLi.custom.parentLineItemUUID) {
+                        matchedLI = productLi;
+                        break;
+                    }
+                }
                 break;
             }
+        } else {
+            for (var m = 0; m < order.productLineItems.length; m++) {
+                pLi = order.productLineItems[m];
+                var pid = pLi.productID;
+                if (apiPid === pid) {
+                    matchedLI = pLi;
+                    break;
+                }
+            }
         }
+
         Transaction.wrap(function () {
             if (apiCurrentLI.contractId) {
                 var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
