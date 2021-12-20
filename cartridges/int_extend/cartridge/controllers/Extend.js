@@ -30,8 +30,7 @@ function isEligibleForWarranty() {
     var qs = request.httpParameters;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     var pid,
-        qty, 
-        lead;
+        qty;
     var response = require('*/cartridge/scripts/util/Response');
 
     // Query string parameter wasn't provided
@@ -56,7 +55,6 @@ function isEligibleForWarranty() {
         if (currentBasket.productLineItems[i].UUID === qs.uuid[0]) {
             pid = currentBasket.productLineItems[i].productID;
             qty = currentBasket.productLineItems[i].quantityValue;
-            lead = currentBasket.productLineItems[i];
             break;
         }
     }
@@ -68,10 +66,6 @@ function isEligibleForWarranty() {
         });
         return;
     }
-
-    Transaction.wrap(function() {
-        lead.custom.isWarrantable = true;
-    });
 
     response.renderJSON({
         isEligible: true,

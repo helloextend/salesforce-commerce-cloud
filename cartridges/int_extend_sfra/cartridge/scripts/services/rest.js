@@ -19,21 +19,12 @@ function createServiceCall(configObj) {
         createRequest: function (service, requestData) {
             var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
             var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion').value;
-
-            if (configObj.API_VERSION) {
-                API_VERSION = configObj.API_VERSION;
-            }
-
             var credential = service.configuration.credential;
 
             // Set request headers
             service.addHeader('Accept', 'application/json; version=' + API_VERSION);
             service.addHeader('Content-Type', 'application/json');
             service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
-
-            if (configObj.XIdempotencyKey) {
-                service.addHeader('X-Idempotency-Key', configObj.XIdempotencyKey);
-            }
 
             // Set request params
             var params = configObj.params.entrySet();
@@ -78,7 +69,6 @@ function createServiceCall(configObj) {
 function createRequestConfiguration(endpoint, requestObject) {
     var HashMap = require('dw/util/HashMap');
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var UUIDUtils = require('dw/util/UUIDUtils');
 
     var configObj = {};
     configObj.params = new HashMap();
@@ -102,21 +92,13 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.method = 'POST';
             configObj.params.put('commit', requestObject.commit);
             configObj.endpoint = 'stores/' + STORE_ID + '/contracts/' + requestObject.extendContractId + '/refund';
+            configObj.mock = mocks.refundsResponseMock;
             break;
 
         case 'offer':
             configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
             configObj.method = 'GET';
             configObj.mock = mocks.offersResponseMock;
-            break;
-
-        case 'orders':
-            configObj.endpoint = 'orders';
-            configObj.method = 'POST';
-            configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
-            configObj.XIdempotencyKey = UUIDUtils.createUUID();
-            configObj.mock = mocks.ordersResponseMock;
             break;
 
         default:
@@ -129,10 +111,9 @@ function createRequestConfiguration(endpoint, requestObject) {
 /**
  * @param {string} endpointName - name of API endpoint
  * @param {Object} requestObject - payload object for request
- * @param {string} apiMethod - name of API method
  * @returns {Object} - response object
  */
-function makeServiceCall(endpointName, requestObject, apiMethod) {
+function makeServiceCall(endpointName, requestObject) {
     var configObj = createRequestConfiguration(endpointName, requestObject);
     var requestStr = JSON.stringify(requestObject);
     var serviceRequest = createServiceCall(configObj);
