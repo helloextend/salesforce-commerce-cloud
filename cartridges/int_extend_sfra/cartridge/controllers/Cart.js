@@ -1,25 +1,38 @@
+/* eslint-disable no-undef */
+/* eslint-disable one-var */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable radix */
+/* eslint-disable no-param-reassign */
+/* eslint-disable valid-jsdoc */
 'use strict';
 
-const server = require('server');
+var server = require('server');
 
-const page = module.superModule;
+var page = module.superModule;
 server.extend(page);
 
+/**
+ *
+ * @param {string} currentWarrantyLi - current warranty list
+ * @param {Object} form - form
+ */
 function updateExtendWarranty(currentWarrantyLi, form) {
     var Transaction = require('dw/system/Transaction');
     var quantityInCart = currentWarrantyLi.getQuantity();
 
-    Transaction.wrap(function() {
+    Transaction.wrap(function () {
         currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(form.quantity, 10));
     });
-};
+}
 
 /**
  * Handle Extend add to cart
- * @param {dw.order.Basket} currentBasket 
- * @param {dw.catalog.Product} product 
- * @param {dw.order.ProductLineItem} parentLineItem 
- * @param {Object} form 
+ * @param {dw.order.Basket} currentBasket
+ * @param {dw.catalog.Product} product
+ * @param {dw.order.ProductLineItem} parentLineItem
+ * @param {Object} form
  */
 function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
     var Transaction = require('dw/system/Transaction');
@@ -60,13 +73,15 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
 server.append('AddProduct', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var ProductMgr = require('dw/catalog/ProductMgr');
-    
+    var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
 
     var form = req.form;
     var viewData = res.getViewData(); // pliUUID
 
-    if (form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
+    var isOfferValide = extendHelpers.validateOffer(form);
+
+    if (isOfferValide && form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
         var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
         var parentLineItem;
 
@@ -74,7 +89,7 @@ server.append('AddProduct', function (req, res, next) {
         for (var i = 0; i < currentBasket.productLineItems.length; i++) {
             if (currentBasket.productLineItems[i].UUID === viewData.pliUUID) {
                 parentLineItem = currentBasket.productLineItems[i];
-                break; 
+                break;
             }
         }
 
@@ -84,7 +99,7 @@ server.append('AddProduct', function (req, res, next) {
         for (var i = 0; i < warrantyLis.length; i++) {
             if (warrantyLis[i].custom.parentLineItemUUID === parentLineItem.UUID) {
                 currentWarrantyLi = warrantyLis[i];
-                break; 
+                break;
             }
         }
 
@@ -97,7 +112,7 @@ server.append('AddProduct', function (req, res, next) {
         // Update totalQuantity with quantity of Extend warranties that's been added to cart
         res.setViewData({
             quantityTotal: viewData.quantityTotal + parseInt(form.quantity, 10)
-        })
+        });
     }
 
     return next();
@@ -107,12 +122,12 @@ server.append('AddProduct', function (req, res, next) {
  * Check productId already have an extend product associated
  * This is used in cart to asynchronously enable up-sell modal
  */
-server.get('DoesWarrantyExists', function(req, res, next) {
+server.get('DoesWarrantyExists', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
-    var extend = require('~/cartridge/scripts/extend');
     var qs = req.querystring;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
-    var pid, qty;
+    var pid,
+        qty;
 
     // Query string parameter wasn't provided
     if (!qs.uuid) {
@@ -130,12 +145,12 @@ server.get('DoesWarrantyExists', function(req, res, next) {
             res.json({
                 isEligible: false
             });
-    
+
             next();
             return;
         }
     }
-    
+
     for (var i = 0; i < currentBasket.productLineItems.length; i++) {
         if (currentBasket.productLineItems[i].UUID === qs.uuid) {
             pid = currentBasket.productLineItems[i].productID;
@@ -157,7 +172,7 @@ server.get('DoesWarrantyExists', function(req, res, next) {
     res.json({
         isEligible: true,
         pid: pid,
-        qty:qty
+        qty: qty
     });
 
     next();
@@ -166,13 +181,14 @@ server.get('DoesWarrantyExists', function(req, res, next) {
 /**
  * Handle Extend products when adding to cart from up-sell modal
  */
-server.post('AddExtendProduct', server.middleware.https, function(req, res, next) {
+server.post('AddExtendProduct', server.middleware.https, function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var ProductMgr = require('dw/catalog/ProductMgr');
     var URLUtils = require('dw/web/URLUtils');
     var Transaction = require('dw/system/Transaction');
     var CartModel = require('*/cartridge/models/cart');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+    var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
 
     var form = req.form;
     var currentBasket = BasketMgr.getCurrentBasket();
@@ -186,7 +202,17 @@ server.post('AddExtendProduct', server.middleware.https, function(req, res, next
 
         return next();
     }
-    
+
+    var isOfferValide = extendHelpers.validateOffer(form);
+
+    if (!isOfferValide) {
+        res.json({
+            error: true
+        });
+
+        return next();
+    }
+
     var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
     var parentLineItem;
 
@@ -198,7 +224,7 @@ server.post('AddExtendProduct', server.middleware.https, function(req, res, next
         }
     }
 
-    addExtendWarrantyToCart (currentBasket, product, parentLineItem, form);
+    addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
 
     Transaction.wrap(function () {
         basketCalculationHelpers.calculateTotals(currentBasket);
@@ -209,6 +235,7 @@ server.post('AddExtendProduct', server.middleware.https, function(req, res, next
     res.json(basketModel);
     return next();
 });
+
 
 /**
  * Handle deletion of Extend parent line item
@@ -236,7 +263,7 @@ server.append('RemoveProductLineItem', function (req, res, next) {
 
     Transaction.wrap(function () {
         var productLineItems = currentBasket.getAllProductLineItems();
-        
+
         for (var i = 0; i < productLineItems.length; i++) {
             var item = productLineItems[i];
             if ((item.custom.parentLineItemUUID === req.querystring.uuid)) {
@@ -264,6 +291,156 @@ server.append('RemoveProductLineItem', function (req, res, next) {
         });
     }
 
+    return next();
+});
+
+/**
+ * ExtendAnalytics
+ */
+server.append('AddProduct', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Site = require('dw/system/Site');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers');
+
+    var analyticsSDK = Site.getCurrent().getCustomPreferenceValue('extendAnalyticsSwitch');
+    var currentBasket = BasketMgr.getCurrentBasket();
+    var viewData = res.getViewData();
+    var form = req.form;
+
+    if (!analyticsSDK || !currentBasket || !form.pid) {
+        return next();
+    }
+
+    var addedProduct;
+    var productLineItems = currentBasket.getAllProductLineItems(form.pid);
+
+    if (productLineItems.length === 0) {
+        return next();
+    }
+
+    for (var i = 0; i < productLineItems.length; i++) {
+        if (productLineItems[i].productID === form.pid) {
+            addedProduct = productLineItems[i];
+        }
+    }
+
+    if (!addedProduct) {
+        return next();
+    }
+
+    var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, addedProduct);
+
+    if (!form.extendPlanId) {
+        viewData.extendAnalytics = extendAnalyticsHelpers.getProductAddedToCartData(addedProduct, form);
+    } else if (form.extendPlanId) {
+        viewData.extendAnalytics = extendAnalyticsHelpers.getOfferAddedToCartData(addedProduct, form);
+    }
+
+    res.setViewData(viewData);
+    return next();
+});
+
+/**
+ * Add tracking of removing plans and products from cart
+ */
+server.prepend('RemoveProductLineItem', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Site = require('dw/system/Site');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers');
+
+    var analyticsSDK = Site.getCurrent().getCustomPreferenceValue('extendAnalyticsSwitch');
+    var currentBasket = BasketMgr.getCurrentBasket();
+    var viewData = res.getViewData();
+    var productId = req.querystring.pid;
+    var uuid = req.querystring.uuid;
+
+    if (!analyticsSDK || !productId || !uuid) {
+        return next();
+    }
+
+    var removedProduct;
+    var removedExtendPlan;
+    var productLineItems = currentBasket.getAllProductLineItems(productId);
+
+    for (var i = 0; i < productLineItems.length; i++) {
+        if (extendAnalyticsHelpers.isExtendProduct(productLineItems[i], uuid)) {
+            removedExtendPlan = productLineItems[i];
+        } else {
+            removedProduct = productLineItems[i];
+        }
+    }
+
+    if (removedProduct) {
+        if (removedProduct.custom.persistentUUID) {
+            var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, removedProduct);
+
+            if (extendProduct) {
+                return next();
+            }
+        }
+        viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
+    } else if (removedExtendPlan) {
+        var removedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, removedExtendPlan);
+        viewData.extendAnalytics = extendAnalyticsHelpers.getOfferRemovedFromCartData(removedExtendedProduct, removedExtendPlan);
+    }
+    res.setViewData(viewData);
+
+    return next();
+});
+
+/**
+ * Add tracking of updating plans and products quantity
+ */
+server.append('UpdateQuantity', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Site = require('dw/system/Site');
+    var extendAnalyticsHelpers = require('*/cartridge/scripts/helpers/extendAnalyticsHelpers');
+
+    var analyticsSDK = Site.getCurrent().getCustomPreferenceValue('extendAnalyticsSwitch');
+    var currentBasket = BasketMgr.getCurrentBasket();
+    var viewData = res.getViewData();
+
+    if (!analyticsSDK || !viewData.items) {
+        return next();
+    }
+
+    if (currentBasket) {
+        var productId = req.querystring.pid;
+        var uuid = req.querystring.uuid;
+        var updatedProduct;
+        var updatedExtendPlan;
+        var productLineItems = currentBasket.getAllProductLineItems(productId);
+
+        if (productLineItems.length === 0) {
+            return next();
+        }
+
+        for (var i = 0; i < productLineItems.length; i++) {
+            if (extendAnalyticsHelpers.isExtendProduct(productLineItems[i], uuid)) {
+                updatedExtendPlan = productLineItems[i];
+            } else {
+                updatedProduct = productLineItems[i];
+            }
+        }
+
+        if (updatedProduct) {
+            if (updatedProduct.custom.persistentUUID) {
+                var extendProduct = extendAnalyticsHelpers.getExtendProduct(currentBasket, updatedProduct);
+
+                if (extendProduct) {
+                    viewData.extendAnalytics = extendAnalyticsHelpers.getOfferUpdatedData(updatedProduct, extendProduct);
+                } else {
+                    viewData.extendAnalytics = extendAnalyticsHelpers.getProductUpdatedData(updatedProduct);
+                }
+            } else {
+                viewData.extendAnalytics = extendAnalyticsHelpers.getProductUpdatedData(updatedProduct);
+            }
+        } else if (updatedExtendPlan) {
+            var updatedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, updatedExtendPlan);
+            viewData.extendAnalytics = extendAnalyticsHelpers.getOfferUpdatedData(updatedExtendedProduct, updatedExtendPlan);
+        }
+        res.setViewData(viewData);
+    }
     return next();
 });
 

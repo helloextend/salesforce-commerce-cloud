@@ -656,6 +656,9 @@ module.exports = {
 
             // BEGIN Extend integration
             var EXT_PDP_UPSELL_SWITCH = window.EXT_PDP_UPSELL_SWITCH || undefined;
+            var isPlanSelected = false;
+            form.area = 'product_page';
+            form.component = 'buttons';
 
             if ($('#extend-offer').length) {
                 var extendComponent = Extend.buttons.instance('#extend-offer');
@@ -665,38 +668,44 @@ module.exports = {
                     form.extendPlanId = extendPlan.planId;
                     form.extendPrice = extendPlan.price;
                     form.extendTerm = extendPlan.term;
+                    isPlanSelected = true;
                     $(this).trigger('updateAddToCartFormData', form);
-                } else if (EXT_PDP_UPSELL_SWITCH) {
-                    Extend.modal.open({
-                        referenceId: $('.product-detail').data('pid'),
-                        onClose: function (plan) {
-                            if (plan) {
-                                form.extendPlanId = plan.planId;
-                                form.extendPrice = plan.price;
-                                form.extendTerm = plan.term;
-                                $(this).trigger('updateAddToCartFormData', form);
-                            }
-
-                            if (addToCartUrl) {
-                                $.ajax({
-                                    url: addToCartUrl,
-                                    method: 'POST',
-                                    data: form,
-                                    success: function (data) {
-                                        handlePostCartAdd(data);
-                                        $('body').trigger('product:afterAddToCart', data);
-                                        $.spinner().stop();
-                                        miniCartReportingUrl(data.reportingURL);
-                                    },
-                                    error: function () {
-                                        $.spinner().stop();
-                                    }
-                                });
-                            }
-                        }
-                    });
-                    return;
                 }
+            } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected) {
+                $('body').trigger('extend:modal:viewed',
+                    { productId: form.pid, area: 'product_modal' });
+
+                Extend.modal.open({
+                    referenceId: $('.product-detail').data('pid'),
+                    onClose: function (plan) {
+                        if (plan) {
+                            form.extendPlanId = plan.planId;
+                            form.extendPrice = plan.price;
+                            form.extendTerm = plan.term;
+                            form.area = 'product_modal';
+                            form.component = 'modal';
+                            $(this).trigger('updateAddToCartFormData', form);
+                        }
+
+                        if (addToCartUrl) {
+                            $.ajax({
+                                url: addToCartUrl,
+                                method: 'POST',
+                                data: form,
+                                success: function (data) {
+                                    handlePostCartAdd(data);
+                                    $('body').trigger('product:afterAddToCart', data);
+                                    $.spinner().stop();
+                                    miniCartReportingUrl(data.reportingURL);
+                                },
+                                error: function () {
+                                    $.spinner().stop();
+                                }
+                            });
+                        }
+                    }
+                });
+                return;
             }
             // END Extend integration
 

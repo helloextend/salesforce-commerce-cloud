@@ -1,144 +1,187 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 'use strict';
 
-var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var Site = require('dw/system/Site').getCurrent();
-var LocalServiceRegistry = require('dw/svc/LocalServiceRegistry');
+var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var webService = require('~/cartridge/scripts/services/rest');
 
 /**
- * Returns a response object from Extend
- *
- * @param {Object} paramData - query params
- * @returns {Object} - response object
+ * Get contracts payload for default API version
+ * @param {dw.object.CustomObject} paramObj - instance of ExtendContractsQueue object
+ * @returns {Object} requestObject - payload object for request
  */
-function createContract(paramData) {
-    var serviceResponse = null;
+function getContractsDefaultPayload(paramObj) {
+    var contractCO = paramObj.custom;
+    var customer = JSON.parse(contractCO.customer);
+    var product = JSON.parse(contractCO.product);
+    var plan = JSON.parse(contractCO.plan);
 
-    serviceResponse = webService.createContractRequest(paramData);
+    var requestObject = {
+        transactionId: contractCO.orderNo,
+        transactionTotal: contractCO.orderTotal,
+        transactionDate: paramObj.getCreationDate().valueOf(),
+        customer: customer,
+        product: product,
+        currency: contractCO.currency,
+        plan: plan
+    };
 
-    if (!serviceResponse.ok) {
-        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
-        logger.error(
-            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}stores/{3}/contracts',
-            serviceResponse.errorMessage,
-            serviceResponse.error,
-            serviceURL,
-            Site.getCustomPreferenceValue('extendStoreID')
-        );
-        return {
-            error: true,
-            errorMessage: serviceResponse.errorMessage || 'No results found.',
-            errorCode: serviceResponse.error
-        };
-    }
-
-    logger.debug('Extend Create Contract Request: {0}', JSON.stringify(serviceResponse.object));
-
-    return serviceResponse.object;
-}
-
-
-/**
- * Returns a response object from Extend
- *
- * @param {Object} paramData - query params
- * @returns {Object} - response object
- */
-function getOffer(paramData) {
-    var serviceResponse = null;
-
-    serviceResponse = webService.getOfferRequest(paramData);
-
-    if (!serviceResponse.ok) {
-        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
-        logger.error(
-            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}stores/offers?storeId={3}&productId={4}',
-            serviceResponse.errorMessage,
-            serviceResponse.error,
-            serviceURL,
-            Site.getCustomPreferenceValue('extendStoreID'),
-            paramData.productId
-        );
-        return {
-            error: true,
-            errorMessage: serviceResponse.errorMessage || 'No results found.',
-            errorCode: serviceResponse.error
-        };
-    }
-
-    logger.debug('Extend Get Offer Request: {0}', JSON.stringify(serviceResponse.object));
-
-    return serviceResponse.object;
-}
-
-
-/**
- * Returns a response object from Extend
- *
- * @param {Object} paramData - query params
- * @returns {Object} - response object
- */
-function createProduct(paramData) {
-    var serviceResponse = null;
-
-    serviceResponse = webService.createProductRequest(paramData);
-
-    if (!serviceResponse.ok) {
-        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
-        logger.error(
-            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}stores/{3}/products',
-            serviceResponse.errorMessage,
-            serviceResponse.error,
-            serviceURL,
-            Site.getCustomPreferenceValue('extendStoreID')
-        );
-        return {
-            error: true,
-            errorMessage: serviceResponse.errorMessage || 'No results found.',
-            errorCode: serviceResponse.error
-        };
-    }
-
-    logger.debug('Extend Create Product Response: {0}', JSON.stringify(serviceResponse.object));
-
-    return serviceResponse.object;
+    return requestObject;
 }
 
 /**
- * Returns a response object from Extend
- *
- * @param {Object} paramData - query params
- * @returns {Object} - response object
+ * Get contracts payload for specific API version
+ * @param {dw.object.CustomObject} paramObj - instance of ExtendContractsQueue object
+ * @returns {Object} requestObject - payload object for request
  */
- function createRefund(paramData) {
-    var serviceResponse = null;
+function getContractsPayload(paramObj) {
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
+    var defaultPayload = getContractsDefaultPayload(paramObj);
 
-    serviceResponse = webService.createRefundRequest(paramData);
-
-    if (!serviceResponse.ok) {
-        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
-        logger.error(
-            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}stores/{3}/contracts/{4}/refund',
-            serviceResponse.errorMessage,
-            serviceResponse.error,
-            serviceURL,
-            Site.getCustomPreferenceValue('extendStoreID'),
-            paramData.extendContractId
-        );
-        return {
-            error: true,
-            errorMessage: serviceResponse.errorMessage || 'No results found.',
-            errorCode: serviceResponse.error
-        };
+    if (apiVersion === 'default') {
+        return defaultPayload;
     }
 
-    return serviceResponse.object;
+    var contractCO = paramObj.custom;
+    var customer = JSON.parse(contractCO.customer);
+    var shippingAddress = JSON.parse(contractCO.shippingAddress);
+    var product = JSON.parse(contractCO.product);
+    var plan = JSON.parse(contractCO.plan);
+    var requestObject = defaultPayload;
+
+    requestObject.transactionTotal = {
+        currencyCode: contractCO.currency,
+        amount: contractCO.orderTotal
+    };
+
+    requestObject.customer.billingAddress = customer.address;
+    requestObject.customer.shippingAddress = shippingAddress;
+    delete requestObject.customer.address;
+
+    requestObject.product.purchasePrice = {
+        currencyCode: contractCO.currency,
+        amount: product.purchasePrice
+    };
+
+    requestObject.plan.purchasePrice = {
+        currencyCode: contractCO.currency,
+        amount: plan.purchasePrice
+    };
+
+    if (apiVersion === '2021-04-01') {
+        requestObject.isTest = true;
+    }
+
+    return requestObject;
 }
 
-/* Exported Methods */
+/**
+ * Get products payload for specific API version
+ * @param {ArrayList<Product>} productBatch - array of products
+ * @returns {Array} requestObject - payload object for request
+ */
+function getProductsPayload(productBatch) {
+    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
+    var requestObject = [];
+
+    for (var i = 0; i < productBatch.length; i++) {
+        var product = productBatch[i];
+        var EXTEND_IMAGE_VIEW_TYPE = Site.getCustomPreferenceValue('extendImageViewType');
+
+        try {
+            var category = '';
+            if (product.isVariant()) {
+                category = !empty(product.getMasterProduct().getPrimaryCategory()) ? product.getMasterProduct().getPrimaryCategory().getID() : '';
+            } else {
+                category = !empty(product.getPrimaryCategory()) ? product.getPrimaryCategory().getID() : '';
+            }
+
+            var price = product.priceModel.price.available && product.priceModel.price.value > 0 ? Math.round(product.priceModel.price.value * 100) : 0;
+
+            if (apiVersion !== 'default') {
+                price = {
+                    currencyCode: product.priceModel.price.getCurrencyCode(),
+                    amount: price
+                };
+            }
+
+            var productObj = {};
+            productObj.brand = product.getBrand();
+            productObj.category = category;
+            productObj.description = !empty(product.getShortDescription()) ? product.getShortDescription().getMarkup() : '';
+            productObj.imageUrl = product.getImage(EXTEND_IMAGE_VIEW_TYPE, 0) ? product.getImage(EXTEND_IMAGE_VIEW_TYPE, 0).getAbsURL().toString() : '';
+            productObj.mfrWarranty = {
+                parts: product.custom.mfrWarrantyParts,
+                labor: product.custom.mfrWarrantyLabor
+            };
+            productObj.price = price;
+            productObj.title = product.getName();
+            productObj.referenceId = product.getID();
+            productObj.parentReferenceId = product.isVariant() ? product.getMasterProduct().getID() : '';
+            productObj.identifiers = {
+                sku: product.getID(),
+                upc: product.getUPC()
+            };
+            requestObject.push(productObj);
+        } catch (error) {
+            logger.error('Request object could not be created. {0}', error);
+        }
+    }
+
+    return requestObject;
+}
+
+/**
+ * Get products payload and make call on products endpoint
+ * @param {Array<Product>} productBatch - array of products
+ * @returns {Object} - response object
+ */
+function exportProducts(productBatch) {
+    var requestObject = getProductsPayload(productBatch);
+    var endpointName = 'products';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
+}
+
+/**
+ * Make call on contract endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+function createContracts(paramObj) {
+    var requestObject = getContractsPayload(paramObj);
+    var endpointName = 'contracts';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
+}
+
+/**
+ * Make call on refund contract endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+function createRefund(paramObj) {
+    var endpointName = 'refund';
+    var response = webService.makeServiceCall(endpointName, paramObj);
+    return response;
+}
+
+/**
+ * Make call on offer endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+ function getOffer(paramObj) {
+    var endpointName = 'offer';
+    var response = webService.makeServiceCall(endpointName, paramObj);
+    return response;
+}
+
 module.exports = {
-    createContract: createContract,
-    getOffer: getOffer,
-    createProduct: createProduct,
-    createRefund: createRefund
+    exportProducts: exportProducts,
+    createContracts: createContracts,
+    createRefund: createRefund,
+    getOffer: getOffer
 };

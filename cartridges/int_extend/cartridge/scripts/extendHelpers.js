@@ -1,4 +1,84 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable radix */
+/* eslint-disable no-redeclare */
+/* eslint-disable block-scoped-var */
+/* eslint-disable no-loop-func */
 'use strict';
+
+var Site = require('dw/system/Site').getCurrent();
+
+/**
+ * Return used plan for added extend product
+ * @param {Object} plans - object with plans get from extend API
+ * @param {Object} extendPlanId - id of used plan for added extend product
+ * @returns {Object} - current plan in plans object
+ */
+function getUsedPlan(plans, extendPlanId) {
+    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
+    if (apiVersion === 'default' || apiVersion === '2019-08-01') {
+        for (var j = 0; j < plans.length; j++) {
+            var currentPlan = plans[j];
+            if (currentPlan.id === extendPlanId) {
+                return currentPlan;
+            }
+        }
+    } else {
+        var plansKeys = Object.keys(plans);
+        for (var i = 0; i < plansKeys.length; i++) {
+            var currentPlanType = plans[plansKeys[i]];
+            if (!empty(currentPlanType)) {
+                for (var j = 0; j < currentPlanType.length; j++) {
+                    var currentPlan = currentPlanType[j];
+                    if (currentPlan.id === extendPlanId) {
+                        return currentPlan;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Return is offer valid
+ * @param {Object} params - http params with offer information
+ * @returns {boolean} - is offer price valid
+ */
+function validateOffer(params) {
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var extend = require('~/cartridge/scripts/extend');
+    var isValid = false;
+
+    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.pid.isEmpty()) {
+        return isValid;
+    }
+
+    var extendPlanId = params.extendPlanId.value;
+    var extendPrice = params.extendPrice.value;
+    var pid = params.pid.value;
+
+    var paramOjb = {
+        pid: pid
+    };
+
+    var offer = extend.getOffer(paramOjb);
+    var usedPlan = getUsedPlan(offer.plans, extendPlanId);
+
+    if (!usedPlan) {
+        logger.error('Extend warranty plan with id "{0}" could not be found.', extendPlanId);
+        return isValid;
+    }
+
+    if (+extendPrice !== usedPlan.price) {
+        logger.error('Wrong price for the warranty plan with id "{0}". Wrong: {1}. Correct: {2} ',
+            extendPlanId,
+            +extendPrice,
+            usedPlan.price
+        );
+        return isValid;
+    }
+
+    return true;
+}
 
 /**
 * Adds Extend warranty product line items to cart
@@ -10,8 +90,9 @@
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
-    
-    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty()) {
+    var isValid = validateOffer(params);
+
+    if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty() || !isValid) {
         return;
     }
 
@@ -35,14 +116,14 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
     for (var i = 0; i < warrantyLis.length; i++) {
         if (warrantyLis[i].custom.parentLineItemUUID === parentLineItem.UUID) {
             currentWarrantyLi = warrantyLis[i];
-            break; 
+            break;
         }
     }
 
     if (currentWarrantyLi) {
         var quantityInCart = currentWarrantyLi.getQuantity();
 
-        Transaction.wrap(function() {
+        Transaction.wrap(function () {
             currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(quantity, 10));
         });
 
@@ -106,8 +187,8 @@ function moneyToCents(value) {
 /**
  * Get SFCC product JSON object
  * @param {dw.order.Order} order : API Order object
- * @param {String} UUID : UUID for the associated parent productLineItem
- * @return {String} stringified object
+ * @param {string} UUID : UUID for the associated parent productLineItem
+ * @return {string} stringified object
  */
 function getSFCCProduct(order, UUID) {
     var obj = {};
@@ -129,11 +210,11 @@ function getSFCCProduct(order, UUID) {
 /**
  * Get Extend plan JSON object
  * @param {dw.order.ProductLineItem} pLi : API ProductLineItem object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getExtendPlan(pLi) {
     var obj = {
-        purchasePrice: moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue)),
+        purchasePrice: Math.ceil(moneyToCents(pLi.adjustedNetPrice.divide(pLi.quantityValue))),
         planId: pLi.getManufacturerSKU()
     };
 
@@ -143,7 +224,7 @@ function getExtendPlan(pLi) {
 /**
  * Get customer JSON object
  * @param {dw.order.Order} order : API Order object
- * @return {String} stringified object
+ * @return {string} stringified object
  */
 function getCustomer(order) {
     var address = order.getBillingAddress();
@@ -162,6 +243,25 @@ function getCustomer(order) {
     };
 
     return JSON.stringify(obj);
+}
+
+/**
+ * Get customer shipping address JSON object
+ * @param {ProductLineItem} pLi : API ProductLineItem object
+ * @return {String} stringified object
+ */
+function getShippingAddress(pLi) {
+    var address = pLi.getShipment().getShippingAddress();
+    var shippingAddress = {
+        address1: address.getAddress1(),
+        address2: address.getAddress2(),
+        city: address.getCity(),
+        countryCode: address.getCountryCode().toString(),
+        postalCode: address.getPostalCode(),
+        provinceCode: address.getStateCode()
+    };
+
+    return JSON.stringify(shippingAddress);
 }
 
 /**
@@ -186,6 +286,7 @@ function addContractToQueue(order) {
                     queueObj.custom.plan = getExtendPlan(pLi);
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);
+                    queueObj.custom.shippingAddress = getShippingAddress(pLi);
                 });
             }
         }
@@ -195,5 +296,6 @@ function addContractToQueue(order) {
 module.exports = {
     createOrUpdateExtendLineItem: createOrUpdateExtendLineItem,
     checkForWarrantyLI: checkForWarrantyLI,
-    addContractToQueue: addContractToQueue
+    addContractToQueue: addContractToQueue,
+    validateOffer: validateOffer
 };
