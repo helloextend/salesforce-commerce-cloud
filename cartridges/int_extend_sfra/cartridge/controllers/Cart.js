@@ -124,10 +124,12 @@ server.append('AddProduct', function (req, res, next) {
  */
 server.get('DoesWarrantyExists', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
+    var Transaction = require('dw/system/Transaction');
     var qs = req.querystring;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     var pid,
-        qty;
+        qty,
+        lead;
 
     // Query string parameter wasn't provided
     if (!qs.uuid) {
@@ -155,6 +157,7 @@ server.get('DoesWarrantyExists', function (req, res, next) {
         if (currentBasket.productLineItems[i].UUID === qs.uuid) {
             pid = currentBasket.productLineItems[i].productID;
             qty = currentBasket.productLineItems[i].quantityValue;
+            lead = currentBasket.productLineItems[i];
             break;
         }
     }
@@ -168,6 +171,10 @@ server.get('DoesWarrantyExists', function (req, res, next) {
         next();
         return;
     }
+
+    Transaction.wrap(function () {
+        lead.custom.isWarrantable = true;
+    });
 
     res.json({
         isEligible: true,
@@ -377,8 +384,8 @@ server.prepend('RemoveProductLineItem', function (req, res, next) {
             if (extendProduct) {
                 return next();
             }
+            viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
         }
-        viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
     } else if (removedExtendPlan) {
         var removedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, removedExtendPlan);
         viewData.extendAnalytics = extendAnalyticsHelpers.getOfferRemovedFromCartData(removedExtendedProduct, removedExtendPlan);
