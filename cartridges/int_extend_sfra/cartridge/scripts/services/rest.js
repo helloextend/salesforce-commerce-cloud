@@ -104,6 +104,14 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.endpoint = 'stores/' + STORE_ID + '/contracts/' + requestObject.extendContractId + '/refund';
             break;
 
+        case 'refunds':
+            configObj.method = 'POST';
+            configObj.params.put('commit', requestObject.commit);
+            configObj.endpoint = 'refunds';
+            configObj.API_VERSION = '2021-07-01';
+            configObj.XIdempotencyKey = UUIDUtils.createUUID();
+            break;
+
         case 'offer':
             configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
             configObj.method = 'GET';

@@ -15,15 +15,20 @@ var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 exports.create = function () {
     var OrderMgr = require('dw/order/OrderMgr');
     var Order = require('dw/order/Order');
+    var Site = require('dw/system/Site').getCurrent();
     var Transaction = require('dw/system/Transaction');
     var refundStatus = jobHelpers.refundStatus;
+    var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
     var canceledOrders = OrderMgr.searchOrders(
-        'status={0} AND custom.extendRefundStatus!={1} AND custom.extendRefundStatus!={2}',
+        'status={0} AND custom.extendRefundStatus!={1} AND custom.extendRefundStatus!={2} AND custom.extendRefundStatus!={3} AND custom.extendRefundStatus!={4} AND custom.extendRefundStatus!={5}',
         'creationDate desc',
         Order.ORDER_STATUS_CANCELLED,
         refundStatus.SUCCESS,
-        refundStatus.REJECT
+        refundStatus.REJECT,
+        refundStatus.refund_quated,
+        refundStatus.refund_paid,
+        refundStatus.refund_denied
     );
 
     logger.info('{0} canceled orders have been found', canceledOrders.getCount());
@@ -68,7 +73,14 @@ exports.create = function () {
                     commit: false
                 };
 
-                var response = extend.createRefund(paramObj);
+                var response = null;
+
+                if (apiMethod === 'ordersAPI') {
+                    paramObj.isOrdersApi = true;
+                    response = extend.createOrderApiRefunds(paramObj);
+                } else {
+                    response = extend.createRefund(paramObj);
+                }
 
                 if (response.error) {
                     // An error has been occurred during service call
@@ -76,22 +88,26 @@ exports.create = function () {
                     continue;
                 }
 
-                if (response.refundAmount.amount === 0) {
-                    logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
-                    extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                } else if (response.refundAmount.amount > 0) {
-                    // paramObj.commit = false for testing
-                    paramObj.commit = true;
-                    response = extend.createRefund(paramObj);
+                if (apiMethod !== 'ordersAPI') {
+                    if (response.refundAmount.amount === 0) {
+                        logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
+                        extendRefundStatuses[extendContractId] = refundStatus.REJECT;
+                    } else if (response.refundAmount.amount > 0) {
+                        // paramObj.commit = false for testing
+                        paramObj.commit = true;
+                        response = extend.createRefund(paramObj);
 
-                    if (response.id) {
-                        logger.info('An Extend contract №{0} has been successfully refunded ', extendContractId);
-                        extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                    } else {
-                        // Error has been occured during service call
-                        extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                        continue;
+                        if (response.id) {
+                            logger.info('An Extend contract №{0} has been successfully refunded ', extendContractId);
+                            extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
+                        } else {
+                            // Error has been occured during service call
+                            extendRefundStatuses[extendContractId] = refundStatus.ERROR;
+                            continue;
+                        }
                     }
+                } else {
+                    extendRefundStatuses[extendContractId] = response.status;
                 }
             }
 
@@ -99,7 +115,7 @@ exports.create = function () {
                 pLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
             });
         }
-        var orderRefundStatus = jobHelpers.getRefundStatus(currentOrder);
+        var orderRefundStatus = jobHelpers.getRefundStatus(currentOrder, apiMethod);
 
         Transaction.wrap(function () {
             currentOrder.custom.extendRefundStatus = orderRefundStatus;

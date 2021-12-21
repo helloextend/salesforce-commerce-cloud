@@ -181,6 +181,18 @@ function getExtendPlan(pLi, order) {
 }
 
 /**
+ * Get ContractId for refunds endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - request object
+ */
+function getContractID(paramObj) {
+    var requestObject = {
+        contractId: paramObj.extendContractId
+    };
+    return requestObject;
+}
+
+/**
  * Get Order`s line items objects
  * @param {dw.order.Order} order : API order
  * @return {Array<Object>} array of line items objects
@@ -297,6 +309,18 @@ function createRefund(paramObj) {
 }
 
 /**
+ * Make call on refunds contract endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+function createOrderApiRefunds(paramObj) {
+    var requestObject = getContractID(paramObj);
+    var endpointName = 'refunds';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
+}
+
+/**
  * Make call on offer endpoint
  * @param {Object} paramObj - object with id of contract and commit type
  * @returns {Object} - response object
@@ -324,6 +348,7 @@ module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
+    createOrderApiRefunds: createOrderApiRefunds,
     getOffer: getOffer,
     createOrders: createOrders
 };

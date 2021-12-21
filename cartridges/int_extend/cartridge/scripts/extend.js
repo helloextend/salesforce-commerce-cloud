@@ -138,7 +138,7 @@ function getProductsPayload(productBatch) {
  * @param {Money} value : API Money object
  * @return {Integer} cents value
  */
- function moneyToCents(value) {
+function moneyToCents(value) {
     return value.decimalValue * 100;
 }
 
@@ -177,6 +177,18 @@ function getExtendPlan(pLi, order) {
         }
     }
     return planObj;
+}
+
+/**
+ * Get ContractId for refunds endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - request object
+ */
+function getContractID(paramObj) {
+    var requestObject = {
+        contractId: paramObj.extendContractId
+    };
+    return requestObject;
 }
 
 /**
@@ -296,6 +308,18 @@ function createRefund(paramObj) {
 }
 
 /**
+ * Make call on refunds contract endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+function createOrderApiRefunds(paramObj) {
+    var requestObject = getContractID(paramObj);
+    var endpointName = 'refunds';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
+}
+
+/**
  * Make call on offer endpoint
  * @param {Object} paramObj - object with id of contract and commit type
  * @returns {Object} - response object
@@ -323,6 +347,7 @@ module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
+    createOrderApiRefunds: createOrderApiRefunds,
     getOffer: getOffer,
     createOrders: createOrders
 };
