@@ -274,6 +274,17 @@ function exportProducts(productBatch) {
 }
 
 /**
+ * Get products payload and make call on products endpoint
+ * @param {Array<Product>} productBatch - array of products
+ * @returns {Object} - response object
+ */
+function sendOrders(productBatch) {
+    var requestObject = 
+    var endpointName = 'orders';
+    var response = webService.makeServiceCall(endpointName, requestObject, apiMethod)
+}
+
+/**
  * Get contracts payload and make call on contracts endpoint
  * @param {dw.object.CustomObject} paramObj - instance of ExtendContractsQueue object
  * @returns {Object} - response object
