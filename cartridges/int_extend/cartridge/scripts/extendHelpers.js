@@ -1,3 +1,8 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+/* eslint-disable new-cap */
+/* eslint-disable no-continue */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable radix */
 /* eslint-disable no-redeclare */
@@ -268,8 +273,7 @@ function getShippingAddress(pLi) {
  * Add Extend products to Contracts queue, from a provided order
  * @param {dw.order.Order} order : order that's just been placed
  */
-function addContractToQueue(order) {
-    var Site = require('dw/system/Site');
+function createContractsCO(order) {
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
     var Transaction = require('dw/system/Transaction');
 
@@ -282,7 +286,7 @@ function addContractToQueue(order) {
                     var queueObj = CustomObjectMgr.createCustomObject('ExtendContractsQueue', pLi.UUID + '-' + j);
                     queueObj.custom.orderNo = order.getOrderNo();
                     queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
-                    queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
+                    queueObj.custom.currency = Site.getDefaultCurrency();
                     queueObj.custom.plan = getExtendPlan(pLi);
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);
@@ -291,6 +295,84 @@ function addContractToQueue(order) {
             }
         }
     }
+}
+
+/**
+ * Process Orders Response
+ * @param {Object} ordersResponse : API response from orders endpoint
+ * @param {dw.order.Order} order : API order
+ */
+function processOrdersResponse(ordersResponse, order) {
+    var Transaction = require('dw/system/Transaction');
+    var ArrayList = require('dw/util/ArrayList');
+    var responseLI = ordersResponse.lineItems;
+    var ordersLI = order.productLineItems;
+
+    for (var i = 0; i < responseLI.length; i++) {
+        var apiCurrentLI = responseLI[i];
+        var apiPid = apiCurrentLI.product.id;
+        var matchedLI = null;
+        var pLi = null;
+        var productLi = null;
+        var pid = null;
+
+        if (apiCurrentLI.plan) {
+            for (var j = 0; j < ordersLI.length; j++) {
+                pLi = ordersLI[j];
+                if (pLi.productID !== apiPid) {
+                    continue;
+                }
+                for (var k = 0; k < ordersLI.length; k++) {
+                    productLi = ordersLI[k];
+                    if (pLi.custom.persistentUUID === productLi.custom.parentLineItemUUID) {
+                        matchedLI = productLi;
+                        break;
+                    }
+                }
+                break;
+            }
+        } else {
+            for (var l = 0; l < ordersLI.length; l++) {
+                pLi = ordersLI[l];
+                pid = pLi.productID;
+                if (pid === apiPid) {
+                    matchedLI = pLi;
+                    break;
+                }
+            }
+        }
+
+        Transaction.wrap(function () {
+            if (apiCurrentLI.contractId) {
+                var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
+                extendContractIds.add(apiCurrentLI.contractId);
+                matchedLI.custom.extendContractId = extendContractIds;
+            } else if (apiCurrentLI.leadToken) {
+                matchedLI.custom.leadToken = apiCurrentLI.leadToken;
+            }
+        });
+    }
+}
+
+/**
+ * Add Extend products to Contracts queue, from a provided order
+ * @param {dw.order.Order} order : order that's just been placed
+ */
+function addContractToQueue(order) {
+    var OrderMgr = require('dw/order/OrderMgr');
+    var extend = require('~/cartridge/scripts/extend');
+
+    var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
+    if (apiMethod === 'contractsAPI') {
+        createContractsCO(order);
+    } else {
+        var customer = getCustomer(order);
+        var ordersResponse = extend.createOrders({ order: order, customer: customer });
+        processOrdersResponse(ordersResponse, order);
+    }
+
+    return;
 }
 
 module.exports = {
