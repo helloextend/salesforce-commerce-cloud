@@ -233,7 +233,6 @@ function getCustomer(customer, address) {
     return customerObj;
 }
 
-
 /**
  * Get Orders Create endpoint Payload
  * @param {Object} paramObj - object with id of contract and commit type
@@ -262,6 +261,56 @@ function getOrdersPayload(paramObj) {
 }
 
 /**
+ * Get orders payload for specific API version
+ * @param {ArrayList<Product>} orderBatch - array of orders
+ * @returns {Array} requestObject - payload object for request
+ */
+function test(orderBatch) {
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var requestObject = [];
+
+    for (var i = 0; i < orderBatch.length; i++) {
+        var currentOrder = orderBatch[i];
+        try {
+            var orderObj = {};
+
+            orderObj.storeId = STORE_ID;
+            orderObj.storeName = 'SFCC';
+
+            var billingAddress = currentOrder.getBillingAddress();
+
+            var customer = {
+                billingAddress: {
+                    address1: billingAddress.getAddress1(),
+                    address2: billingAddress.getAddress2(),
+                    city: billingAddress.getCity(),
+                    countryCode: billingAddress.getCountryCode().toString(),
+                    postalCode: billingAddress.getPostalCode(),
+                    province: billingAddress.getStateCode()
+                },
+                email: currentOrder.customerEmail,
+                name: currentOrder.customerName
+            };
+
+            orderObj.currency = currentOrder.getCurrencyCode();
+            orderObj.customer = customer;
+
+            orderObj.isTest = true;
+
+            // orderObj.status = currentOrder.getStatus().toString();
+            orderObj.total = Math.ceil(moneyToCents(currentOrder.getTotalGrossPrice()));
+            orderObj.transactionId = currentOrder.orderNo;
+            orderObj.lineItems = getLineItems(currentOrder);
+
+            requestObject.push(orderObj);
+        } catch (error) {
+            logger.error('Request object could not be created. {0}', error);
+        }
+    }
+    return requestObject;
+}
+
+/**
  * Get products payload and make call on products endpoint
  * @param {Array<Product>} productBatch - array of products
  * @returns {Object} - response object
@@ -274,14 +323,15 @@ function exportProducts(productBatch) {
 }
 
 /**
- * Get products payload and make call on products endpoint
- * @param {Array<Product>} productBatch - array of products
+ * Get orders payload and make call on orders endpoint
+ * @param {Array<Product>} orderBatch - array of products
  * @returns {Object} - response object
  */
-function sendOrders(productBatch) {
-    var requestObject = 
-    var endpointName = 'orders';
-    var response = webService.makeServiceCall(endpointName, requestObject, apiMethod)
+function sendOrders(orderBatch) {
+    var requestObject = test(orderBatch);
+    var endpointName = 'ordersBatch';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
 }
 
 /**
@@ -335,6 +385,7 @@ module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
+    sendOrders: sendOrders,
     getOffer: getOffer,
     createOrders: createOrders
 };

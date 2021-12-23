@@ -15,38 +15,44 @@ var Site = require('dw/system/Site').getCurrent();
  */
 exports.execute = function () {
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
-    if (apiMethod !== ordersAPI)
+    if (apiMethod !== 'ordersAPI') {
+        logger.info('Current API version should be orders API. Current version is {0}', apiMethod);
+    }
+
+    // Current time
     var currentTime = new Date();
-    var twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+
+    // Time from which orders are collected
+    var startingDate = new Date();
+    startingDate.setFullYear(startingDate.getFullYear() - 2);
+
     var historicalOrder = OrderMgr.searchOrders(
-        'creationDate <= {0} AND creationDate >= {1} AND status!={2}',
+        'creationDate <= {0} AND creationDate >= {1}',
         'creationDate desc',
         currentTime,
-        twoYearsAgo,
-        Order.ORDER_STATUS_CANCELLED
+        startingDate
     );
 
-    var productsBatch = new ArrayList();
+    var ordersBatch = new ArrayList();
 
-    logger.info('{0} canceled orders have been found', historicalOrder.getCount());
+    logger.info('{0} historical orders have been found', historicalOrder.getCount());
 
     while (historicalOrder.hasNext()) {
         var currentOrder = historicalOrder.next();
 
-        for (var i = 0; i < currentOrder.productLineItems.length; i++) {
-            var pLi = currentOrder.productLineItems[i];
-            productsBatch.push(pLi);
+        ordersBatch.push(currentOrder);
 
-            if (productsBatch.length === 100) {
-                // export orders extend. 
-                productsBatch.clear();
-            }
+        var orderLogObject = jobHelpers.getOrdersLoggerModel(currentOrder);
+        logger.info(JSON.stringify(orderLogObject));
+
+        if (ordersBatch.length === 10) {
+            extend.sendOrders(ordersBatch);
+            ordersBatch.clear();
         }
     }
 
-    if (productsBatch.length) {
-        // export orders extend. 
+    if (ordersBatch.length) {
+        extend.sendOrders(ordersBatch);
     }
 
     return new Status(Status.OK, 'OK', 'Historical orders sending job completed');
