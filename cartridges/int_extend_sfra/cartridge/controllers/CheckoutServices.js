@@ -133,20 +133,42 @@ function processOrdersResponse(ordersResponse, order) {
     var Transaction = require('dw/system/Transaction');
     var ArrayList = require('dw/util/ArrayList');
     var responseLI = ordersResponse.lineItems;
+    var ordersLI = order.productLineItems;
 
     for (var i = 0; i < responseLI.length; i++) {
         var apiCurrentLI = responseLI[i];
         var apiPid = apiCurrentLI.product.id;
         var matchedLI = null;
+        var pLi = null;
+        var productLi = null;
+        var pid = null;
 
-        for (var j = 0; j < order.productLineItems.length; j++) {
-            var pLi = order.productLineItems[j];
-            var pid = pLi.productID;
-            if (apiPid === pid) {
-                matchedLI = pLi;
+        if (apiCurrentLI.plan) {
+            for (var j = 0; j < ordersLI.length; j++) {
+                pLi = ordersLI[j];
+                if (pLi.productID !== apiPid) {
+                    continue;
+                }
+                for (var k = 0; k < ordersLI.length; k++) {
+                    productLi = ordersLI[k];
+                    if (pLi.custom.persistentUUID === productLi.custom.parentLineItemUUID) {
+                        matchedLI = productLi;
+                        break;
+                    }
+                }
                 break;
             }
+        } else {
+            for (var l = 0; l < ordersLI.length; l++) {
+                pLi = ordersLI[l];
+                pid = pLi.productID;
+                if (pid === apiPid) {
+                    matchedLI = pLi;
+                    break;
+                }
+            }
         }
+
         Transaction.wrap(function () {
             if (apiCurrentLI.contractId) {
                 var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
