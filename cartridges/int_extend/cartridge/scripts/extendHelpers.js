@@ -1,3 +1,8 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+/* eslint-disable new-cap */
+/* eslint-disable no-continue */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable radix */
 /* eslint-disable no-redeclare */
@@ -269,7 +274,6 @@ function getShippingAddress(pLi) {
  * @param {dw.order.Order} order : order that's just been placed
  */
 function createContractsCO(order) {
-    var Site = require('dw/system/Site');
     var CustomObjectMgr = require('dw/object/CustomObjectMgr');
     var Transaction = require('dw/system/Transaction');
 
@@ -282,7 +286,7 @@ function createContractsCO(order) {
                     var queueObj = CustomObjectMgr.createCustomObject('ExtendContractsQueue', pLi.UUID + '-' + j);
                     queueObj.custom.orderNo = order.getOrderNo();
                     queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
-                    queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
+                    queueObj.custom.currency = Site.getDefaultCurrency();
                     queueObj.custom.plan = getExtendPlan(pLi);
                     queueObj.custom.product = getSFCCProduct(order, pLi.custom.parentLineItemUUID);
                     queueObj.custom.customer = getCustomer(order);

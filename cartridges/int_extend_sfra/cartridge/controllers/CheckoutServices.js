@@ -1,3 +1,5 @@
+/* eslint-disable new-cap */
+/* eslint-disable no-continue */
 /* eslint-disable no-loop-func */
 'use strict';
 
@@ -206,8 +208,6 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
         var ordersResponse = extend.createOrders({ order: order, customer: customer });
         processOrdersResponse(ordersResponse, order);
     }
-
-
     return next();
 });
 

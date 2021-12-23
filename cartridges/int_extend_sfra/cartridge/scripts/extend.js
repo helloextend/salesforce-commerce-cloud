@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-continue */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 'use strict';
@@ -5,7 +7,6 @@
 var Site = require('dw/system/Site').getCurrent();
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var webService = require('~/cartridge/scripts/services/rest');
-var ProductMgr = require('dw/catalog/ProductMgr');
 
 /**
  * Get contracts payload for default API version
@@ -101,6 +102,11 @@ function getProductsPayload(productBatch) {
 
             var price = product.priceModel.price.available && product.priceModel.price.value > 0 ? Math.round(product.priceModel.price.value * 100) : 0;
 
+            if (!price) {
+                logger.info('Product {0} needed to configure price book', product.getID());
+                continue;
+            }
+
             if (apiVersion !== 'default') {
                 price = {
                     currencyCode: product.priceModel.price.getCurrencyCode(),
@@ -143,6 +149,7 @@ function moneyToCents(value) {
     return value.decimalValue * 100;
 }
 
+/**
 /**
  * Get SFCC product object
  * @param {ProductLineItem} pLi : API ProductLineItem object

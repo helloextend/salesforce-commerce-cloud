@@ -384,8 +384,8 @@ server.prepend('RemoveProductLineItem', function (req, res, next) {
             if (extendProduct) {
                 return next();
             }
+            viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
         }
-        viewData.extendAnalytics = extendAnalyticsHelpers.getProductRemovedFromCartData(removedProduct);
     } else if (removedExtendPlan) {
         var removedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, removedExtendPlan);
         viewData.extendAnalytics = extendAnalyticsHelpers.getOfferRemovedFromCartData(removedExtendedProduct, removedExtendPlan);

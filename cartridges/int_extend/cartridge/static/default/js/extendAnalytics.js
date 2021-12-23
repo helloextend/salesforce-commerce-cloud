@@ -1,6 +1,6 @@
 'use strict';
 
-var ExtendAnalytics = window.ExtendAnalytics || undefined;
+var Extend = window.Extend || undefined;
 
 function createAddToCartAnalytics(form) {
     var payload = {};
@@ -18,7 +18,7 @@ function createAddToCartAnalytics(form) {
 }
 
 function trackOfferViewedPDP(productId) {
-    ExtendAnalytics.trackOfferViewed({
+    Extend.trackOfferViewed({
         productId: productId,
         offerType: {
             area: 'product_page',
@@ -27,20 +27,10 @@ function trackOfferViewedPDP(productId) {
     });
 }
 
-function trackOfferViewedModal(productId, area) {
-    ExtendAnalytics.trackOfferViewed({
-        productId: productId,
-        offerType: {
-            area: area,
-            component: 'modal'
-        }
-    });
-}
-
 function trackAddToCart(data) {
     if (data.extendPlanId) {
         if (data.area === 'product_page' || data.area === 'cart_page') {
-            ExtendAnalytics.trackOfferAddedToCart({
+            Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
                 warrantyQuantity: +data.quantity,
@@ -51,9 +41,10 @@ function trackAddToCart(data) {
                 }
             });
         } else {
-            ExtendAnalytics.trackOfferAddedToCart({
+            Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
+                warrantyQuantity: +data.quantity,
                 planId: data.extendPlanId,
                 offerType: {
                     area: data.area,
@@ -62,7 +53,7 @@ function trackAddToCart(data) {
             });
         }
     } else {
-        ExtendAnalytics.trackProductAddedToCart({
+        Extend.trackProductAddedToCart({
             productId: data.productId,
             productQuantity: +data.quantity
         });
@@ -71,20 +62,20 @@ function trackAddToCart(data) {
 
 
 function trackOfferRemovedFromCart(data) {
-    ExtendAnalytics.trackOfferRemovedFromCart({
+    Extend.trackOfferRemovedFromCart({
         productId: data.productID,
         planId: data.planId
     });
 }
 
 function trackProductRemovedFromCart(data) {
-    ExtendAnalytics.trackProductRemovedFromCart({
+    Extend.trackProductRemovedFromCart({
         productId: data.productID,
     });
 }
 
 function trackProductUpdated(data) {
-    ExtendAnalytics.trackProductUpdated({
+    Extend.trackProductUpdated({
         productId: data.productID,
         updates: {
             productQuantity: +data.productQuantity
@@ -93,7 +84,7 @@ function trackProductUpdated(data) {
 }
 
 function trackOfferUpdated(data) {
-    ExtendAnalytics.trackOfferUpdated({
+    Extend.trackOfferUpdated({
         productId: data.productID,
         planId: data.planId,
         updates: {
@@ -104,7 +95,7 @@ function trackOfferUpdated(data) {
 }
 
 function trackLinkClicked(data) {
-    ExtendAnalytics.trackLinkClicked({
+    Extend.trackLinkClicked({
         linkEvent: data.linkEvent,
         productId: data.productId,
         linkType: {
@@ -123,7 +114,6 @@ function trackExtendPDP(currentTarget) {
     } else {
         productId = $('span[itemprop="productID"]').html();
     }
-    trackOfferViewedPDP(productId);
 
     var addTrackEvent = function () {
         $(currentTarget).contents().find('.info-button').on('click', function () {
@@ -150,7 +140,6 @@ function addTrackEventUpsellCart(currentTarget) {
         $(currentTarget).contents().find('.simple-offer').on('click', function () {
             var pid = $(currentTarget).parents('.extend-upsell-style').data().pid;
             window.extendModalReferenceId = pid;
-            trackOfferViewedModal(pid, 'cart_page');
         });
         $(currentTarget).contents().find('.simple-offer').addClass('chained');
         if ($(currentTarget).contents().find('button').hasClass('chained')) {
@@ -226,12 +215,8 @@ function trackExtendDOMNodeInserted() {
         }
         var currentTarget = $(e.target);
 
-        // trackOfferViewedPDPButtons and trackLinkClicked
-        if ($(e.target).parents('#extend-offer').length) {
-            trackExtendPDP(currentTarget);
-
             // trackOfferViewedModal and trackLinkClicked
-        } else if ($(e.target).parents('.extend-upsell-style').length) {
+        if ($(e.target).parents('.extend-upsell-style').length) {
             addTrackEventUpsellCart(currentTarget);
 
             // trackLinkClicked
@@ -255,7 +240,7 @@ function trackCartUpdate() {
         }
 
         for (var i = 0; i < data.array.length; i++) {
-            var current = data.array[i]
+            var current = data.array[i];
 
             if (current.event === 'productRemovedFromCart') {
                 trackProductRemovedFromCart(current);
@@ -270,28 +255,13 @@ function trackCartUpdate() {
     }
 }
 
-function trackCheckoutBtn() {
-    $('body').on('click', 'button[name="dwfrm_cart_checkoutCart"], .mini-cart-link-checkout', function () {
-        var productAmmount = $('.mini-cart-subtotals').find('.value').html()
-            || $('.order-subtotal')[1].html();
-
-        productAmmount = productAmmount.slice(1);
-        productAmmount = productAmmount.replace(',', '');
-
-        ExtendAnalytics.trackCartCheckout({
-            cartTotal: +productAmmount
-        });
-    })
-}
-
 function initExtendAnalytics() {
     var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
-    ExtendAnalytics.config({ storeId: EXT_STORE_ID });
+    Extend.config({ storeId: EXT_STORE_ID });
 }
 
 $(document).ready(function () {
     initExtendAnalytics();
     trackExtendDOMNodeInserted();
     trackCartUpdate();
-    trackCheckoutBtn();
 });
