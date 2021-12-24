@@ -138,7 +138,7 @@ function getProductsPayload(productBatch) {
  * @param {Money} value : API Money object
  * @return {Integer} cents value
  */
- function moneyToCents(value) {
+function moneyToCents(value) {
     return value.decimalValue * 100;
 }
 
@@ -261,6 +261,55 @@ function getOrdersPayload(paramObj) {
 }
 
 /**
+ * Get orders payload for specific API version
+ * @param {ArrayList<Product>} orderBatch - array of orders
+ * @returns {Array} requestObject - payload object for request
+ */
+function sendOrdersBatch(orderBatch) {
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var requestObject = [];
+
+    for (var i = 0; i < orderBatch.length; i++) {
+        var currentOrder = orderBatch[i];
+        try {
+            var orderObj = {};
+
+            orderObj.storeId = STORE_ID;
+            orderObj.storeName = 'SFCC';
+
+            var billingAddress = currentOrder.getBillingAddress();
+
+            var customer = {
+                billingAddress: {
+                    address1: billingAddress.getAddress1(),
+                    address2: billingAddress.getAddress2(),
+                    city: billingAddress.getCity(),
+                    countryCode: billingAddress.getCountryCode().toString(),
+                    postalCode: billingAddress.getPostalCode(),
+                    province: billingAddress.getStateCode()
+                },
+                email: currentOrder.customerEmail,
+                name: currentOrder.customerName
+            };
+
+            orderObj.currency = currentOrder.getCurrencyCode();
+            orderObj.customer = customer;
+
+            orderObj.isTest = true;
+
+            orderObj.total = Math.ceil(moneyToCents(currentOrder.getTotalGrossPrice()));
+            orderObj.transactionId = currentOrder.orderNo;
+            orderObj.lineItems = getLineItems(currentOrder);
+
+            requestObject.push(orderObj);
+        } catch (error) {
+            logger.error('Request object could not be created. {0}', error);
+        }
+    }
+    return requestObject;
+}
+
+/**
  * Get products payload and make call on products endpoint
  * @param {Array<Product>} productBatch - array of products
  * @returns {Object} - response object
@@ -268,6 +317,18 @@ function getOrdersPayload(paramObj) {
 function exportProducts(productBatch) {
     var requestObject = getProductsPayload(productBatch);
     var endpointName = 'products';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
+}
+
+/**
+ * Get orders payload and make call on orders endpoint
+ * @param {Array<Product>} orderBatch - array of products
+ * @returns {Object} - response object
+ */
+function sendOrders(orderBatch) {
+    var requestObject = sendOrdersBatch(orderBatch);
+    var endpointName = 'ordersBatch';
     var response = webService.makeServiceCall(endpointName, requestObject);
     return response;
 }

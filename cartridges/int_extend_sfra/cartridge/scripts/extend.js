@@ -265,7 +265,7 @@ function getOrdersPayload(paramObj) {
  * @param {ArrayList<Product>} orderBatch - array of orders
  * @returns {Array} requestObject - payload object for request
  */
-function test(orderBatch) {
+function sendOrdersBatch(orderBatch) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
     var requestObject = [];
 
@@ -297,7 +297,6 @@ function test(orderBatch) {
 
             orderObj.isTest = true;
 
-            // orderObj.status = currentOrder.getStatus().toString();
             orderObj.total = Math.ceil(moneyToCents(currentOrder.getTotalGrossPrice()));
             orderObj.transactionId = currentOrder.orderNo;
             orderObj.lineItems = getLineItems(currentOrder);
@@ -328,7 +327,7 @@ function exportProducts(productBatch) {
  * @returns {Object} - response object
  */
 function sendOrders(orderBatch) {
-    var requestObject = test(orderBatch);
+    var requestObject = sendOrdersBatch(orderBatch);
     var endpointName = 'ordersBatch';
     var response = webService.makeServiceCall(endpointName, requestObject);
     return response;
