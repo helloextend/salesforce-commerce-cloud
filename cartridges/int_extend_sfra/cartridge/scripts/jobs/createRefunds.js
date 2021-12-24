@@ -93,7 +93,6 @@ exports.create = function () {
                         logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
                         extendRefundStatuses[extendContractId] = refundStatus.REJECT;
                     } else if (response.refundAmount.amount > 0) {
-                        // paramObj.commit = false for testing
                         paramObj.commit = true;
                         response = extend.createRefund(paramObj);
 
