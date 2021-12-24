@@ -54,17 +54,23 @@ var refundStatus = {
     SUCCESS: 'SUCCESS',
     REJECT: 'REJECT',
     ERROR: 'ERROR',
-    REJECT_AND_ERROR: 'REJECT_AND_ERROR'
+    REJECT_AND_ERROR: 'REJECT_AND_ERROR',
+    refund_quated: 'refund_quated',
+    refund_paid: 'refund_paid',
+    refund_denied: 'refund_denied'
 };
 
 /**
  * Returns status for refund
  * @param {Object} order - order
+ * @param {string} apiMethod - apiMethod using for requests
  * @returns {string} - status
  */
-function getRefundStatus(order) {
+function getRefundStatus(order, apiMethod) {
     var error = false;
     var reject = false;
+    var quated = false;
+    var denied = false;
 
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
@@ -84,6 +90,10 @@ function getRefundStatus(order) {
                 error = true;
             } else if (status === refundStatus.REJECT) {
                 reject = true;
+            } else if (status === refundStatus.refund_quated) {
+                quated = true;
+            } else if (status === refundStatus.refund_denied) {
+                denied = true;
             }
         }
     }
@@ -94,8 +104,12 @@ function getRefundStatus(order) {
         return refundStatus.ERROR;
     } else if (reject) {
         return refundStatus.REJECT;
+    } else if (quated) {
+        return refundStatus.refund_quated;
+    } else if (denied) {
+        return refundStatus.refund_denied;
     }
-    return refundStatus.SUCCESS;
+    return (apiMethod === 'ordersAPI') ? refundStatus.refund_paid : refundStatus.SUCCESS;
 }
 
 module.exports = {
