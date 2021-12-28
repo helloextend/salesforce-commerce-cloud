@@ -54,11 +54,13 @@ exports.create = function () {
             for (var j = 0; j < extendContractIds.length; j++) {
                 var extendContractId = extendContractIds[j];
 
-                if (
-                    extendRefundStatuses &&
-                    (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
-                        extendRefundStatuses[extendContractId] === refundStatus.REJECT)
-                ) {
+                var statusesCondition = extendRefundStatuses &&
+                                        (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
+                                        extendRefundStatuses[extendContractId] === refundStatus.REJECT ||
+                                        extendRefundStatuses[extendContractId] === refundStatus.refund_paid ||
+                                        extendRefundStatuses[extendContractId] === refundStatus.refund_denied);
+
+                if (statusesCondition) {
                     continue;
                 }
 
