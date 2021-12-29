@@ -406,6 +406,8 @@ server.append('UpdateQuantity', function (req, res, next) {
     var analyticsSDK = Site.getCurrent().getCustomPreferenceValue('extendAnalyticsSwitch');
     var currentBasket = BasketMgr.getCurrentBasket();
     var viewData = res.getViewData();
+    var productHelper = require('*/cartridge/scripts/helpers/productHelpers');
+    var showProductPageHelperResult = productHelper.showProductPage(req.querystring, req.pageMetaData);
 
     if (!analyticsSDK || !viewData.items) {
         return next();
@@ -444,6 +446,22 @@ server.append('UpdateQuantity', function (req, res, next) {
             }
         } else if (updatedExtendPlan) {
             var updatedExtendedProduct = extendAnalyticsHelpers.getExtendedProduct(currentBasket, updatedExtendPlan);
+            var warrantyQty = parseInt(req.querystring.quantity, 10);
+            if (warrantyQty > updatedExtendedProduct.getQuantityValue()) {
+                // updatedExtendPlan.setQuantityValue(updatedExtendedProduct.getQuantityValue());
+
+                // updatedExtendPlan.setQuantityValue(updatedExtendedProduct.quantity);
+
+                // updatedExtendPlan.quantityValue = updatedExtendedProduct.quantity;
+
+                // var productQty = showProductPageHelperResult.product.quantities;
+                // for (var i = 0; i < productQty.length; i++) {
+                //     if (parseInt(productQty[i].value) === updatedExtendedProduct.getQuantityValue()) {
+                //         productQty[i].selected = true;
+                //         break;
+                //     }
+                // }
+            }
             viewData.extendAnalytics = extendAnalyticsHelpers.getOfferUpdatedData(updatedExtendedProduct, updatedExtendPlan);
         }
         res.setViewData(viewData);
