@@ -454,13 +454,13 @@ server.append('UpdateQuantity', function (req, res, next) {
 
                 // updatedExtendPlan.quantityValue = updatedExtendedProduct.quantity;
 
-                // var productQty = showProductPageHelperResult.product.quantities;
-                // for (var i = 0; i < productQty.length; i++) {
-                //     if (parseInt(productQty[i].value) === updatedExtendedProduct.getQuantityValue()) {
-                //         productQty[i].selected = true;
-                //         break;
-                //     }
-                // }
+                var productQty = showProductPageHelperResult.product.quantities;
+                for (var i = 0; i < productQty.length; i++) {
+                    if (parseInt(productQty[i].value) === updatedExtendedProduct.getQuantityValue()) {
+                        productQty[i].selected = true;
+                        break;
+                    }
+                }
             }
             viewData.extendAnalytics = extendAnalyticsHelpers.getOfferUpdatedData(updatedExtendedProduct, updatedExtendPlan);
         }

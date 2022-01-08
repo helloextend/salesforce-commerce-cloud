@@ -96,12 +96,14 @@ function createProductLineItemsObject(allLineItems, view) {
 
             var extendLineItem = JSON.parse(JSON.stringify(newLineItem));
             extendLineItem.productName = item.productName;
-            extendLineItem.price.sales = {
-                currency: item.basePrice.currencyCode,
-                decimalPrice: item.basePrice.toNumberString(),
-                formatted: item.basePrice.toFormattedString(),
-                value: item.basePrice.getDecimalValue()
-            };
+            if (extendLineItem.price) {
+                extendLineItem.price.sales = {
+                    currency: item.basePrice.currencyCode,
+                    decimalPrice: item.basePrice.toNumberString(),
+                    formatted: item.basePrice.toFormattedString(),
+                    value: item.basePrice.getDecimalValue()
+                };
+            }
 
             lineItems.push(extendLineItem);
         }
