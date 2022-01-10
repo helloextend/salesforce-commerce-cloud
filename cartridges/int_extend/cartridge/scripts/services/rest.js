@@ -112,7 +112,6 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.params.put('commit', requestObject.commit);
             configObj.endpoint = 'refunds';
             configObj.API_VERSION = '2021-07-01';
-            configObj.XIdempotencyKey = UUIDUtils.createUUID();
             break;
 
         case 'offer':
