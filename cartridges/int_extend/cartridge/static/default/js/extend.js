@@ -102,7 +102,7 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
             addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
             $('.extend-form-data').remove();
         }
-    } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected) {
+    } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected && $('#extend-offer').find('iframe').length) {
         window.Extend.modal.open({
             referenceId: $('.product-number span').text().trim(),
             onClose: function (plan) {
