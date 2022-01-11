@@ -223,6 +223,53 @@ function getLineItems(order) {
     return lineItems;
 }
 
+// function WarrantyInfo (warrantyItem) {
+//     var 
+// }
+
+/**
+ * Get Order`s line items objects
+ * @param {dw.order.Order} order : API order
+ * @return {Array<Object>} array of line items objects
+ */
+function getlineItemsTest(order) {
+    var lineItems = [];
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+        if (!pLi.custom.parentLineItemUUID) {
+            var pliObj = null;
+            var product = null;
+            var plan = null;
+            var warrantyLi = null;
+            for (var j = 0; j < pLi.quantity.value; j++) {
+                pliObj = {};
+                product = getSFCCProduct(pLi);
+                pliObj.warrantable = false;
+                pliObj.product = product;
+
+                if (pLi.custom.persistentUUID) {
+                    pliObj.warrantable = true;
+                    for (var k = 0; k < order.productLineItems.length; k++) {
+                        var productLi = order.productLineItems[k];
+                        if (productLi.custom.parentLineItemUUID === pLi.custom.persistentUUID) {
+                            warrantyLi = productLi;
+                            plan = {};
+                            plan.purchasePrice = Math.ceil(moneyToCents(warrantyLi.adjustedNetPrice.divide(warrantyLi.quantityValue)));
+                            plan.id = warrantyLi.getManufacturerSKU();
+                            pliObj.plan = plan;
+                            break;
+                        }
+                    }
+                } else if (pLi.custom.isWarrantable) {
+                    pliObj.warrantable = true;
+                }
+                lineItems.push(pliObj);
+            }
+        }
+    }
+    return lineItems;
+}
+
 /**
  * Get customer object
  * @param {Object} customer : object with customer information
@@ -273,7 +320,7 @@ function getOrdersPayload(paramObj) {
 
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
-    requestObject.lineItems = getLineItems(order);
+    requestObject.lineItems = getlineItemsTest(order);
     return requestObject;
 }
 
