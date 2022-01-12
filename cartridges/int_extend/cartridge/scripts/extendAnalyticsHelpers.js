@@ -124,9 +124,10 @@ function getItemsData(items, cart) {
         if (product.custom.persistentUUID) {
             extendProduct = getExtendProduct(productLineItems, product);
 
-            if (!extendProduct) {
-                itemsData.push(getProductUpdatedData(product, data));
-            }
+            // if (!extendProduct) {
+            //     itemsData.push(getProductUpdatedData(product, data));
+            // }
+            itemsData.push(getProductUpdatedData(product, data));
         } else if (product.custom.parentLineItemUUID) {
             extendedProduct = getExtendedProduct(productLineItems, product);
             itemsData.push(getOfferUpdatedData(extendedProduct, product, data));
@@ -183,12 +184,15 @@ function setUpdateCartPayload(cart) {
     var productsToUpdate = JSON.parse(session.custom.analyticsPayload);
     var itemsData = [];
 
-    if (productsToUpdate.array) {
-        for (var i = 0; i < productsToUpdate.array.length; i++) {
+    if (productsToUpdate) {
+        if (productsToUpdate.array) {
+            productsToUpdate = productsToUpdate.array;
+        }
+        for (var i = 0; i < productsToUpdate.length; i++) {
             var extendProduct,
                 extendedProduct;
             var data = {};
-            var product = productsToUpdate.array[i];
+            var product = productsToUpdate[i];
             var productLineItems = cart.productLineItems;
             var isProductExist = false;
     
@@ -200,10 +204,12 @@ function setUpdateCartPayload(cart) {
                         if (item.custom.persistentUUID) {
                             extendProduct = getExtendProduct(productLineItems, item);
     
-                            if (!extendProduct) {
-                                data.event = 'productUpdated';
-                                itemsData.push(getProductUpdatedData(item, data));
-                            }
+                            // if (!extendProduct) {
+                            //     data.event = 'productUpdated';
+                            //     itemsData.push(getProductUpdatedData(item, data));
+                            // }
+                            data.event = 'productUpdated';
+                            itemsData.push(getProductUpdatedData(item, data));
                         } else if (item.custom.parentLineItemUUID) {
                             extendedProduct = getExtendedProduct(productLineItems, item);
                             data.event = 'offerUpdated';
@@ -220,7 +226,7 @@ function setUpdateCartPayload(cart) {
                 }
             }
     
-            if (!isProductExist && +product.newQuantity === 0) {
+            if ((!isProductExist && +product.newQuantity === 0) || (isProductExist && +product.newQuantity === 0)) {
                 data.productID = product.productID;
                 if (product.planId) {
                     data.planId = product.planId;

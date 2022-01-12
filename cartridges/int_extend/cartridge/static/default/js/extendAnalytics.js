@@ -30,6 +30,10 @@ function trackOfferViewedPDP(productId) {
 function trackAddToCart(data) {
     if (data.extendPlanId) {
         if (data.area === 'product_page' || data.area === 'cart_page') {
+            Extend.trackProductAddedToCart({
+                productId: data.productId,
+                productQuantity: +data.quantity
+            });
             Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
@@ -41,6 +45,10 @@ function trackAddToCart(data) {
                 }
             });
         } else {
+            Extend.trackProductAddedToCart({
+                productId: data.productId,
+                productQuantity: +data.quantity
+            });
             Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
