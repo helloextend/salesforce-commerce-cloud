@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 'use strict';
@@ -223,8 +224,47 @@ function getLineItems(order) {
     return lineItems;
 }
 
-// function WarrantyInfo (warrantyItem) {
-//     var 
+/**
+ * Get Order`s line items objects
+ * @param {dw.order.Order} order : API order
+ * @return {Array<Object>} array of line items objects
+ */
+// function getlineItemsTest(order) {
+//     var lineItems = [];
+//     for (var i = 0; i < order.productLineItems.length; i++) {
+//         var pLi = order.productLineItems[i];
+//         if (!pLi.custom.parentLineItemUUID) {
+//             var pliObj = null;
+//             var product = null;
+//             var plan = null;
+//             var warrantyLi = null;
+//             for (var j = 0; j < pLi.quantity.value; j++) {
+//                 pliObj = {};
+//                 product = getSFCCProduct(pLi);
+//                 pliObj.warrantable = false;
+//                 pliObj.product = product;
+
+//                 if (pLi.custom.persistentUUID) {
+//                     pliObj.warrantable = true;
+//                     for (var k = 0; k < order.productLineItems.length; k++) {
+//                         var productLi = order.productLineItems[k];
+//                         if (productLi.custom.parentLineItemUUID === pLi.custom.persistentUUID) {
+//                             warrantyLi = productLi;
+//                             plan = {};
+//                             plan.purchasePrice = Math.ceil(moneyToCents(warrantyLi.adjustedNetPrice.divide(warrantyLi.quantityValue)));
+//                             plan.id = warrantyLi.getManufacturerSKU();
+//                             pliObj.plan = plan;
+//                             break;
+//                         }
+//                     }
+//                 } else if (pLi.custom.isWarrantable) {
+//                     pliObj.warrantable = true;
+//                 }
+//                 lineItems.push(pliObj);
+//             }
+//         }
+//     }
+//     return lineItems;
 // }
 
 /**
@@ -232,38 +272,59 @@ function getLineItems(order) {
  * @param {dw.order.Order} order : API order
  * @return {Array<Object>} array of line items objects
  */
-function getlineItemsTest(order) {
+function getLineItemsTest(order) {
     var lineItems = [];
+    var productsArray = [];
+    var warrantiesArray = [];
+    var pliObj = null;
+    var productLi = null;
+    var product = null;
+    var warrantyCounter = 0;
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
-        if (!pLi.custom.parentLineItemUUID) {
-            var pliObj = null;
-            var product = null;
-            var plan = null;
-            var warrantyLi = null;
-            for (var j = 0; j < pLi.quantity.value; j++) {
-                pliObj = {};
-                product = getSFCCProduct(pLi);
-                pliObj.warrantable = false;
-                pliObj.product = product;
+        if (pLi.custom.persistentUUID) {
+            productsArray.push(pLi);
+        } else {
+            warrantiesArray.push(pLi);
+        }
+    }
+    for (var j = 0; j < productsArray.length; j++) {
+        productLi = productsArray[j];
+        product = getSFCCProduct(productLi);
+        for (var k = 0; k < productLi.quantity.value; k++) {
+            pliObj = {};
+            pliObj.product = product;
 
-                if (pLi.custom.persistentUUID) {
-                    pliObj.warrantable = true;
-                    for (var k = 0; k < order.productLineItems.length; k++) {
-                        var productLi = order.productLineItems[k];
-                        if (productLi.custom.parentLineItemUUID === pLi.custom.persistentUUID) {
-                            warrantyLi = productLi;
-                            plan = {};
-                            plan.purchasePrice = Math.ceil(moneyToCents(warrantyLi.adjustedNetPrice.divide(warrantyLi.quantityValue)));
-                            plan.id = warrantyLi.getManufacturerSKU();
-                            pliObj.plan = plan;
+            if (productLi.custom.isWarrantable) {
+                pliObj.warrantable = true;
+                lineItems.push(pliObj);
+                break;
+            }
+
+            if (!productLi.custom.persistentUUID) {
+                pliObj.warrantable = false;
+                lineItems.push(pliObj);
+                break;
+            }
+
+            pliObj.warrantable = true;
+
+            while (warrantiesArray.length) {
+                var warrantyLi = warrantiesArray[0];
+                if (productLi.custom.persistentUUID === warrantyLi.custom.parentLineItemUUID) {
+                    for (var l = 0; l < warrantyLi.quantity.value; l++) {
+                        var plan = {};
+                        plan.purchasePrice = Math.ceil(moneyToCents(warrantyLi.adjustedNetPrice.divide(warrantyLi.quantityValue)));
+                        plan.id = warrantyLi.getManufacturerSKU();
+                        pliObj.plan = plan;
+                        lineItems.push(pliObj);
+                        if (l === (warrantyLi.quantity.value - 1)) {
+                            warrantiesArray.splice(0, 1);
                             break;
                         }
                     }
-                } else if (pLi.custom.isWarrantable) {
-                    pliObj.warrantable = true;
+                    break;
                 }
-                lineItems.push(pliObj);
             }
         }
     }
@@ -320,7 +381,7 @@ function getOrdersPayload(paramObj) {
 
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
-    requestObject.lineItems = getlineItemsTest(order);
+    requestObject.lineItems = getLineItemsTest(order);
     return requestObject;
 }
 
