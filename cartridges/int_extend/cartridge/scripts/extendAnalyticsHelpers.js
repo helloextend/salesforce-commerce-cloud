@@ -183,12 +183,12 @@ function setUpdateCartPayload(cart) {
     var productsToUpdate = JSON.parse(session.custom.analyticsPayload);
     var itemsData = [];
 
-    if (productsToUpdate.array) {
-        for (var i = 0; i < productsToUpdate.array.length; i++) {
+    if (productsToUpdate) {
+        for (var i = 0; i < productsToUpdate.length; i++) {
             var extendProduct,
                 extendedProduct;
             var data = {};
-            var product = productsToUpdate.array[i];
+            var product = productsToUpdate[i];
             var productLineItems = cart.productLineItems;
             var isProductExist = false;
     
