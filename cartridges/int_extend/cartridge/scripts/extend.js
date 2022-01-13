@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 'use strict';
@@ -203,21 +204,58 @@ function getContractID(paramObj) {
  */
 function getLineItems(order) {
     var lineItems = [];
+    var productsArray = [];
+    var warrantiesArray = [];
+    var pliObj = null;
+    var productLi = null;
+    var product = null;
+    var warrantyCounter = 0;
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
-        if (!pLi.custom.parentLineItemUUID) {
-            var pliObj = {};
-            pliObj.warrantable = false;
-            pliObj.quantity = pLi.quantityValue;
-            pliObj.product = getSFCCProduct(pLi);
+        if (pLi.custom.parentLineItemUUID) {
+            warrantiesArray.push(pLi);
+        } else {
+            productsArray.push(pLi);
+        }
+    }
+    for (var j = 0; j < productsArray.length; j++) {
+        productLi = productsArray[j];
+        product = getSFCCProduct(productLi);
+        for (var k = 0; k < productLi.quantity.value; k++) {
+            pliObj = {};
+            pliObj.product = product;
 
-            if (pLi.custom.persistentUUID) {
+            if (productLi.custom.isWarrantable) {
                 pliObj.warrantable = true;
-                pliObj.plan = getExtendPlan(pLi, order);
-            } else if (pLi.custom.isWarrantable) {
-                pliObj.warrantable = true;
+                lineItems.push(pliObj);
+                break;
             }
-            lineItems.push(pliObj);
+
+            if (!warrantiesArray.length && productLi.custom.persistentUUID) {
+                pliObj.warrantable = true;
+                lineItems.push(pliObj);
+                break;
+            }
+
+            pliObj.warrantable = true;
+
+            while (warrantiesArray.length) {
+                var warrantyLi = warrantiesArray[0];
+                if (productLi.custom.persistentUUID === warrantyLi.custom.parentLineItemUUID) {
+                    for (var l = 0; l < warrantyLi.quantity.value; l++) {
+                        var plan = {};
+                        plan.purchasePrice = Math.ceil(moneyToCents(warrantyLi.adjustedNetPrice.divide(warrantyLi.quantityValue)));
+                        plan.id = warrantyLi.getManufacturerSKU();
+                        pliObj.plan = plan;
+                        lineItems.push(pliObj);
+                        if (l === (warrantyLi.quantity.value - 1)) {
+                            warrantiesArray.splice(0, 1);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
         }
     }
     return lineItems;
