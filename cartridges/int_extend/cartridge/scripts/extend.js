@@ -231,8 +231,8 @@ function getLineItems(order) {
                 break;
             }
 
-            if (!productLi.custom.persistentUUID) {
-                pliObj.warrantable = false;
+            if (!warrantiesArray.length && productLi.custom.persistentUUID) {
+                pliObj.warrantable = true;
                 lineItems.push(pliObj);
                 break;
             }
