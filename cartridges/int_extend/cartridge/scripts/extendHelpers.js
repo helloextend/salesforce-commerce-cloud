@@ -315,7 +315,6 @@ function processOrdersResponse(ordersResponse, order) {
         var pLi = null;
         var productLi = null;
         var pid = null;
-        var usedMatchedLi = null;
 
         if (apiCurrentLI.plan) {
             for (var j = 0; j < ordersLI.length; j++) {
