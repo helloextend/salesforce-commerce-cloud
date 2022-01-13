@@ -204,76 +204,6 @@ function getContractID(paramObj) {
  */
 function getLineItems(order) {
     var lineItems = [];
-    for (var i = 0; i < order.productLineItems.length; i++) {
-        var pLi = order.productLineItems[i];
-        if (!pLi.custom.parentLineItemUUID) {
-            var pliObj = {};
-            pliObj.warrantable = false;
-            pliObj.quantity = pLi.quantityValue;
-            pliObj.product = getSFCCProduct(pLi);
-
-            if (pLi.custom.persistentUUID) {
-                pliObj.warrantable = true;
-                pliObj.plan = getExtendPlan(pLi, order);
-            } else if (pLi.custom.isWarrantable) {
-                pliObj.warrantable = true;
-            }
-            lineItems.push(pliObj);
-        }
-    }
-    return lineItems;
-}
-
-/**
- * Get Order`s line items objects
- * @param {dw.order.Order} order : API order
- * @return {Array<Object>} array of line items objects
- */
-// function getlineItemsTest(order) {
-//     var lineItems = [];
-//     for (var i = 0; i < order.productLineItems.length; i++) {
-//         var pLi = order.productLineItems[i];
-//         if (!pLi.custom.parentLineItemUUID) {
-//             var pliObj = null;
-//             var product = null;
-//             var plan = null;
-//             var warrantyLi = null;
-//             for (var j = 0; j < pLi.quantity.value; j++) {
-//                 pliObj = {};
-//                 product = getSFCCProduct(pLi);
-//                 pliObj.warrantable = false;
-//                 pliObj.product = product;
-
-//                 if (pLi.custom.persistentUUID) {
-//                     pliObj.warrantable = true;
-//                     for (var k = 0; k < order.productLineItems.length; k++) {
-//                         var productLi = order.productLineItems[k];
-//                         if (productLi.custom.parentLineItemUUID === pLi.custom.persistentUUID) {
-//                             warrantyLi = productLi;
-//                             plan = {};
-//                             plan.purchasePrice = Math.ceil(moneyToCents(warrantyLi.adjustedNetPrice.divide(warrantyLi.quantityValue)));
-//                             plan.id = warrantyLi.getManufacturerSKU();
-//                             pliObj.plan = plan;
-//                             break;
-//                         }
-//                     }
-//                 } else if (pLi.custom.isWarrantable) {
-//                     pliObj.warrantable = true;
-//                 }
-//                 lineItems.push(pliObj);
-//             }
-//         }
-//     }
-//     return lineItems;
-// }
-
-/**
- * Get Order`s line items objects
- * @param {dw.order.Order} order : API order
- * @return {Array<Object>} array of line items objects
- */
-function getLineItemsTest(order) {
-    var lineItems = [];
     var productsArray = [];
     var warrantiesArray = [];
     var pliObj = null;
@@ -282,10 +212,10 @@ function getLineItemsTest(order) {
     var warrantyCounter = 0;
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
-        if (pLi.custom.persistentUUID) {
-            productsArray.push(pLi);
-        } else {
+        if (pLi.custom.parentLineItemUUID) {
             warrantiesArray.push(pLi);
+        } else {
+            productsArray.push(pLi);
         }
     }
     for (var j = 0; j < productsArray.length; j++) {
@@ -381,7 +311,7 @@ function getOrdersPayload(paramObj) {
 
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
-    requestObject.lineItems = getLineItemsTest(order);
+    requestObject.lineItems = getLineItems(order);
     return requestObject;
 }
 
