@@ -124,9 +124,10 @@ function getItemsData(items, cart) {
         if (product.custom.persistentUUID) {
             extendProduct = getExtendProduct(productLineItems, product);
 
-            if (!extendProduct) {
-                itemsData.push(getProductUpdatedData(product, data));
-            }
+            // if (!extendProduct) {
+            //     itemsData.push(getProductUpdatedData(product, data));
+            // }
+            itemsData.push(getProductUpdatedData(product, data));
         } else if (product.custom.parentLineItemUUID) {
             extendedProduct = getExtendedProduct(productLineItems, product);
             itemsData.push(getOfferUpdatedData(extendedProduct, product, data));
@@ -182,6 +183,8 @@ function setUpdateCartPayload(cart) {
 
     var productsToUpdate = JSON.parse(session.custom.analyticsPayload);
     var itemsData = [];
+
+    productsToUpdate = productsToUpdate.array ? productsToUpdate.array : productsToUpdate;
 
     if (productsToUpdate) {
         for (var i = 0; i < productsToUpdate.length; i++) {
@@ -254,15 +257,16 @@ function setDeleteProductPayload(cart, object) {
     var data = {};
 
     if (object.custom.parentLineItemUUID) {
-        extendedProduct = getExtendedProduct(cart.object.productLineItems, object);
+        extendedProduct = (cart.object.productLineItems, object);
         itemsData.push(getOfferRemovedFromCartData(extendedProduct, object));
     } else if (object.custom.persistentUUID) {
         extendProduct = getExtendProduct(cart.object.productLineItems, object);
 
-        if (extendProduct) {
-            return;
-        }
-        itemsData.push(getProductRemovedFromCartData(object));
+        // if (extendProduct) {
+        //     return;
+        // }
+        // itemsData.push(getProductRemovedFromCartData(object));
+        itemsData.push(getOfferRemovedFromCartData(object, extendProduct));
     } else {
         itemsData.push(getProductRemovedFromCartData(object));
     }
