@@ -123,10 +123,6 @@ function getItemsData(items, cart) {
 
         if (product.custom.persistentUUID) {
             extendProduct = getExtendProduct(productLineItems, product);
-
-            // if (!extendProduct) {
-            //     itemsData.push(getProductUpdatedData(product, data));
-            // }
             itemsData.push(getProductUpdatedData(product, data));
         } else if (product.custom.parentLineItemUUID) {
             extendedProduct = getExtendedProduct(productLineItems, product);
@@ -261,11 +257,6 @@ function setDeleteProductPayload(cart, object) {
         itemsData.push(getOfferRemovedFromCartData(extendedProduct, object));
     } else if (object.custom.persistentUUID) {
         extendProduct = getExtendProduct(cart.object.productLineItems, object);
-
-        // if (extendProduct) {
-        //     return;
-        // }
-        // itemsData.push(getProductRemovedFromCartData(object));
         itemsData.push(getOfferRemovedFromCartData(object, extendProduct));
     } else {
         itemsData.push(getProductRemovedFromCartData(object));
