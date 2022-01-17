@@ -254,11 +254,12 @@ function setDeleteProductPayload(cart, object) {
     var itemsData = [];
     var data = {};
 
+    extendProduct = getExtendProduct(cart.object.productLineItems, object);
+
     if (object.custom.parentLineItemUUID) {
         extendedProduct = getExtendedProduct(cart.object.productLineItems, object);
         itemsData.push(getOfferRemovedFromCartData(extendedProduct, object));
-    } else if (object.custom.persistentUUID) {
-        extendProduct = getExtendProduct(cart.object.productLineItems, object);
+    } else if (object.custom.persistentUUID && extendProduct) {
         itemsData.push(getOfferRemovedFromCartData(object, extendProduct));
     } else {
         itemsData.push(getProductRemovedFromCartData(object));
