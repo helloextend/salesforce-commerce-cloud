@@ -224,6 +224,8 @@ function setUpdateCartPayload(cart) {
                 if (product.planId) {
                     data.planId = product.planId;
                     data.event = 'offerRemovedFromCart';
+                    itemsData.push(data);
+                    break;
                 } else {
                     data.event = 'productRemovedFromCart';
                 }
@@ -253,7 +255,7 @@ function setDeleteProductPayload(cart, object) {
     var data = {};
 
     if (object.custom.parentLineItemUUID) {
-        extendedProduct = (cart.object.productLineItems, object);
+        extendedProduct = getExtendedProduct(cart.object.productLineItems, object);
         itemsData.push(getOfferRemovedFromCartData(extendedProduct, object));
     } else if (object.custom.persistentUUID) {
         extendProduct = getExtendProduct(cart.object.productLineItems, object);
