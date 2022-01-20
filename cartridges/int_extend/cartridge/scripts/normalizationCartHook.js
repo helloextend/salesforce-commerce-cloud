@@ -36,11 +36,26 @@ function normalizeCartQuantities(basket) {
     });
 
     if (warrantyItems.length > 0) {
-        var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems); 
+        var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
+
+        if (warrantyItems.length > productsWithWarranty.length ) {
+            productsWithWarranty.forEach( function (productLineItem) {
+                warrantyItems.forEach( function (warrantyLineItem) {
+                    if (warrantyLineItem.custom.parentLineItemUUID !== productLineItem.custom.persistentUUID) {
+                        basket.removeProductLineItem(warrantyLineItem);
+                    }
+                });
+            });
+        }
+
+        if (empty(mappedLineItemProducts)) {
+                warrantyItems.forEach( function (warrItem) {
+                basket.removeProductLineItem(warrItem);
+            });
+        }
         Transaction.wrap(function () {
             applyQuantityLogic(mappedLineItemProducts);
         });
-         
     }
 }
 
