@@ -123,7 +123,11 @@ function getItemsData(items, cart) {
 
         if (product.custom.persistentUUID) {
             extendProduct = getExtendProduct(productLineItems, product);
-            itemsData.push(getProductUpdatedData(product, data));
+            if (extendProduct) {
+                itemsData.push(getOfferUpdatedData(product, extendProduct, data));
+            } else {
+                itemsData.push(getProductUpdatedData(product, data));
+            }
         } else if (product.custom.parentLineItemUUID) {
             extendedProduct = getExtendedProduct(productLineItems, product);
             itemsData.push(getOfferUpdatedData(extendedProduct, product, data));
