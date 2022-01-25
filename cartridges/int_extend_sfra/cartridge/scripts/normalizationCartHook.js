@@ -14,29 +14,49 @@ var BasketMgr = require('dw/order/BasketMgr');
  */
 
 function normalizeCartQuantities(basket) {
-	if(dw.system.Site.current.preferences.custom.extendGlobalSwitch) {
-	    collections.forEach(basket.getAllProductLineItems(), function (lineItem) {
-	    	if(!empty(lineItem.custom.parentLineItemUUID)){
-	    		var warrantedPLI = getWarrantedItem(basket,lineItem.custom.parentLineItemUUID);
-	    		if(!empty(warrantedPLI)) {
-	    			Transaction.wrap(function () {
-	    				lineItem.setQuantityValue(warrantedPLI.getQuantityValue());
-	                });
-	    		}
-	    	}
-	    });
-	}
-}
+    var productLineItems = basket.getProductLineItems();
 
-function getWarrantedItem(basket,uuid) {
-	var warrantedPLI;
-	collections.forEach(basket.getAllProductLineItems(), function (lineItem) {
+    var productsWithWarranty = [];
+    var warrantyItems = [];
+
+    collections.forEach(productLineItems, function (lineItem) {
+
+        var persistentUUID = lineItem.custom.persistentUUID || null;
+        var parentLineItemUUID = lineItem.custom.parentLineItemUUID || null; 
+
           // Is LineItem with warranty
-          if (lineItem.getUUID() === uuid) { 
-        	  warrantedPLI =  lineItem;
-          } 
+          if (persistentUUID && !parentLineItemUUID) { 
+                productsWithWarranty.push(lineItem);
+          }
+
+          // Is warranty line item
+          if (persistentUUID && parentLineItemUUID) {
+                warrantyItems.push(lineItem);
+          }
     });
-	return warrantedPLI;
+
+    if (warrantyItems.length > 0) {
+        var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
+
+        if (warrantyItems.length > productsWithWarranty.length ) {
+            productsWithWarranty.forEach( function (productLineItem) {
+                warrantyItems.forEach( function (warrantyLineItem) {
+                    if (warrantyLineItem.custom.parentLineItemUUID !== productLineItem.custom.persistentUUID) {
+                        basket.removeProductLineItem(warrantyLineItem);
+                    }
+                });
+            });
+        }
+
+        if (empty(mappedLineItemProducts)) {
+                warrantyItems.forEach( function (warrItem) {
+                basket.removeProductLineItem(warrItem);
+            });
+        }
+        Transaction.wrap(function () {
+            applyQuantityLogic(mappedLineItemProducts);
+        });
+    }
 }
 
  /**
@@ -64,12 +84,10 @@ function applyQuantityLogic (mappedProducts) {
             makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);   
         }
 
-        // Add quantity to the highest warranty product if P quantities > W quantities
-        // this statetment related to Case 4 from ticket
-        
-        // if (quantityOfProduct > totalQuantityWarrantyProducts) {
-        //     addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);  
-        // }
+        // Make quantity equal if W quantities < P total quantities
+        if (totalQuantityWarrantyProducts < quantityOfProduct) {
+            addQuantityToHighestWarranty(quantityOfProduct - totalQuantityWarrantyProducts, warrantyProducts);
+        }
     });
 }
 
