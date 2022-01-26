@@ -20,15 +20,15 @@ function normalizeCartQuantities(basket) {
     var warrantyItems = [];
  
     collections.forEach(productLineItems, function (lineItem) {
-         
+
         var persistentUUID = lineItem.custom.persistentUUID || null;
         var parentLineItemUUID = lineItem.custom.parentLineItemUUID || null; 
-          
+
           // Is LineItem with warranty
           if (persistentUUID && !parentLineItemUUID) { 
                 productsWithWarranty.push(lineItem);
-          } 
-          
+          }
+
           // Is warranty line item
           if (!persistentUUID && parentLineItemUUID) {
                 warrantyItems.push(lineItem);
@@ -36,11 +36,26 @@ function normalizeCartQuantities(basket) {
     });
 
     if (warrantyItems.length > 0) {
-        var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems); 
+        var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
+
+        if (warrantyItems.length > productsWithWarranty.length ) {
+            productsWithWarranty.forEach( function (productLineItem) {
+                warrantyItems.forEach( function (warrantyLineItem) {
+                    if (warrantyLineItem.custom.parentLineItemUUID !== productLineItem.custom.persistentUUID) {
+                        basket.removeProductLineItem(warrantyLineItem);
+                    }
+                });
+            });
+        }
+
+        if (empty(mappedLineItemProducts)) {
+                warrantyItems.forEach( function (warrItem) {
+                basket.removeProductLineItem(warrItem);
+            });
+        }
         Transaction.wrap(function () {
             applyQuantityLogic(mappedLineItemProducts);
         });
-         
     }
 }
 
@@ -62,19 +77,17 @@ function applyQuantityLogic (mappedProducts) {
         
         var totalQuantityWarrantyProducts = warrantyProducts.reduce(function (prev, item) {
             return prev += item.getQuantityValue();
-        }, 0); 
+        }, 0);
 
         // Make quantity equal if P quantities < W total quantities 
         if (quantityOfProduct < totalQuantityWarrantyProducts) {
-            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);   
+            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);
         }
 
-        // Add quantity to the highest warranty product if P quantities > W quantities
-        // this statetment related to Case 4 from ticket
-        
-        // if (totalQuantityWarrantyProducts > quantityOfProduct) {
-        //     addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);  
-        // }
+        // Make quantity equal if W quantities < P total quantities
+        if (totalQuantityWarrantyProducts < quantityOfProduct) {
+            addQuantityToHighestWarranty(quantityOfProduct - totalQuantityWarrantyProducts, warrantyProducts);
+        }
     });
 }
 
@@ -90,13 +103,13 @@ function applyQuantityLogic (mappedProducts) {
  */
 
 function addQuantityToHighestWarranty (numberToAdd, warrantyProducts) {
-    var countToAdd = numberToAdd;  
-    var warrantyProductsDESC = reverseArray(warrantyProducts); 
+    var countToAdd = numberToAdd;
+    var warrantyProductsDESC = reverseArray(warrantyProducts);
 
     warrantyProductsDESC.forEach(function (warrProduct) {
         var warrProductQuantity = warrProduct.getQuantityValue();
         var warrOptionProducts = warrProduct.optionProductLineItems[0];
-        
+
         if (countToAdd > 0) {
             while (countToAdd > 0) {
                 var warrProductQuantity = warrProduct.getQuantityValue(); 
@@ -104,7 +117,7 @@ function addQuantityToHighestWarranty (numberToAdd, warrantyProducts) {
 
                 warrProduct.setQuantityValue(warrProductQuantity + 1);
                 warrOptionProducts.setQuantityValue(warrProductQuantity + 1);
-                
+
                 countToAdd--;
             }
         }

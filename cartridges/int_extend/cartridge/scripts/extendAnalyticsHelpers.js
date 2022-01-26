@@ -76,6 +76,7 @@ function getProductUpdatedData(updatedProduct, data) {
  */
 function getProductRemovedFromCartData(removedProduct) {
     var productRemovedFromCart = {
+        newQuantity: 0,
         productID: removedProduct.productID,
         event: 'productRemovedFromCart'
     };
@@ -91,6 +92,7 @@ function getProductRemovedFromCartData(removedProduct) {
  */
 function getOfferRemovedFromCartData(removedProduct, removedPlan) {
     var offerRemovedFromCart = {
+        newQuantity: 0,
         productID: removedProduct.productID,
         planId: removedPlan.manufacturerSKU,
         event: 'offerRemovedFromCart'
@@ -121,8 +123,9 @@ function getItemsData(items, cart) {
 
         if (product.custom.persistentUUID) {
             extendProduct = getExtendProduct(productLineItems, product);
-
-            if (!extendProduct) {
+            if (extendProduct) {
+                itemsData.push(getOfferUpdatedData(product, extendProduct, data));
+            } else {
                 itemsData.push(getProductUpdatedData(product, data));
             }
         } else if (product.custom.parentLineItemUUID) {
@@ -181,51 +184,57 @@ function setUpdateCartPayload(cart) {
     var productsToUpdate = JSON.parse(session.custom.analyticsPayload);
     var itemsData = [];
 
-    for (var i = 0; i < productsToUpdate.length; i++) {
-        var extendProduct,
-            extendedProduct;
-        var data = {};
-        var product = productsToUpdate[i];
-        var productLineItems = cart.productLineItems;
-        var isProductExist = false;
+    productsToUpdate = productsToUpdate.array ? productsToUpdate.array : productsToUpdate;
 
-        for (var j = 0; j < productLineItems.length; j++) {
-            var item = productLineItems[j];
-            if (item.UUID === product.UUID) {
-                isProductExist = true;
-                if (product.quantityValue !== item.quantityValue) {
-                    if (item.custom.persistentUUID) {
-                        extendProduct = getExtendProduct(productLineItems, item);
-
-                        if (!extendProduct) {
+    if (productsToUpdate) {
+        for (var i = 0; i < productsToUpdate.length; i++) {
+            var extendProduct,
+                extendedProduct;
+            var data = {};
+            var product = productsToUpdate[i];
+            var productLineItems = cart.productLineItems;
+            var isProductExist = false;
+    
+            for (var j = 0; j < productLineItems.length; j++) {
+                var item = productLineItems[j];
+                if (item.UUID === product.UUID) {
+                    isProductExist = true;
+                    if (product.quantityValue !== item.quantityValue) {
+                        if (item.custom.persistentUUID) {
+                            extendProduct = getExtendProduct(productLineItems, item);
+    
+                            if (!extendProduct) {
+                                data.event = 'productUpdated';
+                                itemsData.push(getProductUpdatedData(item, data));
+                            }
+                        } else if (item.custom.parentLineItemUUID) {
+                            extendedProduct = getExtendedProduct(productLineItems, item);
+                            data.event = 'offerUpdated';
+                            var newData = getOfferUpdatedData(extendedProduct, item, data);
+    
+                            if (product.quantityValue !== newData.warrantyQuantity) {
+                                itemsData.push(newData);
+                            }
+                        } else {
                             data.event = 'productUpdated';
                             itemsData.push(getProductUpdatedData(item, data));
                         }
-                    } else if (item.custom.parentLineItemUUID) {
-                        extendedProduct = getExtendedProduct(productLineItems, item);
-                        data.event = 'offerUpdated';
-                        var newData = getOfferUpdatedData(extendedProduct, item, data);
-
-                        if (product.quantityValue !== newData.warrantyQuantity) {
-                            itemsData.push(newData);
-                        }
-                    } else {
-                        data.event = 'productUpdated';
-                        itemsData.push(getProductUpdatedData(item, data));
                     }
                 }
             }
-        }
-
-        if (!isProductExist && +product.newQuantity === 0) {
-            data.productID = product.productID;
-            if (product.planId) {
-                data.planId = product.planId;
-                data.event = 'offerRemovedFromCart';
-            } else {
-                data.event = 'productRemovedFromCart';
+    
+            if (!isProductExist && +product.newQuantity === 0) {
+                data.productID = product.productID;
+                if (product.planId) {
+                    data.planId = product.planId;
+                    data.event = 'offerRemovedFromCart';
+                    itemsData.push(data);
+                    break;
+                } else {
+                    data.event = 'productRemovedFromCart';
+                }
+                itemsData.push(data);
             }
-            itemsData.push(data);
         }
     }
     var newData = {
@@ -249,15 +258,13 @@ function setDeleteProductPayload(cart, object) {
     var itemsData = [];
     var data = {};
 
+    extendProduct = getExtendProduct(cart.object.productLineItems, object);
+
     if (object.custom.parentLineItemUUID) {
         extendedProduct = getExtendedProduct(cart.object.productLineItems, object);
         itemsData.push(getOfferRemovedFromCartData(extendedProduct, object));
-    } else if (object.custom.persistentUUID) {
-        extendProduct = getExtendProduct(cart.object.productLineItems, object);
-
-        if (!extendProduct) {
-            itemsData.push(getProductRemovedFromCartData(object));
-        }
+    } else if (object.custom.persistentUUID && extendProduct) {
+        itemsData.push(getOfferRemovedFromCartData(object, extendProduct));
     } else {
         itemsData.push(getProductRemovedFromCartData(object));
     }
