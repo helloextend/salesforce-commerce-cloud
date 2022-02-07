@@ -57,29 +57,86 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
 
     // Configure the Extend ProductLineItem
     Transaction.wrap(function () {
-        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + parentLineItem.productName);
         warrantyLi.setManufacturerSKU(form.extendPlanId);
         warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
         warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
-        warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
-        warrantyLi.custom.persistentUUID = warrantyLi.UUID;
-        parentLineItem.custom.persistentUUID = parentLineItem.UUID;
+        if (parentLineItem) {
+            warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + parentLineItem.productName);
+            warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
+            warrantyLi.custom.persistentUUID = warrantyLi.UUID;
+            parentLineItem.custom.persistentUUID = parentLineItem.UUID;
+        }
     });
 }
-
 /**
  * Handle Extend products when adding regular product to cart
  */
 server.append('AddProduct', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var ProductMgr = require('dw/catalog/ProductMgr');
+    var Resource = require('dw/web/Resource');
+    var URLUtils = require('dw/web/URLUtils');
+    var Transaction = require('dw/system/Transaction');
+    var CartModel = require('*/cartridge/models/cart');
+    var ProductLineItemsModel = require('*/cartridge/models/productLineItems');
+
     var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
+    var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
+    var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
+    if (!currentBasket) {
+        return next();
+    }
 
     var form = req.form;
+    var isProductSkip = form.pskip;
     var viewData = res.getViewData(); // pliUUID
 
     var isOfferValide = extendHelpers.validateOffer(form);
+
+    if (isOfferValide && form.extendPlanId && form.extendPrice && form.extendTerm && isProductSkip) {
+        var extendPlanId = 'EXTEND-' + form.extendTerm;
+        var quantity = null;
+        var childProducts = [];
+        var options = [];
+        var result = null;
+        var parentLineItem = null;
+
+        Transaction.wrap(function () {
+            quantity = parseInt(form.quantity, 10);
+            result = cartHelper.addProductToCart(currentBasket, extendPlanId, quantity, childProducts, options);
+            if (!result.error) {
+                cartHelper.ensureAllShipmentsHaveMethods(currentBasket);
+                basketCalculationHelpers.calculateTotals(currentBasket);
+            }
+        });
+
+        var quantityTotal = ProductLineItemsModel.getTotalQuantity(currentBasket.productLineItems);
+        var cartModel = new CartModel(currentBasket);
+
+        var reportingURL = cartHelper.getReportingUrlAddToCart(currentBasket, result.error);
+
+        var extendProduct = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
+        addExtendWarrantyToCart(currentBasket, extendProduct, null, form);
+
+        Transaction.wrap(function () {
+            basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+
+        var basketModel = new CartModel(currentBasket);
+
+        res.json({
+            reportingURL: reportingURL,
+            quantityTotal: quantityTotal,
+            message: result.message,
+            cart: cartModel,
+            error: result.error,
+            pliUUID: result.uuid,
+            minicartCountOfItems: Resource.msgf('minicart.count', 'common', null, quantityTotal)
+        });
+        return next();
+    }
 
     if (isOfferValide && form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
         var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);

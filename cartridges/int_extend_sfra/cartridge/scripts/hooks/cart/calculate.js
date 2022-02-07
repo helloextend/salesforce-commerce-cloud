@@ -28,14 +28,14 @@ function calculate (basket) {
     // ===================================================
     // =====   CALCULATE PRODUCT LINE ITEM PRICES    =====
     // ===================================================
-    
+
     calculateProductPrices(basket);
-    
+
     // =======================================================
     // =====   NORMALIZE CART QUANTITIES FOR EXTEND ITEMS ====
     // =======================================================
     normalizeCartQuantities(basket);
-    
+
     // ===================================================
     // =====    CALCULATE GIFT CERTIFICATE PRICES    =====
     // ===================================================
@@ -171,7 +171,9 @@ function calculateProductPrices (basket) {
             productLineItem.setPriceValue(null);
         // handle normal product line items
         } else {
-            productLineItem.setPriceValue(productPrices.get(product).valueOrNull);
+                if (!product.ID.includes('EXTEND')) {
+                    productLineItem.setPriceValue(productPrices.get(product).valueOrNull);
+                }
         }
     }
 }
