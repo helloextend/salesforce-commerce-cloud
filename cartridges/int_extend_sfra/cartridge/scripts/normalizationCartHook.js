@@ -82,13 +82,6 @@ function applyQuantityLogic (mappedProducts) {
         if (quantityOfProduct < totalQuantityWarrantyProducts) {
             makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);   
         }
-
-        // Add quantity to the highest warranty product if P quantities > W quantities
-        // this statetment related to Case 4 from ticket
-        
-        // if (quantityOfProduct > totalQuantityWarrantyProducts) {
-        //     addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);  
-        // }
     });
 }
 
