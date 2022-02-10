@@ -153,7 +153,7 @@ function processOrdersResponse(ordersResponse, order) {
                 }
                 for (var k = 0; k < ordersLI.length; k++) {
                     productLi = ordersLI[k];
-                    if (pLi.custom.persistentUUID === productLi.custom.parentLineItemUUID) {
+                    if ((pLi.custom.persistentUUID === productLi.custom.parentLineItemUUID) && (apiCurrentLI.plan.id === productLi.getManufacturerSKU())) {
                         matchedLI = productLi;
                         break;
                     }
