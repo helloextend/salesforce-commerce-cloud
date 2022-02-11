@@ -200,8 +200,17 @@ function updateUpsellBtns() {
     });
 }
 
+function normalizeCartQuantities() {
+    $('body').on('change', '.quantity-form > .quantity', function () {
+        var preSelectQty = $(this).data('pre-select-qty');
+        var quantity = $(this).val();
+        var productID = $(this).data('pid');
+        var uuid = $(this).data('uuid');
+    });
+}
 
 module.exports = {
+    normalizeCartQuantities: normalizeCartQuantities(),
     initExtend: initExtend,
     renderUpsellBtns: renderUpsellBtns,
     updateUpsellBtns: updateUpsellBtns
