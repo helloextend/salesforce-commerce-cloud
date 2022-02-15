@@ -13,6 +13,7 @@ $(document).ready(function () {
     processInclude(require('base/components/countrySelector'));
     processInclude(require('base/components/toolTip'));
     processInclude(require('./extend/cart'));
+    processInclude(require('./cart/cart'));
     processInclude(require('./extend/extendAnalytics'));
 });
 
