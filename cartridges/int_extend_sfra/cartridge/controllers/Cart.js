@@ -73,6 +73,9 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
 server.append('AddProduct', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var ProductMgr = require('dw/catalog/ProductMgr');
+    var CartModel = require('*/cartridge/models/cart');
+    var Transaction = require('dw/system/Transaction');
+    var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
 
@@ -103,15 +106,35 @@ server.append('AddProduct', function (req, res, next) {
             }
         }
 
+        // Determine whether the product already has any warranty in cart
+        var isWarrantyInCart = false;
+        var productLineItems = currentBasket.getAllProductLineItems();
+        for (var i = 0; i < productLineItems.length; i++) {
+            var pLi = productLineItems[i];
+            if (pLi.custom.persistentUUID && (pLi.productID === form.pid)) {
+                isWarrantyInCart = true;
+            }
+        }
+
+        var quantityTotal = null;
+
         if (currentWarrantyLi) {
             updateExtendWarranty(currentWarrantyLi, form);
         } else {
             addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
         }
 
+        quantityTotal = !isWarrantyInCart ? viewData.quantityTotal + parseInt(form.quantity, 10) : viewData.quantityTotal;
+
+        Transaction.wrap(function () {
+            basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+        var cartModel = new CartModel(currentBasket);
+
         // Update totalQuantity with quantity of Extend warranties that's been added to cart
         res.setViewData({
-            quantityTotal: viewData.quantityTotal + parseInt(form.quantity, 10)
+            cart: cartModel,
+            quantityTotal: quantityTotal
         });
     }
 
