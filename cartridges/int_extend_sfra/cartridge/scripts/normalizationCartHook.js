@@ -29,7 +29,7 @@ function normalizeCartQuantities(basket) {
           }
 
           // Is warranty line item
-          if (!persistentUUID && parentLineItemUUID) {
+          if (persistentUUID && parentLineItemUUID) {
                 warrantyItems.push(lineItem);
           }
     });
@@ -37,21 +37,6 @@ function normalizeCartQuantities(basket) {
     if (warrantyItems.length > 0) {
         var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
 
-        if (warrantyItems.length > productsWithWarranty.length ) {
-            productsWithWarranty.forEach( function (productLineItem) {
-                warrantyItems.forEach( function (warrantyLineItem) {
-                    if (warrantyLineItem.custom.parentLineItemUUID !== productLineItem.custom.persistentUUID) {
-                        basket.removeProductLineItem(warrantyLineItem);
-                    }
-                });
-            });
-        }
-
-        if (empty(mappedLineItemProducts)) {
-                warrantyItems.forEach( function (warrItem) {
-                basket.removeProductLineItem(warrItem);
-            });
-        }
         Transaction.wrap(function () {
             applyQuantityLogic(mappedLineItemProducts);
         });
@@ -63,24 +48,32 @@ function normalizeCartQuantities(basket) {
  *
  * Entrypoint method that contains logic of normalization cart requirements
  *
- * @param {Array.<Object>} mappedProducts - mapped array with objects of ProductLineItem 
- * and all Warranty products linked with that product 
+ * @param {Array.<Object>} mappedProducts - mapped array with objects of ProductLineItem
+ * and all Warranty products linked with that product
  */
 
 function applyQuantityLogic (mappedProducts) {
     mappedProducts.forEach(function (mappedObject) {
-        
-        var lineItem = mappedObject.lineItem; 
+
+        var lineItem = mappedObject.lineItem;
         var warrantyProducts = mappedObject.warranties;
         var quantityOfProduct = lineItem.getQuantityValue();
-        
+
         var totalQuantityWarrantyProducts = warrantyProducts.reduce(function (prev, item) {
             return prev += item.getQuantityValue();
         }, 0);
 
-        // Make quantity equal if P quantities < W total quantities 
+        // Make quantity equal if P quantities < W total quantities
         if (quantityOfProduct < totalQuantityWarrantyProducts) {
-            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);   
+            makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);
+        }
+
+        // quantity of warranty needed to add to normalize cart quantities
+        var quantityToAdd = quantityOfProduct - totalQuantityWarrantyProducts;
+
+        // Make quantity equal if W quantities < P total quantities
+        if (quantityOfProduct > totalQuantityWarrantyProducts && quantityToAdd >= 1) {
+            addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);
         }
     });
 }
@@ -136,28 +129,28 @@ function makeQuantityEqual (numberToRemove, warrantyProducts) {
 
     warrantyProducts.forEach(function (warrProduct) {
         var warrProductQuantity = warrProduct.getQuantityValue();
-        
+
         if (countToRemove > 0) {
 
             while (countToRemove > 0) {
                 var warrProductQuantity = warrProduct.getQuantityValue();
-                
+
                 if (warrProductQuantity > 1) {
                     var warrOptionProducts = warrProduct.optionProductLineItems[0];
-        
+
                     warrProduct.setQuantityValue(warrProductQuantity - 1);
                     warrOptionProducts.setQuantityValue(warrProductQuantity - 1);
                 }
 
-                if (countToRemove >= warrProductQuantity && warrProductQuantity === 1) { 
+                if (countToRemove >= warrProductQuantity && warrProductQuantity === 1) {
                     currentBasket.removeProductLineItem(warrProduct);
                     normalizeCartQuantities(BasketMgr.getCurrentBasket());
                 }
-                
+
                 countToRemove--;
-            }  
-        } 
-    }); 
+            }
+        }
+    });
 
 }
 
