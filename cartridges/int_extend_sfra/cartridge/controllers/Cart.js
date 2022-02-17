@@ -73,6 +73,9 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
 server.append('AddProduct', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var ProductMgr = require('dw/catalog/ProductMgr');
+    var CartModel = require('*/cartridge/models/cart');
+    var Transaction = require('dw/system/Transaction');
+    var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
 
@@ -117,16 +120,20 @@ server.append('AddProduct', function (req, res, next) {
 
         if (currentWarrantyLi) {
             updateExtendWarranty(currentWarrantyLi, form);
-            if (isWarrantyInCart) {
-                quantityTotal = viewData.quantityTotal;
-            }
         } else {
             addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
-            quantityTotal = viewData.quantityTotal === 1 || !isWarrantyInCart ? viewData.quantityTotal + 1 : viewData.quantityTotal;
         }
+
+        quantityTotal = !isWarrantyInCart ? viewData.quantityTotal + parseInt(form.quantity, 10) : viewData.quantityTotal;
+
+        Transaction.wrap(function () {
+            basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+        var cartModel = new CartModel(currentBasket);
 
         // Update totalQuantity with quantity of Extend warranties that's been added to cart
         res.setViewData({
+            cart: cartModel,
             quantityTotal: quantityTotal
         });
     }
@@ -466,56 +473,5 @@ server.append('UpdateQuantity', function (req, res, next) {
     }
     return next();
 });
-
-// server.append('UpdateQuantity', function (req, res, next) {
-//     var BasketMgr = require('dw/order/BasketMgr');
-//     var Resource = require('dw/web/Resource');
-//     var Transaction = require('dw/system/Transaction');
-//     var URLUtils = require('dw/web/URLUtils');
-//     var CartModel = require('*/cartridge/models/cart');
-//     var collections = require('*/cartridge/scripts/util/collections');
-//     var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
-//     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
-
-//     var currentBasket = BasketMgr.getCurrentBasket();
-
-//     if (!currentBasket) {
-//         res.setStatusCode(500);
-//         res.json({
-//             error: true,
-//             redirectUrl: URLUtils.url('Cart-Show').toString()
-//         });
-
-//         return next();
-//     }
-
-//     var isProductLineItemFound = false;
-//     var extendProductsUUIDs = [];
-
-//     Transaction.wrap(function () {
-//         var productLineItems = currentBasket.getAllProductLineItems();
-
-//         for (var i = 0; i < productLineItems.length; i++) {
-//             var item = productLineItems[1];
-//             extendProductsUUIDs.push(item.UUID);
-//             isProductLineItemFound = true;
-//         }
-//         // basketCalculationHelpers.calculateTotals(currentBasket);
-//     });
-
-//     var basketModel = new CartModel(currentBasket);
-//     if (isProductLineItemFound) {
-//         res.json({
-//             basket: basketModel,
-//             toBeDeletedUUIDs: extendProductsUUIDs
-//         });
-//     } else {
-//         res.json({
-//             basket: basketModel
-//         });
-//     }
-
-//     return next();
-// });
 
 module.exports = server.exports();
