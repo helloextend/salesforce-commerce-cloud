@@ -17,6 +17,21 @@ function getPSTtime() {
 }
 
 /**
+ * Returns info about order
+ * @param {Object} order - some order
+ * @returns {Object} - order model
+ */
+function getOrdersLoggerModel(order) {
+    var result = {};
+
+    result.orderNo = order.orderNo;
+    result.currencyCode = order.getCurrencyCode();
+    result.timestampPST = getPSTtime().getTime();
+
+    return result;
+}
+
+/**
  * Returns info about product
  * @param {Object} product - some product
  * @returns {Object} - product model
@@ -116,6 +131,7 @@ module.exports = {
     getPSTtime: getPSTtime,
     getProductLoggerModel: getProductLoggerModel,
     getContractLoggerModel: getContractLoggerModel,
+    getOrdersLoggerModel: getOrdersLoggerModel,
     refundStatus: refundStatus,
     getRefundStatus: getRefundStatus
 };
