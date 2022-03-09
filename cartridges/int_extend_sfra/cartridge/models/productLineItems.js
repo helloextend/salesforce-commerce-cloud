@@ -1,7 +1,9 @@
+/* eslint-disable no-use-before-define */
 'use strict';
 
 var collections = require('*/cartridge/scripts/util/collections');
 var ProductFactory = require('*/cartridge/scripts/factories/product');
+var priceHelper = require('*/cartridge/scripts/helpers/pricing');
 var URLUtils = require('dw/web/URLUtils');
 var Resource = require('dw/web/Resource');
 
@@ -102,12 +104,25 @@ function createProductLineItemsObject(allLineItems, view) {
                 formatted: item.basePrice.toFormattedString(),
                 value: item.basePrice.getDecimalValue()
             };
+            extendLineItem.renderedPrice = getRenderedPrice(extendLineItem.price);
 
             lineItems.push(extendLineItem);
         }
         // END Extend integration
     });
     return lineItems;
+}
+
+/**
+  * Renders pricing template for line item
+  * @param {Object} price - Factory price
+  * @return {string} - Rendered HTML
+  */
+function getRenderedPrice(price) {
+    var context = {
+        price: price
+    };
+    return priceHelper.renderHtml(priceHelper.getHtmlContext(context));
 }
 
 /**

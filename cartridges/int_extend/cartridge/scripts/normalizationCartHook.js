@@ -38,21 +38,6 @@ function normalizeCartQuantities(basket) {
     if (warrantyItems.length > 0) {
         var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
 
-        if (warrantyItems.length > productsWithWarranty.length ) {
-            productsWithWarranty.forEach( function (productLineItem) {
-                warrantyItems.forEach( function (warrantyLineItem) {
-                    if (warrantyLineItem.custom.parentLineItemUUID !== productLineItem.custom.persistentUUID) {
-                        basket.removeProductLineItem(warrantyLineItem);
-                    }
-                });
-            });
-        }
-
-        if (empty(mappedLineItemProducts)) {
-                warrantyItems.forEach( function (warrItem) {
-                basket.removeProductLineItem(warrItem);
-            });
-        }
         Transaction.wrap(function () {
             applyQuantityLogic(mappedLineItemProducts);
         });
@@ -84,9 +69,12 @@ function applyQuantityLogic (mappedProducts) {
             makeQuantityEqual(totalQuantityWarrantyProducts - quantityOfProduct, warrantyProducts);
         }
 
+        // quantity of warranty needed to add to normalize cart quantities
+        var quantityToAdd = quantityOfProduct - totalQuantityWarrantyProducts;
+
         // Make quantity equal if W quantities < P total quantities
-        if (totalQuantityWarrantyProducts < quantityOfProduct) {
-            addQuantityToHighestWarranty(quantityOfProduct - totalQuantityWarrantyProducts, warrantyProducts);
+        if (quantityOfProduct > totalQuantityWarrantyProducts && quantityToAdd >= 1) {
+            addQuantityToHighestWarranty(quantityToAdd, warrantyProducts);
         }
     });
 }

@@ -1,3 +1,5 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-continue */
 /* eslint-disable no-unused-vars */
 /* eslint-disable one-var */
 /* eslint-disable block-scoped-var */
@@ -30,7 +32,7 @@ function isEligibleForWarranty() {
     var qs = request.httpParameters;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     var pid,
-        qty, 
+        qty,
         lead;
     var response = require('*/cartridge/scripts/util/Response');
 
@@ -69,7 +71,7 @@ function isEligibleForWarranty() {
         return;
     }
 
-    Transaction.wrap(function() {
+    Transaction.wrap(function () {
         lead.custom.isWarrantable = true;
     });
 
@@ -139,7 +141,7 @@ function isJsonValid(jsonString) {
 function errorInRequest(RESPONSE, reqProduct, products, product, contracts, contract, reqContract, message) {
     if (products && product && reqProduct) {
         product.productID = reqProduct.productID;
-        product['details'] = message;
+        product.details = message;
         products.push(product);
         product = {};
         RESPONSE.products = products;
@@ -163,7 +165,7 @@ function errorInRequest(RESPONSE, reqProduct, products, product, contracts, cont
  */
 function responseProduct(RESPONSE, reqProduct, products, product, message) {
     product.productID = reqProduct.productID;
-    product['details'] = message;
+    product.details = message;
     products.push(product);
     RESPONSE.products = products;
 }
@@ -174,11 +176,11 @@ function responseProduct(RESPONSE, reqProduct, products, product, message) {
  * @param {string} message - message to describe details
  * @returns {object}
  */
-function responseStatus (status, message) {
+function responseStatus(status, message) {
     return {
-        'status' : status,
-        'details' : message
-    }
+        status: status,
+        details: message
+    };
 }
 
 /**
@@ -187,7 +189,6 @@ function responseStatus (status, message) {
 function refund() {
     var res = require('*/cartridge/scripts/util/Response');
     var Site = require('dw/system/Site');
-    var Transaction = require('dw/system/Transaction');
     var OrderMgr = require('dw/order/OrderMgr');
     var ArrayList = require('dw/util/ArrayList');
     var logger = require('dw/system/Logger');
@@ -216,9 +217,10 @@ function refund() {
             errorMessage: 'invalid JSON'
         });
         return;
-    } else {
-        data = JSON.parse(request.httpParameterMap.requestBodyAsString);
     }
+
+    data = JSON.parse(request.httpParameterMap.requestBodyAsString);
+
 
     var apiOrder = OrderMgr.getOrder(data.orderID);
     if (!apiOrder) {
@@ -246,7 +248,7 @@ function refund() {
     var contract = {};
 
     if (data.products) {
-        for (var i = 0; i < data.products.length; i += 1 ) {
+        for (var i = 0; i < data.products.length; i++) {
             var reqProduct = data.products[i];
 
             if (!reqProduct.productID) {
@@ -272,104 +274,103 @@ function refund() {
                 continue;
             }
 
-            for (var j = 0; j < apiOrder.productLineItems.length; j +=1 ) {
+            var warrantiesArray = [];
+
+            for (var j = 0; j < apiOrder.productLineItems.length; j++) {
                 var currentProduct = apiOrder.productLineItems[j];
-                for (var l = 0; l < pLi.length; l += 1) {
+                for (var l = 0; l < pLi.length; l++) {
                     if (currentProduct.custom.parentLineItemUUID === pLi[l].custom.persistentUUID) {
                         extendLi = currentProduct;
+                        warrantiesArray.push(extendLi);
                     }
                 }
             }
 
-            if (!extendLi) {
+            if (!warrantiesArray.length) {
                 responseProduct(RESPONSE, reqProduct, products, product, 'product has no extend');
                 continue;
             }
 
-            var extendContractIds;
-            var statuses;
-            var extendRefundStatuses = JSON.parse(extendLi.custom.extendRefundStatuses) || {};
-            statuses = Object.keys(extendRefundStatuses);
+            var refundsCounter = null;
 
-            if (!extendLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
-                continue;
-            } else if (statuses.length) {
-                extendContractIds = statuses;
-            } else {
-                extendContractIds = extendLi.custom.extendContractId;
-            }
+            for (var n = 0; n < reqProduct.qty; n++) {
+                for (var m = 0; m < warrantiesArray.length; m++) {
+                    var warranty = warrantiesArray[m];
 
-            product.productID = reqProduct.productID;
-            product.contracts = contracts;
+                    var extendContractIds;
+                    var statuses;
 
-            for (var k = 0; k < reqProduct.qty; k +=1 ) {
+                    product.productID = reqProduct.productID;
+                    product.contracts = contracts;
 
-                var extendContractId = extendContractIds[k];
+                    var extendRefundStatuses = JSON.parse(warranty.custom.extendRefundStatuses) || {};
+                    statuses = Object.keys(extendRefundStatuses);
 
-                if (!extendContractId) {
-                    for (var n = 0; n < extendLi.custom.extendContractId.length; n++) {
-                        var currentApiContract = extendLi.custom.extendContractId[n];
-                        var isExists = extendContractIds.indexOf(currentApiContract);
-                        if (isExists === -1) {
-                            extendContractId = currentApiContract;
+                    if (!warranty.custom.extendContractId.length || (!statuses && !statuses.length)) {
+                        continue;
+                    } else if (statuses.length) {
+                        extendContractIds = statuses;
+                    } else {
+                        extendContractIds = warranty.custom.extendContractId;
+                    }
+
+                    for (var p = 0; p < extendContractIds.length; p++) {
+                        var extendContractId = extendContractIds[n];
+
+                        if (refundsCounter >= reqProduct.qty) {
                             break;
                         }
+
+                        refundsCounter++;
+
+                        var isContractRefunded = extendRefundStatuses &&
+                                (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
+                                extendRefundStatuses[extendContractId] === refundStatus.REJECT);
+
+                        if (isContractRefunded) {
+                            contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
+                            continue;
+                        }
+
+                        var paramObj = {
+                            extendContractId: extendContractId,
+                            commit: false
+                        };
+
+                        var responseFromExtend = extend.createRefund(paramObj);
+
+                        if (responseFromExtend.error) {
+                            extendRefundStatuses[extendContractId] = refundStatus.ERROR;
+                            contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
+                            continue;
+                        }
+
+                        if (responseFromExtend.refundAmount.amount === 0) {
+                            extendRefundStatuses[extendContractId] = refundStatus.REJECT;
+                            contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
+                        } else if (responseFromExtend.refundAmount.amount > 0) {
+                            paramObj.commit = true;
+                            responseFromExtend = extend.createRefund(paramObj);
+
+                            if (responseFromExtend.id) {
+                                extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
+                                contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
+                            } else {
+                                extendRefundStatuses[extendContractId] = refundStatus.ERROR;
+                                contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
+                            }
+                        }
                     }
-                    if (!extendContractId) {
-                        contract[`number_${k}`] = responseStatus(refundStatus.ERROR, 'contract not found');
-                    }
-                }
 
-                var isContractRefunded = extendRefundStatuses &&
-                                        (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
-                                        extendRefundStatuses[extendContractId] === refundStatus.REJECT);
-
-                if (isContractRefunded) {
-                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
-                    continue;
-                }
-
-                var paramObj = {
-                    extendContractId: extendContractId,
-                    commit: false
-                };
-
-                var responseFromExtend = extend.createRefund(paramObj);
-                var extendStatus;
-
-                if (responseFromExtend.error) {
-                    extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
-                    continue;
-                }
-
-                if (responseFromExtend.refundAmount.amount === 0) {
-                    extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                    contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
-                    continue;
-                } else if (responseFromExtend.refundAmount.amount > 0) {
-                    paramObj.commit = true;
-                    responseFromExtend = extend.createRefund(paramObj);
-
-                    if (responseFromExtend.id) {
-                        extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
-                    } else {
-                        extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                        contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
-                        continue;
-                    }
+                    Transaction.wrap(function () {
+                        warranty.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
+                    });
                 }
             }
-
             contracts.push(contract);
             product.contracts = contracts;
             products.push(product);
             RESPONSE.products = products;
-
-            Transaction.wrap(function () {
-                extendLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
-            });
         }
     }
 
@@ -383,7 +384,7 @@ function refund() {
 
             for (var j = 0; j < pLi.length; j += 1) {
                 var currentContract = pLi[j];
-                for (var k = 0 ; k < currentContract.custom.extendContractId.length; k += 1) {
+                for (var k = 0; k < currentContract.custom.extendContractId.length; k += 1) {
                     if (reqContract === currentContract.custom.extendContractId[k]) {
                         extendLi = currentContract;
                     }
@@ -416,11 +417,11 @@ function refund() {
                 extendContractIds = extendLi.custom.extendContractId;
             }
 
-           for (var q = 0; q < extendContractIds.length; q +=1 ) {
-               if (reqContract === extendContractIds[q]) {
-                   extendContractId = reqContract;
-               }
-           }
+            for (var q = 0; q < extendContractIds.length; q += 1) {
+                if (reqContract === extendContractIds[q]) {
+                    extendContractId = reqContract;
+                }
+            }
 
             var isContractRefunded = extendRefundStatuses &&
                                     (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
@@ -446,7 +447,7 @@ function refund() {
                 continue;
             }
 
-            if (responseFromExtend.refundAmount.amount === 0 ) {
+            if (responseFromExtend.refundAmount.amount === 0) {
                 extendRefundStatuses[extendContractId] = refundStatus.REJECT;
                 contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
                 continue;
@@ -498,4 +499,4 @@ exports.AddExtendProduct = guard.ensure(['post', 'https'], addExtendProduct);
 
 /** Refund extend warranty from order.
  * @see {@link module:controllers/Extend~refund} */
- exports.Refund = guard.ensure(['post', 'https'], refund);
+exports.Refund = guard.ensure(['post', 'https'], refund);
