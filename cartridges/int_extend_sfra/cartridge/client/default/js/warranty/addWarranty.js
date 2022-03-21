@@ -49,6 +49,21 @@ function getChildProducts() {
 }
 
 /**
+ * Create hidden input in case whether only warranty was added to cart
+ * @param {Object} data - ajax response after adding warranty to cart
+ */
+function createHiddenInput(data) {
+    var $footer = $('#footercontent');
+    if (!data.renderExtendButton) {
+        var $input = $('input').attr({
+            type: 'hidden',
+            name: 'noRenderExtendButton'
+        });
+        $footer.append($input);
+    }
+}
+
+/**
  * Open modal window with warranty's offer
  * @param {Object} form - info about product
  * @param {string} addToCartUrl - add to cart url
@@ -79,7 +94,8 @@ function warrantyModalOpen(form, addToCartUrl) {
                     data: form,
                     success: function (data) {
                         handlePostCartAdd(data);
-                        $('body').trigger('product:afterAddToCart', data);
+                        createHiddenInput(data);
+                        // $('body').trigger('product:afterAddToCart', data);
                         $.spinner().stop();
                         base.miniCartReportingUrl(data.reportingURL);
                     },
@@ -100,7 +116,7 @@ module.exports = {
         var pidsObj = null;
 
         pid = base.getPidValue('button.add-to-cart');
-        addToCartUrl = '/on/demandware.store/Sites-RefArch-Site/en_US/Warranty-AddWarranty';
+        addToCartUrl = $('.product-detail').find('input[name=addWarranty]').val();
 
         var form = {
             pid: pid,

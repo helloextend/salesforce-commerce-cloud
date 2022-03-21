@@ -20,6 +20,9 @@ function normalizeCartQuantities(basket) {
     var warrantyItems = [];
  
     collections.forEach(productLineItems, function (lineItem) {
+        if (lineItem.custom.isWarranty) {
+            return;
+        }
 
         var persistentUUID = lineItem.custom.persistentUUID || null;
         var parentLineItemUUID = lineItem.custom.parentLineItemUUID || null; 
@@ -37,6 +40,10 @@ function normalizeCartQuantities(basket) {
 
     if (warrantyItems.length > 0) {
         var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
+
+        if (!mappedLineItemProducts) {
+            return;
+        }
 
         if (warrantyItems.length > productsWithWarranty.length ) {
             productsWithWarranty.forEach( function (productLineItem) {
@@ -70,11 +77,11 @@ function normalizeCartQuantities(basket) {
 
 function applyQuantityLogic (mappedProducts) {
     mappedProducts.forEach(function (mappedObject) { 
-        
+
         var lineItem = mappedObject.lineItem; 
         var warrantyProducts = mappedObject.warranties;
         var quantityOfProduct = lineItem.getQuantityValue();
-        
+
         var totalQuantityWarrantyProducts = warrantyProducts.reduce(function (prev, item) {
             return prev += item.getQuantityValue();
         }, 0);

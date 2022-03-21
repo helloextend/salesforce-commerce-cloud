@@ -1,3 +1,6 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-undef */
+/* eslint-disable one-var */
 /* eslint-disable no-use-before-define */
 /* eslint-disable require-jsdoc */
 'use strict';
@@ -24,10 +27,7 @@ function disableLinkForExtendInMiniCart() {
     });
 }
 
-function addItemToCartHandler(form, page, minicart, dialog, addItemToCart) {
-    if (window.EXT_A_EXT_GLOBAL_SWITCH) {
-        var payload = createAddToCartAnalytics(form);
-    }
+function addItemToCartHandler(form, addItemToCart) {
     addItemToCart(form).then(function (response) {
         var $uuid = form.find('input[name="uuid"]');
         if ($uuid.length > 0 && $uuid.val().length > 0) {
@@ -43,64 +43,75 @@ function addItemToCartHandler(form, page, minicart, dialog, addItemToCart) {
 }
 
 function warrantyModalOpen(form, page, minicart, dialog, addItemToCart) {
-    var EXT_PDP_UPSELL_SWITCH = window.EXT_PDP_UPSELL_SWITCH || undefined;
-    var isPlanSelected = false;
-
-    if ($('#extend-offer').length) {
-        var extendComponent = window.Extend.buttons.instance('#extend-offer');
-
-        if (!extendComponent) {
-            addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
-            return;
-        }
-    }
-
-    if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected && $('#extend-offer').find('iframe').length) {
-        window.Extend.modal.open({
-            referenceId: $('.product-number span').text().trim(),
-            onClose: function (plan) {
-                $('.extend-form-data').remove();
+    window.Extend.modal.open({
+        referenceId: $('.product-number span').text().trim(),
+        onClose: function (plan) {
+            var parentId = $('div.product-number').find('span').text();
+            if (plan) {
+                form.append('<input type="hidden" name="extendParentId" value="' + parentId + '" />');
+                form.append('<input type="hidden" name="extendPlanId" value="' + plan.planId + '" />');
+                form.append('<input type="hidden" name="extendPrice" value="' + plan.price + '" />');
+                form.append('<input type="hidden" name="extendTerm" value="' + plan.term + '" />');
+                form.append('<input class="extend-form-data" type="hidden" name="eventArea" value="product_modal" />');
+                form.append('<input class="extend-form-data" type="hidden" name="eventType" value="modal" />');
             }
-        });
-    }
-    
-    // window.Extend.modal.open({
-    //     referenceId: $('.product-number span').text().trim(),
-    //     onClose: function (plan) {
-    //         $('.extend-form-data').remove();
-    //     }
-    // });
+            addItemToCartHandler(form, page, minicart, dialog, addItemToCart);
+            $('.extend-form-data').remove();
+        }
+    });
 }
 
-// function addWarranty() {
+/**
+ * Create hidden input in case whether only warranty was added to cart
+ * @param {string} name - data attribute called name
+ * @param {string} value - data attribute called value
+ */
+function createHiddenInput(name, value) {
+    var $extendIframe = $('iframe#extend-offers-modal-iframe');
+    var $input = $('input').attr({
+        type: 'hidden',
+        name: `${name}`,
+        value: `${value}`
+    });
+    $extendIframe.append($input);
+}
 
-// }
+/**
+ * @description Make the AJAX request to add an item to cart
+ * @param {Element} form The form element that contains the item quantity and ID data
+ * @returns {Promise}
+ */
+var addItemToCart = function (form) {
+    var $form = $(form);
+    var $extendIframe = $('iframe#extend-offers-modal-iframe');
+
+    var addToCartUrl = $extendIframe.closest('body').find('input[name=addWarranty]').val();
+    var continueCartUrl = $extendIframe.closest('body').find('input[name=continueCartUrl]').val();
+
+    return Promise.resolve($.ajax({
+        type: 'POST',
+        url: addToCartUrl,
+        data: $form.serialize()
+    })).then(function (response) {
+// handle error in the response
+        if (response.error) {
+            throw new Error(response.error);
+        } else {
+            location.href = continueCartUrl;
+        }
+    });
+};
+
+var addWarranty = function () {
+    var divAddToCart = $('div.product-add-to-cart');
+    var $form = divAddToCart.closest('form');
+
+    var page, minicart, dialog;
+
+    warrantyModalOpen($form, page, minicart, dialog, addItemToCart);
+};
 
 $(document).ready(function () {
     extendInit();
-
-    var $form = $('button#add-to-cart');
-    var addItemToCart = function (form) {
-        var $form = $(form),
-            $qty = $form.find('input[name="Quantity"]');
-        if ($qty.length === 0 || isNaN($qty.val()) || parseInt($qty.val(), 10) === 0) {
-            $qty.val('1');
-        }
-        return Promise.resolve($.ajax({
-            type: 'POST',
-            url: util.ajaxUrl(Urls.addProduct),
-            data: $form.serialize()
-        })).then(function (response) {
-            // handle error in the response
-            if (response.error) {
-                throw new Error(response.error);
-            } else {
-                return response;
-            }
-        });
-    };
-    warrantyModalOpen($form, page, minicart, dialog, addItemToCart);
-    // extendPDP();
-    // if ($('.pt_cart').length) { renderUpsellBtns(); }
-    // extendAddToCart($form, page, minicart, dialog, addItemToCart);
+    addWarranty();
 });

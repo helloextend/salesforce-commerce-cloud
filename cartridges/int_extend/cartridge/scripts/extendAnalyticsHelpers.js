@@ -93,7 +93,7 @@ function getProductRemovedFromCartData(removedProduct) {
 function getOfferRemovedFromCartData(removedProduct, removedPlan) {
     var offerRemovedFromCart = {
         newQuantity: 0,
-        productID: removedProduct.productID,
+        productID: removedProduct ? removedProduct.productID : '',
         planId: removedPlan.manufacturerSKU,
         event: 'offerRemovedFromCart'
     };

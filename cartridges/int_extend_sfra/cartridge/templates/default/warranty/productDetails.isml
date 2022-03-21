@@ -151,6 +151,8 @@
             <div class="recommendations">
                 <isslot id="product-recommendations-m" description="Recommended products" context="global" />
             </div>
+
+            <input type="hidden" name="addWarranty" value="${pdict.actionUrl.addWarranty}"/>
         </div>
     </isobject>
 </isdecorate>

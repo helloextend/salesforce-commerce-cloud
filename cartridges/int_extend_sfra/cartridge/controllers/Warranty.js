@@ -60,6 +60,8 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
  */
 server.get('ShowOffers', cache.applyPromotionSensitiveCache, consentTracking.consent, function (req, res, next) {
     var OrderMgr = require('dw/order/OrderMgr');
+    var URLUtils = require('dw/web/URLUtils');
+
     var productHelper = require('*/cartridge/scripts/helpers/productHelpers');
     var data = req.querystring;
     var token = data.token;
@@ -107,6 +109,10 @@ server.get('ShowOffers', cache.applyPromotionSensitiveCache, consentTracking.con
         }
     }
 
+    var actionUrl = {
+        addWarranty: URLUtils.url('Warranty-AddWarranty').toString()
+    };
+
     var productType = showProductPageHelperResult.product.productType;
     if (!showProductPageHelperResult.product.online && productType !== 'set' && productType !== 'bundle') {
         res.setStatusCode(404);
@@ -125,6 +131,7 @@ server.get('ShowOffers', cache.applyPromotionSensitiveCache, consentTracking.con
             res.render(showProductPageHelperResult.template, {
                 product: showProductPageHelperResult.product,
                 addToCartUrl: showProductPageHelperResult.addToCartUrl,
+                actionUrl: actionUrl,
                 resources: showProductPageHelperResult.resources,
                 breadcrumbs: showProductPageHelperResult.breadcrumbs,
                 canonicalUrl: showProductPageHelperResult.canonicalUrl,
@@ -174,7 +181,8 @@ server.post('AddWarranty', function (req, res, next) {
         message: result.message,
         cart: cartModel,
         error: result.error,
-        minicartCountOfItems: Resource.msgf('minicart.count', 'common', null, quantityTotal)
+        minicartCountOfItems: Resource.msgf('minicart.count', 'common', null, quantityTotal),
+        renderExtendButton: false
     });
     return next();
 });

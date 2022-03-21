@@ -19,6 +19,9 @@
 	}
 </isscript>
 
+	<input type="hidden" name="addWarranty" value="${pdict.actionUrls.addWarranty}"/>
+	<input type="hidden" name="continueCartUrl" value="${pdict.actionUrls.continueCartUrl}"/>
+
 <script src="${URLUtils.staticURL('/js/addWarranty.js')}"></script>
 
 <isdecorate template="${DecoratorTemplate}">
