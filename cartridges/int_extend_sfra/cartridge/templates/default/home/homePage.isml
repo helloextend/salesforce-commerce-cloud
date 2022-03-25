@@ -43,4 +43,6 @@
             </form>
         </div>
     </div>
+
+    <input type="hidden" name="lead-offer-modal-url" value="${URLUtils.url('Extend-PostPurchase')}">
 </isdecorate>

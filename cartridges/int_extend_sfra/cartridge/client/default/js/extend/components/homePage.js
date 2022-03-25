@@ -46,11 +46,48 @@ function isLeadTokenInURL(params) {
     return false;
 }
 
+// function leadOfferModal(Extend, form, leadToken, addToCartUrl) {
+//     Extend.aftermarketModal.open({
+//         leadToken: leadToken,
+//         onClose: function (plan) {
+//             if (plan) {
+//                 form.extendPlanId = plan.planId;
+//                 form.extendPrice = plan.price;
+//                 form.extendTerm = plan.term;
+//             }
+//         }
+//     });
+// }
+
+/**
+ * Updates the Mini-Cart quantity value after the customer has pressed the "Add to Cart" button
+ * @param {string} response - ajax response from clicking the add to cart button
+ */
+function handlePostCartAdd(response) {
+    $('.minicart').trigger('count:update', response);
+    var messageType = response.error ? 'alert-danger' : 'alert-success';
+    // show add to cart toast
+    if ($('.add-to-cart-messages').length === 0) {
+        $('body').append(
+            '<div class="add-to-cart-messages"></div>'
+        );
+    }
+
+    $('.add-to-cart-messages').append(
+        '<div class="alert ' + messageType + ' add-to-basket-alert text-center" role="alert">'
+        + response.message
+        + '</div>'
+    );
+
+    setTimeout(function () {
+        $('.add-to-basket-alert').remove();
+    }, 5000);
+}
+
 module.exports = {
     modalOpen: function () {
-        $(document).onload(function () {
+        $(document).ready(function () {
             var Extend = window.Extend || undefined;
-            var EXT_PDP_UPSELL_SWITCH = window.EXT_PDP_UPSELL_SWITCH || undefined;
 
             if (!Extend) {
                 return;
@@ -61,11 +98,41 @@ module.exports = {
             var isLeadToken = isLeadTokenInURL(queryParameters);
             var leadToken;
         
-            if (isLeadToken && EXT_PDP_UPSELL_SWITCH) {
+            if (isLeadToken) {
                 leadToken = getLeadToken(queryParameters);
+
+                var pid = 'product';
+                var addToCartUrl = $('body').find('input[name=lead-offer-modal-url]').val();
+
+                var form = {
+                    pid: pid,
+                    quantity: 1
+                };
         
                 Extend.aftermarketModal.open({
-                    leadToken: leadToken
+                    leadToken: leadToken,
+                    onClose: function (plan) {
+                        if (plan) {
+                            form.extendPlanId = plan.planId;
+                            form.extendPrice = plan.price;
+                            form.extendTerm = plan.term;
+                        }
+
+                        if (addToCartUrl) {
+                            $.ajax({
+                                url: addToCartUrl,
+                                method: 'POST',
+                                data: form,
+                                success: function (data) {
+                                    handlePostCartAdd(data);
+                                    $.spinner().stop();
+                                },
+                                error: function () {
+                                    $.spinner().stop();
+                                }
+                            });
+                        }
+                    }
                 });
             }
         });

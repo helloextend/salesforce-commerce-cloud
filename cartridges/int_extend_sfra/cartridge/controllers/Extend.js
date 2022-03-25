@@ -78,6 +78,44 @@ function responseStatus(status, message) {
     };
 }
 
+/**
+ * Handle Extend add to cart
+ * @param {dw.order.Basket} currentBasket - current basket
+ * @param {dw.catalog.Product} product - product
+ * @param {dw.order.ProductLineItem} parentLineItem - parent line item
+ * @param {Object} form - form
+ */
+ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
+    var Transaction = require('dw/system/Transaction');
+    var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
+    var warrantyLi;
+
+    if (!currentBasket) {
+        return;
+    }
+
+    // Add new line item for the Extend warranty
+    Transaction.wrap(function () {
+        warrantyLi = cartHelper.addLineItem(
+            currentBasket,
+            product,
+            parseInt(form.quantity, 10),
+            [],
+            product.getOptionModel(),
+            currentBasket.getDefaultShipment()
+        );
+    });
+
+    // Configure the Extend ProductLineItem
+    Transaction.wrap(function () {
+        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + form.pid);
+        warrantyLi.setManufacturerSKU(form.extendPlanId);
+        warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
+        warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
+        warrantyLi.custom.isWarranty = true;
+    });
+}
+
 server.post('Refund', server.middleware.https, function (req, res, next) {
     var Site = require('dw/system/Site');
     var Transaction = require('dw/system/Transaction');
@@ -371,5 +409,49 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
     return next();
 });
+
+server.post('PostPurchase', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Transaction = require('dw/system/Transaction');
+    var Resource = require('dw/web/Resource');
+    var ProductMgr = require('dw/catalog/ProductMgr');
+    var CartModel = require('*/cartridge/models/cart');
+    var ProductLineItemsModel = require('*/cartridge/models/productLineItems');
+    var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+
+    var currentBasket = BasketMgr.getCurrentOrNewBasket();
+    if (!currentBasket) {
+        return;
+    }
+
+    var form = req.form;
+
+    var result = {
+        error: false,
+        message: Resource.msg('text.alert.addedtobasket', 'product', null)
+    };
+
+    var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
+    addExtendWarrantyToCart(currentBasket, product, null, form);
+
+    var quantityTotal = ProductLineItemsModel.getTotalQuantity(currentBasket.productLineItems);
+
+    Transaction.wrap(function () {
+        basketCalculationHelpers.calculateTotals(currentBasket);
+    });
+
+    var cartModel = new CartModel(currentBasket);
+
+    res.json({
+        quantityTotal: quantityTotal,
+        message: result.message,
+        cart: cartModel,
+        error: result.error,
+        minicartCountOfItems: Resource.msgf('minicart.count', 'common', null, quantityTotal),
+        // renderExtendButton: false
+    });
+
+    return next();
+})
 
 module.exports = server.exports();
