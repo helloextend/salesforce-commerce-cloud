@@ -134,13 +134,14 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
 
     var RESPONSE = {};
     var products = [];
-    var contracts = [];
-    var product = {};
-    var contract = {};
 
     if (data.products) {
-        for (var i = 0; i < data.products.length; i += 1) {
+        for (var i = 0; i < data.products.length; i++) {
             var reqProduct = data.products[i];
+
+            // object for requested product
+            var product = {};
+            product.productID = reqProduct.productID;
 
             if (!reqProduct.productID) {
                 errorInRequest(RESPONSE, reqProduct, products, product, [], {}, '', 'no product id provided');
@@ -165,103 +166,105 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
                 continue;
             }
 
-            for (var j = 0; j < apiOrder.productLineItems.length; j += 1) {
+            var warrantiesArray = [];
+
+            for (var j = 0; j < apiOrder.productLineItems.length; j++) {
                 var currentProduct = apiOrder.productLineItems[j];
-                for (var l = 0; l < pLi.length; l += 1) {
+                for (var l = 0; l < pLi.length; l++) {
                     if (currentProduct.custom.parentLineItemUUID === pLi[l].custom.persistentUUID) {
                         extendLi = currentProduct;
+                        warrantiesArray.push(extendLi);
                     }
                 }
             }
 
-            if (!extendLi) {
+            if (!warrantiesArray.length) {
                 responseProduct(RESPONSE, reqProduct, products, product, 'product has no extend');
                 continue;
             }
 
-            var extendContractIds;
-            var statuses;
-            var extendRefundStatuses = JSON.parse(extendLi.custom.extendRefundStatuses) || {};
-            statuses = Object.keys(extendRefundStatuses);
+            var refundsCounter = null;
 
-            if (!extendLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
-                continue;
-            } else if (statuses.length) {
-                extendContractIds = statuses;
-            } else {
-                extendContractIds = extendLi.custom.extendContractId;
-            }
+            for (var n = 0; n < warrantiesArray.length; n++) {
+                var contracts = [];
+                var warranty = warrantiesArray[n];
 
-            product.productID = reqProduct.productID;
-            product.contracts = contracts;
+                var extendContractIds;
+                var statuses;
 
-            for (var k = 0; k < reqProduct.qty; k += 1) {
-                var extendContractId = extendContractIds[k];
+                var extendRefundStatuses = JSON.parse(warranty.custom.extendRefundStatuses) || {};
+                statuses = Object.keys(extendRefundStatuses);
 
-                if (!extendContractId) {
-                    for (var n = 0; n < extendLi.custom.extendContractId.length; n++) {
-                        var currentApiContract = extendLi.custom.extendContractId[n];
-                        var isExists = extendContractIds.indexOf(currentApiContract);
-                        if (isExists === -1) {
-                            extendContractId = currentApiContract;
-                            break;
-                        }
+                if (!warranty.custom.extendContractId.length || (!statuses && !statuses.length)) {
+                    continue;
+                } else if (statuses.length) {
+                    extendContractIds = statuses;
+                } else {
+                    extendContractIds = warranty.custom.extendContractId;
+                }
+
+                for (var m = 0; m < reqProduct.qty; m++) {
+                    // object for requested contract
+                    var contract = {};
+
+                    var extendContractId = extendContractIds[m];
+
+                    if (refundsCounter >= reqProduct.qty) {
+                        break;
                     }
-                    if (!extendContractId) {
-                        contract[`number_${k}`] = responseStatus(refundStatus.ERROR, 'contract not found');
-                    }
-                }
 
-                var isContractRefunded = extendRefundStatuses &&
-                                        (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
-                                        extendRefundStatuses[extendContractId] === refundStatus.REJECT);
+                    refundsCounter++;
 
-                if (isContractRefunded) {
-                    contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
-                    continue;
-                }
+                    var isContractRefunded = extendRefundStatuses &&
+                                (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
+                                extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
-                var paramObj = {
-                    extendContractId: extendContractId,
-                    commit: false
-                };
-
-                var responseFromExtend = extend.createRefund(paramObj);
-                var extendStatus;
-
-                if (responseFromExtend.error) {
-                    extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                    contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
-                    continue;
-                }
-
-                if (responseFromExtend.refundAmount.amount === 0) {
-                    extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                    contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
-                    continue;
-                } else if (responseFromExtend.refundAmount.amount > 0) {
-                    paramObj.commit = true;
-                    responseFromExtend = extend.createRefund(paramObj);
-
-                    if (responseFromExtend.id) {
-                        extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
-                    } else {
-                        extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                        contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
+                    if (isContractRefunded) {
+                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
+                        contracts.push(contract);
                         continue;
                     }
-                }
-            }
 
-            contracts.push(contract);
-            product.contracts = contracts;
+                    var paramObj = {
+                        extendContractId: extendContractId,
+                        commit: false
+                    };
+
+                    var responseFromExtend = extend.createRefund(paramObj);
+
+                    if (responseFromExtend.error) {
+                        extendRefundStatuses[extendContractId] = refundStatus.ERROR;
+                        contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
+                        contracts.push(contract);
+                        continue;
+                    }
+
+                    if (responseFromExtend.refundAmount.amount === 0) {
+                        extendRefundStatuses[extendContractId] = refundStatus.REJECT;
+                        contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
+                    } else if (responseFromExtend.refundAmount.amount > 0) {
+                        paramObj.commit = true;
+                        responseFromExtend = extend.createRefund(paramObj);
+
+                        if (responseFromExtend.id) {
+                            extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
+                            contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
+                        } else {
+                            extendRefundStatuses[extendContractId] = refundStatus.ERROR;
+                            contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
+                        }
+                    }
+
+                    contracts.push(contract);
+
+                    Transaction.wrap(function () {
+                        warranty.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
+                    });
+                }
+                product.contracts = contracts;
+            }
             products.push(product);
             RESPONSE.products = products;
-
-            Transaction.wrap(function () {
-                extendLi.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
-            });
         }
     }
 
