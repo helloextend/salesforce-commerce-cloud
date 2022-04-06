@@ -17,22 +17,37 @@ function normalizeCartQuantities(basket) {
 
     var productsWithWarranty = [];
     var warrantyItems = [];
+    var leadsLineItems = [];
  
     collections.forEach(productLineItems, function (lineItem) {
 
         var persistentUUID = lineItem.custom.persistentUUID || null;
-        var parentLineItemUUID = lineItem.custom.parentLineItemUUID || null; 
+        var parentLineItemUUID = lineItem.custom.parentLineItemUUID || null;
 
-          // Is LineItem with warranty
-          if (persistentUUID && !parentLineItemUUID) { 
-                productsWithWarranty.push(lineItem);
-          }
+        // Is LineItem with warranty
+        if (persistentUUID && !parentLineItemUUID) { 
+            productsWithWarranty.push(lineItem);
+        }
 
-          // Is warranty line item
-          if (persistentUUID && parentLineItemUUID) {
-                warrantyItems.push(lineItem);
-          }
+        // Is warranty line item
+        if (persistentUUID && parentLineItemUUID) {
+            warrantyItems.push(lineItem);
+        }
+
+        // Is LineItem leadOffer
+        var leadExtendId = lineItem.custom.leadExtendId;
+        var postPurchaseLeadToken = lineItem.custom.postPurchaseLeadToken;
+
+        if (leadExtendId && postPurchaseLeadToken) {
+            leadsLineItems.push(lineItem);
+        }
     });
+
+    if (leadsLineItems) {
+        Transaction.wrap(function () {
+            normalizeLeadOffersQuantities(leadsLineItems)
+        })
+    }
 
     if (warrantyItems.length > 0) {
         var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
@@ -210,6 +225,21 @@ function reverseArray (warrantyArr) {
     }
 
     return result;
+}
+
+/**
+ * Normalize lead offers quantities in cart
+ * @param {Array} leadsLineItems - array of leads line items
+ * @returns {Array} new normalized array
+ */
+function normalizeLeadOffersQuantities(leadsLineItems) {
+    leadsLineItems.forEach(function (lead) {
+        var quantityOfLead = lead.getQuantityValue();
+
+        if (quantityOfLead > lead.custom.leadQuantuty) {
+            lead.setQuantityValue(lead.custom.leadQuantuty);
+        }
+    })
 }
 
 module.exports = normalizeCartQuantities;

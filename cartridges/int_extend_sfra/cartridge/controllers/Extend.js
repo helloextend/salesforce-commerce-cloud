@@ -79,6 +79,20 @@ function responseStatus(status, message) {
 }
 
 /**
+ *
+ * @param {string} currentWarrantyLi - current warranty list
+ * @param {Object} form - form
+ */
+ function updateExtendWarranty(currentWarrantyLi, form) {
+    var Transaction = require('dw/system/Transaction');
+    var quantityInCart = currentWarrantyLi.getQuantity();
+
+    Transaction.wrap(function () {
+        currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(form.quantity, 10));
+    });
+}
+
+/**
  * Handle Extend add to cart
  * @param {dw.order.Basket} currentBasket - current basket
  * @param {dw.catalog.Product} product - product
@@ -88,6 +102,7 @@ function responseStatus(status, message) {
  function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
     var Transaction = require('dw/system/Transaction');
     var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
+
     var warrantyLi;
 
     if (!currentBasket) {
@@ -108,11 +123,16 @@ function responseStatus(status, message) {
 
     // Configure the Extend ProductLineItem
     Transaction.wrap(function () {
-        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + form.pid);
+        warrantyLi.setProductName('Extend Protection Plan' + ' for ' + form.productName);
         warrantyLi.setManufacturerSKU(form.extendPlanId);
         warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
         warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
         warrantyLi.custom.isWarranty = true;
+        if (form.leadToken) {
+            warrantyLi.custom.leadExtendId = form.extendPlanId;
+            warrantyLi.custom.leadQuantuty = +form.quantity;
+            warrantyLi.custom.postPurchaseLeadToken = form.leadToken;
+        }
     });
 }
 
@@ -416,41 +436,65 @@ server.post('PostPurchase', function (req, res, next) {
     var Resource = require('dw/web/Resource');
     var ProductMgr = require('dw/catalog/ProductMgr');
     var CartModel = require('*/cartridge/models/cart');
+    var URLUtils = require('dw/web/URLUtils');
+    var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
     var ProductLineItemsModel = require('*/cartridge/models/productLineItems');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
 
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     if (!currentBasket) {
-        return;
+        return next();
     }
 
     var form = req.form;
+    var isOfferValide = extendHelpers.validateOffer(form);
 
     var result = {
         error: false,
         message: Resource.msg('text.alert.addedtobasket', 'product', null)
     };
 
-    var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
-    addExtendWarrantyToCart(currentBasket, product, null, form);
+    if (form.extendPlanId && form.extendPrice && form.extendTerm) {
+        var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
 
-    var quantityTotal = ProductLineItemsModel.getTotalQuantity(currentBasket.productLineItems);
+        // Determine whether warranty line item already exists for this product line item
+        var currentWarrantyLi;
+        var warrantyLis = currentBasket.getProductLineItems('EXTEND-' + form.extendTerm);
+        for (var i = 0; i < warrantyLis.length; i++) {
+            if (warrantyLis[i].custom.leadExtendId === form.extendPlanId) {
+                currentWarrantyLi = warrantyLis[i];
+                break;
+            }
+        }
 
-    Transaction.wrap(function () {
-        basketCalculationHelpers.calculateTotals(currentBasket);
-    });
+        if (currentWarrantyLi) {
+            updateExtendWarranty(currentWarrantyLi, form);
+        } else {
+            addExtendWarrantyToCart(currentBasket, product, null, form);
+        }
 
-    var cartModel = new CartModel(currentBasket);
+        var quantityTotal = ProductLineItemsModel.getTotalQuantity(currentBasket.productLineItems);
 
-    res.json({
-        quantityTotal: quantityTotal,
-        message: result.message,
-        cart: cartModel,
-        error: result.error,
-        minicartCountOfItems: Resource.msgf('minicart.count', 'common', null, quantityTotal),
-        // renderExtendButton: false
-    });
+        var actionUrl = {
+            continueUrl: URLUtils.url('Cart-Show').toString()
+        }
 
+        Transaction.wrap(function () {
+            basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+
+        var basketModel = new CartModel(currentBasket);
+
+        res.json({
+            quantityTotal: quantityTotal,
+            actionUrl: actionUrl,
+            message: result.message,
+            basket: basketModel,
+            error: result.error,
+            minicartCountOfItems: Resource.msgf('minicart.count', 'common', null, quantityTotal),
+            renderExtendButton: false
+        });
+    }
     return next();
 })
 
