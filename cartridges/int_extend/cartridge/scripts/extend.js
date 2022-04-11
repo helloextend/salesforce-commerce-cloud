@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 /* eslint-disable no-continue */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
@@ -262,6 +263,33 @@ function getLineItems(order) {
 }
 
 /**
+ * Get Order`s line items objects
+ * @param {dw.order.Order} order : API order
+ * @return {Array<Object>} array of line items objects
+ */
+function getOrdersBatchLineItems(order) {
+    var lineItems = [];
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+        if (!pLi.custom.parentLineItemUUID) {
+            var pliObj = {};
+            pliObj.warrantable = false;
+            pliObj.quantity = pLi.quantityValue;
+            pliObj.product = getSFCCProduct(pLi);
+
+            if (pLi.custom.persistentUUID && getExtendPlan(pLi, order)) {
+                pliObj.warrantable = true;
+                pliObj.plan = getExtendPlan(pLi, order);
+            } else if (pLi.custom.isWarrantable) {
+                pliObj.warrantable = true;
+            }
+            lineItems.push(pliObj);
+        }
+    }
+    return lineItems;
+}
+
+/**
  * Get customer object
  * @param {Object} customer : object with customer information
  * @param {Object} address : default shipping address
@@ -316,6 +344,55 @@ function getOrdersPayload(paramObj) {
 }
 
 /**
+ * Get orders payload for specific API version
+ * @param {ArrayList<Product>} orderBatch - array of orders
+ * @returns {Array} requestObject - payload object for request
+ */
+function sendOrdersBatch(orderBatch) {
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var requestObject = [];
+
+    for (var i = 0; i < orderBatch.length; i++) {
+        var currentOrder = orderBatch[i];
+        try {
+            var orderObj = {};
+
+            orderObj.storeId = STORE_ID;
+            orderObj.storeName = 'SFCC';
+
+            var billingAddress = currentOrder.getBillingAddress();
+
+            var customer = {
+                billingAddress: {
+                    address1: billingAddress.getAddress1(),
+                    address2: billingAddress.getAddress2(),
+                    city: billingAddress.getCity(),
+                    countryCode: billingAddress.getCountryCode().toString(),
+                    postalCode: billingAddress.getPostalCode(),
+                    province: billingAddress.getStateCode()
+                },
+                email: currentOrder.customerEmail,
+                name: currentOrder.customerName
+            };
+
+            orderObj.currency = currentOrder.getCurrencyCode();
+            orderObj.customer = customer;
+
+            orderObj.isTest = true;
+
+            orderObj.total = Math.ceil(moneyToCents(currentOrder.getTotalGrossPrice()));
+            orderObj.transactionId = currentOrder.orderNo;
+            orderObj.lineItems = getOrdersBatchLineItems(currentOrder);
+
+            requestObject.push(orderObj);
+        } catch (error) {
+            logger.error('Request object could not be created. {0}', error);
+        }
+    }
+    return requestObject;
+}
+
+/**
  * Get products payload and make call on products endpoint
  * @param {Array<Product>} productBatch - array of products
  * @returns {Object} - response object
@@ -323,6 +400,18 @@ function getOrdersPayload(paramObj) {
 function exportProducts(productBatch) {
     var requestObject = getProductsPayload(productBatch);
     var endpointName = 'products';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
+}
+
+/**
+ * Get orders payload and make call on orders endpoint
+ * @param {Array<Product>} orderBatch - array of products
+ * @returns {Object} - response object
+ */
+function sendOrders(orderBatch) {
+    var requestObject = sendOrdersBatch(orderBatch);
+    var endpointName = 'ordersBatch';
     var response = webService.makeServiceCall(endpointName, requestObject);
     return response;
 }
@@ -390,6 +479,7 @@ module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
+    sendOrders: sendOrders,
     createOrderApiRefunds: createOrderApiRefunds,
     getOffer: getOffer,
     createOrders: createOrders
