@@ -160,37 +160,40 @@ function upsellModal(uuid) {
 }
 
 function addExtendUpsellBtn(uuid, pid, qty) {
+    var isRenderButton = $('#footercontent').find('input[name=noRenderButton]');
     $('#cart-table [data-uuid="' + uuid + '"].cart-row .item-details')
         .append('<div class="extend-upsell-style" id="extend-offer-' + uuid + '" data-pid=' + pid + '></div>')
         .ready(function () {
-            /** initialize offer */
-            Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
-                referenceId: pid,
-                onAddToCart:
-                    function (plan) {
-                        if (plan) {
-                            var form = {};
-                            form.extendPlanId = plan.plan.planId;
-                            form.extendPrice = plan.plan.price;
-                            form.extendTerm = plan.plan.term;
-                            form.pid = pid;
-                            form.pliUUID = uuid;
-                            form.quantity = qty;
-                            trackOfferAddedToCart(form);
+            if (!isRenderButton) {
+                 /** initialize offer */
+                Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
+                    referenceId: pid,
+                    onAddToCart:
+                        function (plan) {
+                            if (plan) {
+                                var form = {};
+                                form.extendPlanId = plan.plan.planId;
+                                form.extendPrice = plan.plan.price;
+                                form.extendTerm = plan.plan.term;
+                                form.pid = pid;
+                                form.pliUUID = uuid;
+                                form.quantity = qty;
+                                trackOfferAddedToCart(form);
 
-                            $.ajax({
-                                url: window.EXT_CART_ADDTOCART,
-                                method: 'POST',
-                                data: form,
-                                success: function () {
-                                    location.reload();
-                                },
-                                error: function () {
-                                }
-                            });
+                                $.ajax({
+                                    url: window.EXT_CART_ADDTOCART,
+                                    method: 'POST',
+                                    data: form,
+                                    success: function () {
+                                        location.reload();
+                                    },
+                                    error: function () {
+                                    }
+                                });
+                            }
                         }
-                    }
-            });
+                });
+            }
         });
 }
 
