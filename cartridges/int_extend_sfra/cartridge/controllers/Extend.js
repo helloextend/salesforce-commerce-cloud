@@ -447,7 +447,6 @@ server.post('PostPurchase', function (req, res, next) {
     }
 
     var form = req.form;
-    var isOfferValide = extendHelpers.validateOffer(form);
 
     var result = {
         error: false,
