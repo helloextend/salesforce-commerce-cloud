@@ -29,7 +29,7 @@ function trackOfferAddedToCart(data) {
  */
 function addExtendUpsellBtnCart(uuid, pid, qty) {
     var hasExtendUpsell = $('.item-' + uuid).parents('.product-card-footer').find('#extend-offer-' + uuid).length > 0;
-    var isRenderButton = $('#footercontent').find('input[name=noRenderButton]');
+    var isRenderButton = $('#footercontent').find('input[name=noRenderButton]').length;
     if (!hasExtendUpsell && !isRenderButton) {
         $('<div class="extend-upsell-style" id="extend-offer-' + uuid + '" data-pid=' + pid + '></div>')
             .insertAfter('.item-' + uuid)
@@ -77,7 +77,7 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
  */
 function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
     var hasExtendUpsell = $('.minicart').find('.card.uuid-' + uuid).find('#extend-offer-' + uuid).length > 0;
-    var isRenderButton = $('#footercontent').find('input[name=noRenderButton]');
+    var isRenderButton = $('#footercontent').find('input[name=noRenderButton]').length;
     if (!hasExtendUpsell && !isRenderButton) {
         $('<div class="extend-upsell-style" id="extend-offer-' + uuid + '" data-pid=' + pid + '></div>')
             .insertAfter('.minicart .product-summary ' + '.item-' + uuid)

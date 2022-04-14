@@ -160,7 +160,7 @@ function upsellModal(uuid) {
 }
 
 function addExtendUpsellBtn(uuid, pid, qty) {
-    var isRenderButton = $('#footercontent').find('input[name=noRenderButton]');
+    var isRenderButton = $('#footercontent').find('input[name=noRenderButton]').length;
     $('#cart-table [data-uuid="' + uuid + '"].cart-row .item-details')
         .append('<div class="extend-upsell-style" id="extend-offer-' + uuid + '" data-pid=' + pid + '></div>')
         .ready(function () {

@@ -95,6 +95,7 @@ function createRequestConfiguration(endpoint, requestObject) {
         case 'contracts':
             configObj.endpoint = 'stores/' + STORE_ID + '/contracts';
             configObj.method = 'POST';
+            configObj.API_VERSION = '2021-04-01';
             configObj.mock = mocks.contractsResponseMock;
             break;
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-loop-func */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable no-continue */
 /* eslint-disable no-unused-vars */
@@ -393,6 +394,75 @@ function sendOrdersBatch(orderBatch) {
 }
 
 /**
+ * Get info about plan
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @param {Object} lineItem - leads offer line item
+ * @returns - plan info
+ */
+function getPlanWithLead(paramObj, lineItem) {
+    var plan = {};
+    var purchasePrice = {};
+    var order = paramObj.order;
+
+    purchasePrice.currencyCode = order.currencyCode;
+    purchasePrice.amount = Math.ceil(moneyToCents(lineItem.adjustedNetPrice.divide(lineItem.quantityValue)));
+
+    plan.purchasePrice = purchasePrice;
+    plan.planId = lineItem.getManufacturerSKU();
+
+    return plan;
+}
+
+/**
+ * Get Orders Create endpoint Payload
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @param {Object} lineItem - leads offer line item
+ * @returns {Object} - request object
+ */
+function getLeadsOfferPayload(paramObj, lineItem) {
+    var requestObject = null;
+    var customer = JSON.parse(paramObj.customer);
+    var leadToken = lineItem.custom.postPurchaseLeadToken;
+    var order = paramObj.order;
+
+    var plan = getPlanWithLead(paramObj, lineItem);
+
+    requestObject = {
+        customer: customer,
+        leadToken: leadToken,
+        plan: plan,
+        transactionDate: order.getCreationDate().valueOf(),
+        transactionId: order.orderNo
+    };
+
+    return requestObject;
+}
+
+/**
+ * Process Leads Response
+ * @param {Object} ordersResponse : API response from contracts endpoint
+ * @param {dw.order.Order} order : API order
+ */
+function processLeadsResponse(leadsResponse, order, lineItem) {
+    var Transaction = require('dw/system/Transaction');
+    var ordersLI = order.productLineItems;
+    var isLead = false;
+
+    if (leadsResponse.id) {
+        for (var i = 0; i < ordersLI.length; i++) {
+            var pLi = ordersLI[i];
+            isLead = (lineItem.getManufacturerSKU() === pLi.getManufacturerSKU()) &&
+                    (lineItem.custom.postPurchaseLeadToken === pLi.custom.postPurchaseLeadToken);
+            if (isLead) {
+                Transaction.wrap(function () {
+                    pLi.custom.extendContractId = leadsResponse.id;
+                });
+            }
+        }
+    }
+}
+
+/**
  * Get products payload and make call on products endpoint
  * @param {Array<Product>} productBatch - array of products
  * @returns {Object} - response object
@@ -475,6 +545,30 @@ function createOrders(paramObj) {
     return response;
 }
 
+/**
+ * Make call on orders endpoint
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @returns {Object} - response object
+ */
+function createLeadContractId(paramObj) {
+    var order = paramObj.order;
+    var requestObject = null;
+    var endpointName = 'contracts';
+    var leadsResponse = null;
+
+    var ordersLineItems = order.getProductLineItems();
+    for (var i = 0; i < ordersLineItems.length; i++) {
+        var lineItem = ordersLineItems[i];
+        if (lineItem.custom.postPurchaseLeadToken) {
+            requestObject = getLeadsOfferPayload(paramObj, lineItem);
+            leadsResponse = webService.makeServiceCall(endpointName, requestObject);
+            if (leadsResponse) {
+                processLeadsResponse(leadsResponse, order, lineItem);
+            }
+        }
+    }
+}
+
 module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
@@ -482,5 +576,6 @@ module.exports = {
     sendOrders: sendOrders,
     createOrderApiRefunds: createOrderApiRefunds,
     getOffer: getOffer,
-    createOrders: createOrders
+    createOrders: createOrders,
+    createLeadContractId: createLeadContractId
 };
