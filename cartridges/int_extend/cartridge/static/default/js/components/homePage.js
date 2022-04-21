@@ -71,7 +71,7 @@ function getProductInfo($extendIframe) {
  * @param {Object} data - ajax response after adding warranty to cart
  */
 function renderExtendButton(data) {
-    var $footer = $('#footercontent');
+    var $footer = $('.footer-container');
     if (!data.renderExtendButton) {
         var $input = $('input').attr({
             type: 'hidden',

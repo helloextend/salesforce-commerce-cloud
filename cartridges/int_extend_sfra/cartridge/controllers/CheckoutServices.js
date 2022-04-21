@@ -206,7 +206,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     } else {
         var customer = getCustomer(order);
         var ordersResponse = extend.createOrders({ order: order, customer: customer });
-        if (ordersResponse.lineItems) {
+        if (!empty(ordersResponse.lineItems)) {
             processOrdersResponse(ordersResponse, order);
         }
         extend.createLeadContractId({ order: order, customer: customer });

@@ -1,3 +1,4 @@
+/* eslint-disable new-cap */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-loop-func */
 /* eslint-disable valid-jsdoc */
@@ -236,6 +237,7 @@ function getLineItems(order) {
             pliObj.product = product;
 
             if (productLi.custom.isWarrantable) {
+                pliObj.quantity = productLi.quantity.value;
                 pliObj.warrantable = true;
                 lineItems.push(pliObj);
                 break;
@@ -453,8 +455,11 @@ function getLeadsOfferPayload(paramObj, lineItem) {
  */
 function processLeadsResponse(leadsResponse, order, lineItem) {
     var Transaction = require('dw/system/Transaction');
+    var ArrayList = require('dw/util/ArrayList');
+
     var ordersLI = order.productLineItems;
     var isLead = false;
+    var extendContractIds = [];
 
     if (leadsResponse.id) {
         for (var i = 0; i < ordersLI.length; i++) {
@@ -463,7 +468,9 @@ function processLeadsResponse(leadsResponse, order, lineItem) {
                     (lineItem.custom.postPurchaseLeadToken === pLi.custom.postPurchaseLeadToken);
             if (isLead) {
                 Transaction.wrap(function () {
-                    pLi.custom.extendContractId = leadsResponse.id;
+                    extendContractIds = ArrayList(pLi.custom.extendContractId || []);
+                    extendContractIds.add(leadsResponse.id);
+                    pLi.custom.extendContractId = extendContractIds;
                 });
             }
         }
