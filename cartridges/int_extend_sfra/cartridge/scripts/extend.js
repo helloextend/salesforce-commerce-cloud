@@ -430,6 +430,7 @@ function getPlanWithLead(paramObj, lineItem) {
  * @returns {Object} - request object
  */
 function getLeadsOfferPayload(paramObj, lineItem) {
+    var UUIDUtils = require('dw/util/UUIDUtils');
     var requestObject = null;
     var customer = JSON.parse(paramObj.customer);
     var leadToken = lineItem.custom.postPurchaseLeadToken;
@@ -442,7 +443,7 @@ function getLeadsOfferPayload(paramObj, lineItem) {
         leadToken: leadToken,
         plan: plan,
         transactionDate: order.getCreationDate().valueOf(),
-        transactionId: order.orderNo
+        transactionId: UUIDUtils.createUUID()
     };
 
     return requestObject;
@@ -575,10 +576,12 @@ function createLeadContractId(paramObj) {
     for (var i = 0; i < ordersLineItems.length; i++) {
         var lineItem = ordersLineItems[i];
         if (lineItem.custom.postPurchaseLeadToken) {
-            requestObject = getLeadsOfferPayload(paramObj, lineItem);
-            leadsResponse = webService.makeServiceCall(endpointName, requestObject);
-            if (leadsResponse) {
-                processLeadsResponse(leadsResponse, order, lineItem);
+            for (var k = 0; k < lineItem.quantityValue; k++) {
+                requestObject = getLeadsOfferPayload(paramObj, lineItem);
+                leadsResponse = webService.makeServiceCall(endpointName, requestObject);
+                if (leadsResponse) {
+                    processLeadsResponse(leadsResponse, order, lineItem);
+                }
             }
         }
     }

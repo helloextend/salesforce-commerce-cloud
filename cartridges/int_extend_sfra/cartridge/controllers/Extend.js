@@ -498,6 +498,6 @@ server.post('PostPurchase', function (req, res, next) {
         });
     }
     return next();
-})
+});
 
 module.exports = server.exports();
