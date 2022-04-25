@@ -1,3 +1,4 @@
+/* eslint-disable new-cap */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-loop-func */
 /* eslint-disable valid-jsdoc */
@@ -236,6 +237,7 @@ function getLineItems(order) {
             pliObj.product = product;
 
             if (productLi.custom.isWarrantable) {
+                pliObj.quantity = productLi.quantity.value;
                 pliObj.warrantable = true;
                 lineItems.push(pliObj);
                 break;
@@ -426,6 +428,7 @@ function getPlanWithLead(paramObj, lineItem) {
  * @returns {Object} - request object
  */
 function getLeadsOfferPayload(paramObj, lineItem) {
+    var UUIDUtils = require('dw/util/UUIDUtils');
     var requestObject = null;
     var customer = JSON.parse(paramObj.customer);
     var leadToken = lineItem.custom.postPurchaseLeadToken;
@@ -438,7 +441,7 @@ function getLeadsOfferPayload(paramObj, lineItem) {
         leadToken: leadToken,
         plan: plan,
         transactionDate: order.getCreationDate().valueOf(),
-        transactionId: order.orderNo
+        transactionId: UUIDUtils.createUUID()
     };
 
     return requestObject;
@@ -451,8 +454,11 @@ function getLeadsOfferPayload(paramObj, lineItem) {
  */
 function processLeadsResponse(leadsResponse, order, lineItem) {
     var Transaction = require('dw/system/Transaction');
+    var ArrayList = require('dw/util/ArrayList');
+
     var ordersLI = order.productLineItems;
     var isLead = false;
+    var extendContractIds = [];
 
     if (leadsResponse.id) {
         for (var i = 0; i < ordersLI.length; i++) {
@@ -461,7 +467,9 @@ function processLeadsResponse(leadsResponse, order, lineItem) {
                     (lineItem.custom.postPurchaseLeadToken === pLi.custom.postPurchaseLeadToken);
             if (isLead) {
                 Transaction.wrap(function () {
-                    pLi.custom.extendContractId = leadsResponse.id;
+                    extendContractIds = ArrayList(pLi.custom.extendContractId || []);
+                    extendContractIds.add(leadsResponse.id);
+                    pLi.custom.extendContractId = extendContractIds;
                 });
             }
         }
@@ -566,10 +574,12 @@ function createLeadContractId(paramObj) {
     for (var i = 0; i < ordersLineItems.length; i++) {
         var lineItem = ordersLineItems[i];
         if (lineItem.custom.postPurchaseLeadToken) {
-            requestObject = getLeadsOfferPayload(paramObj, lineItem);
-            leadsResponse = webService.makeServiceCall(endpointName, requestObject);
-            if (leadsResponse) {
-                processLeadsResponse(leadsResponse, order, lineItem);
+            for (var k = 0; k < lineItem.quantityValue; k++) {
+                requestObject = getLeadsOfferPayload(paramObj, lineItem);
+                leadsResponse = webService.makeServiceCall(endpointName, requestObject);
+                if (leadsResponse) {
+                    processLeadsResponse(leadsResponse, order, lineItem);
+                }
             }
         }
     }
