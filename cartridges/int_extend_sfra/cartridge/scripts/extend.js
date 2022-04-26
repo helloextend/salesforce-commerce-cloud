@@ -339,7 +339,7 @@ function getOrdersPayload(paramObj) {
     var requestObject = {};
 
     requestObject.storeId = STORE_ID;
-    requestObject.storeName = 'SFCC';
+    requestObject.storeName = Site.getCustomPreferenceValue('extendStoreName');
 
     requestObject.currency = order.getCurrencyCode();
     requestObject.customer = getCustomer(customer, defaultShippingAddress);
