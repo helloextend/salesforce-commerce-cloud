@@ -75,7 +75,7 @@ function getContractsPayload(paramObj) {
     };
 
     if (apiVersion === '2021-04-01') {
-        requestObject.isTest = true;
+        requestObject.isTest = false;
     }
 
     return requestObject;
@@ -336,7 +336,7 @@ function getOrdersPayload(paramObj) {
     requestObject.currency = order.getCurrencyCode();
     requestObject.customer = getCustomer(customer, defaultShippingAddress);
 
-    requestObject.isTest = true;
+    requestObject.isTest = false;
 
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
