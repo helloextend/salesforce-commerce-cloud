@@ -20,7 +20,15 @@ function createServiceCall(configObj) {
     return require('dw/svc/LocalServiceRegistry').createService('int_extend.http.Extend', {
         createRequest: function (service, requestData) {
             var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
-            var API_VERSION = Site.getCustomPreferenceValue('extendAPIVersion').value;
+
+            var API_VERSION = null;
+            var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
+            if (extendAPIMethod === 'contractsAPI') {
+                API_VERSION = '2021-04-01';
+            } else {
+                API_VERSION = '2021-07-01';
+            }
 
             if (configObj.API_VERSION) {
                 API_VERSION = configObj.API_VERSION;
@@ -118,6 +126,7 @@ function createRequestConfiguration(endpoint, requestObject) {
         case 'offer':
             configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
             configObj.method = 'GET';
+            configObj.API_VERSION = '2021-04-01';
             configObj.mock = mocks.offersResponseMock;
             break;
 
