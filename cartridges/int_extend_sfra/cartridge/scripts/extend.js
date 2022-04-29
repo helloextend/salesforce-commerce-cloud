@@ -42,12 +42,9 @@ function getContractsDefaultPayload(paramObj) {
  */
 function getContractsPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
-    var defaultPayload = getContractsDefaultPayload(paramObj);
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (apiVersion === 'default') {
-        return defaultPayload;
-    }
+    var defaultPayload = getContractsDefaultPayload(paramObj);
 
     var contractCO = paramObj.custom;
     var customer = JSON.parse(contractCO.customer);
@@ -75,10 +72,6 @@ function getContractsPayload(paramObj) {
         amount: plan.purchasePrice
     };
 
-    if (apiVersion === '2021-04-01') {
-        requestObject.isTest = false;
-    }
-
     return requestObject;
 }
 
@@ -88,7 +81,7 @@ function getContractsPayload(paramObj) {
  * @returns {Array} requestObject - payload object for request
  */
 function getProductsPayload(productBatch) {
-    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
     var requestObject = [];
 
     for (var i = 0; i < productBatch.length; i++) {
@@ -110,7 +103,7 @@ function getProductsPayload(productBatch) {
                 continue;
             }
 
-            if (apiVersion !== 'default') {
+            if (extendAPIMethod !== 'contractsAPI') {
                 price = {
                     currencyCode: product.priceModel.price.getCurrencyCode(),
                     amount: price
@@ -343,8 +336,6 @@ function getOrdersPayload(paramObj) {
 
     requestObject.currency = order.getCurrencyCode();
     requestObject.customer = getCustomer(customer, defaultShippingAddress);
-
-    requestObject.isTest = false;
 
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
