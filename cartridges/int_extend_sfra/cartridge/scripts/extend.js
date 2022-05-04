@@ -207,11 +207,15 @@ function getLineItems(order) {
     var productLi = null;
     var product = null;
     var warrantyCounter = 0;
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
 
         // Determine whether line item is lead offer
-        if (pLi.custom.postPurchaseLeadToken) {
+        if (pLi.custom.postPurchaseLeadToken && (extendAPIMethod === 'ordersAPI')) {
+            pliObj = ordersAPIgetLeadsOfferPayload(pLi);
+            lineItems.push(pliObj);
             continue;
         }
 
@@ -413,12 +417,12 @@ function getPlanWithLead(paramObj, lineItem) {
 }
 
 /**
- * Get Orders Create endpoint Payload
+ * Get leads request object to make a call via Contracts API
  * @param {Object} paramObj - object with id of contract and commit type
  * @param {Object} lineItem - leads offer line item
  * @returns {Object} - request object
  */
-function getLeadsOfferPayload(paramObj, lineItem) {
+function contractsAPIgetLeadsOfferPayload(paramObj, lineItem) {
     var UUIDUtils = require('dw/util/UUIDUtils');
     var requestObject = null;
     var customer = JSON.parse(paramObj.customer);
@@ -432,7 +436,29 @@ function getLeadsOfferPayload(paramObj, lineItem) {
         leadToken: leadToken,
         plan: plan,
         transactionDate: order.getCreationDate().valueOf(),
-        transactionId: UUIDUtils.createUUID()
+        transactionId: order.orderNo
+    };
+
+    return requestObject;
+}
+
+/**
+ * Get leads request object to make a call via Orders API
+ * @param {Object} lineItem - leads offer line item
+ * @returns {Object} - request object
+ */
+function ordersAPIgetLeadsOfferPayload(lineItem) {
+    var requestObject = null;
+
+    var plan = {
+        purchasePrice: Math.ceil(moneyToCents(lineItem.adjustedNetPrice.divide(lineItem.quantityValue))),
+        id: lineItem.getManufacturerSKU()
+    };
+
+    requestObject = {
+        leadToken: lineItem.custom.postPurchaseLeadToken,
+        quantity: +lineItem.quantityValue,
+        plan: plan
     };
 
     return requestObject;
@@ -443,7 +469,7 @@ function getLeadsOfferPayload(paramObj, lineItem) {
  * @param {Object} ordersResponse : API response from contracts endpoint
  * @param {dw.order.Order} order : API order
  */
-function processLeadsResponse(leadsResponse, order, lineItem) {
+function contractsAPIprocessLeadsResponse(leadsResponse, order, lineItem) {
     var Transaction = require('dw/system/Transaction');
     var ArrayList = require('dw/util/ArrayList');
 
@@ -551,14 +577,14 @@ function createOrders(paramObj) {
 }
 
 /**
- * Make call on orders endpoint
+ * Make call to contracts endpoint // Contracs API
  * @param {Object} paramObj - object with id of contract and commit type
- * @returns {Object} - response object
  */
-function createLeadContractId(paramObj) {
+function contractsAPIcreateLeadContractId(paramObj) {
     var order = paramObj.order;
-    var requestObject = null;
     var endpointName = 'contracts';
+    
+    var requestObject = null;
     var leadsResponse = null;
 
     var ordersLineItems = order.getProductLineItems();
@@ -566,14 +592,29 @@ function createLeadContractId(paramObj) {
         var lineItem = ordersLineItems[i];
         if (lineItem.custom.postPurchaseLeadToken) {
             for (var k = 0; k < lineItem.quantityValue; k++) {
-                requestObject = getLeadsOfferPayload(paramObj, lineItem);
+                requestObject = contractsAPIgetLeadsOfferPayload(paramObj, lineItem);
                 leadsResponse = webService.makeServiceCall(endpointName, requestObject);
                 if (leadsResponse) {
-                    processLeadsResponse(leadsResponse, order, lineItem);
+                    contractsAPIprocessLeadsResponse(leadsResponse, order, lineItem);
                 }
             }
         }
     }
+}
+
+/**
+ * Make call to orders endpoint // Orders API
+ * @param {Object} paramObj - object with id of contract and commit type
+ */
+function ordersAPIcreateLeadContractId(paramObj) {
+    var order = paramObj.order;
+    var endpointName = 'orders';
+    var apiMethod = 'orders';
+
+    var requestObject = null;
+    var leadsResponse = null;
+
+    var ordersLineItems = order.getProductLineItems();
 }
 
 module.exports = {
@@ -584,5 +625,6 @@ module.exports = {
     createOrderApiRefunds: createOrderApiRefunds,
     getOffer: getOffer,
     createOrders: createOrders,
-    createLeadContractId: createLeadContractId
+    contractsAPIcreateLeadContractId: contractsAPIcreateLeadContractId,
+    ordersAPIcreateLeadContractId: ordersAPIcreateLeadContractId
 };

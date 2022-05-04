@@ -83,7 +83,7 @@ function responseStatus(status, message) {
  * @param {string} currentWarrantyLi - current warranty list
  * @param {Object} form - form
  */
- function updateExtendWarranty(currentWarrantyLi, form) {
+function updateExtendWarranty(currentWarrantyLi, form) {
     var Transaction = require('dw/system/Transaction');
     var quantityInCart = currentWarrantyLi.getQuantity();
 
@@ -99,7 +99,7 @@ function responseStatus(status, message) {
  * @param {dw.order.ProductLineItem} parentLineItem - parent line item
  * @param {Object} form - form
  */
- function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
+function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
     var Transaction = require('dw/system/Transaction');
     var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
 
@@ -479,7 +479,7 @@ server.post('PostPurchase', function (req, res, next) {
 
         var actionUrl = {
             continueUrl: URLUtils.url('Cart-Show').toString()
-        }
+        };
 
         Transaction.wrap(function () {
             basketCalculationHelpers.calculateTotals(currentBasket);
