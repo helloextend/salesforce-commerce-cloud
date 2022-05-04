@@ -343,9 +343,21 @@ function processOrdersResponse(ordersResponse, order) {
             }
         }
 
+        if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
+            for (var n = 0; n < ordersLI.length; n++) {
+                pLi = ordersLI[n];
+                if (pLi.custom.postPurchaseLeadToken === apiCurrentLI.leadToken) {
+                    matchedLI = pLi;
+                }
+            }
+        }
+
         Transaction.wrap(function () {
+            var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
             if (apiCurrentLI.contractId) {
-                var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
+                extendContractIds.add(apiCurrentLI.contractId);
+                matchedLI.custom.extendContractId = extendContractIds;
+            } else if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
                 extendContractIds.add(apiCurrentLI.contractId);
                 matchedLI.custom.extendContractId = extendContractIds;
             } else if (apiCurrentLI.leadToken) {
@@ -366,14 +378,14 @@ function addContractToQueue(order) {
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
     if (apiMethod === 'contractsAPI') {
-        createContractsCO(order);
+        createContractsCO(order, viewData.orderID);
+        extend.contractsAPIcreateLeadContractId({ order: order, customer: customer });
     } else {
-        var customer = getCustomer(order);
         var ordersResponse = extend.createOrders({ order: order, customer: customer });
         if (!empty(ordersResponse.lineItems)) {
             processOrdersResponse(ordersResponse, order);
         }
-        extend.createLeadContractId({ order: order, customer: customer });
+        extend.ordersAPIcreateLeadContractId({ order: order, customer: customer });
     }
 
     return;
