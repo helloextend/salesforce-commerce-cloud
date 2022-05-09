@@ -376,6 +376,7 @@ function addContractToQueue(order) {
     var extend = require('~/cartridge/scripts/extend');
 
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+    var customer = getCustomer(order);
 
     if (apiMethod === 'contractsAPI') {
         createContractsCO(order, viewData.orderID);
