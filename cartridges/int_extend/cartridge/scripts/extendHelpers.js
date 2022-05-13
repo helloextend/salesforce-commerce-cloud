@@ -21,7 +21,7 @@ var Site = require('dw/system/Site').getCurrent();
 function getUsedPlan(plans, extendPlanId) {
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (extendAPIMethod === 'contractsAPI') {
+    if (extendAPIMethod === 'contractsAPIonSchedule') {
         for (var j = 0; j < plans.base.length; j++) {
             var currentPlan = plans.base[j];
             if (currentPlan.id === extendPlanId) {
@@ -368,6 +368,26 @@ function processOrdersResponse(ordersResponse, order) {
 }
 
 /**
+ * Create order custom object
+ * @param {dw.order.Order} order : API order
+ * @param {string} orderID : id of the order
+ */
+function createExtendOrderQueue(order) {
+    var Transaction = require('dw/system/Transaction');
+    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+    var pLi = order.productLineItems[0];
+
+    Transaction.wrap(function () {
+        var queueObj = CustomObjectMgr.createCustomObject('ExtendOrderQueue', order.getOrderNo());
+        queueObj.custom.OrderNo = order.getOrderNo();
+        queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
+        queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
+        queueObj.custom.customer = getCustomer(order);
+        queueObj.custom.shippingAddress = getShippingAddress(pLi);
+    });
+}
+
+/**
  * Add Extend products to Contracts queue, from a provided order
  * @param {dw.order.Order} order : order that's just been placed
  */
@@ -378,15 +398,17 @@ function addContractToQueue(order) {
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
     var customer = getCustomer(order);
 
-    if (apiMethod === 'contractsAPI') {
-        createContractsCO(order, viewData.orderID);
+    if (apiMethod === 'contractsAPIonSchedule') {
+        createContractsCO(order);
         extend.contractsAPIcreateLeadContractId({ order: order, customer: customer });
-    } else {
+    } else if (apiMethod === 'ordersAPIonOrderCreate') {
         var ordersResponse = extend.createOrders({ order: order, customer: customer });
         if (!empty(ordersResponse.lineItems)) {
             processOrdersResponse(ordersResponse, order);
         }
         extend.ordersAPIcreateLeadContractId({ order: order, customer: customer });
+    } else if (apiMethod === 'ordersAPIonSchedule') {
+        createExtendOrderQueue(order);
     }
 
     return;
@@ -396,5 +418,7 @@ module.exports = {
     createOrUpdateExtendLineItem: createOrUpdateExtendLineItem,
     checkForWarrantyLI: checkForWarrantyLI,
     addContractToQueue: addContractToQueue,
-    validateOffer: validateOffer
+    validateOffer: validateOffer,
+    getCustomer: getCustomer,
+    processOrdersResponse: processOrdersResponse
 };

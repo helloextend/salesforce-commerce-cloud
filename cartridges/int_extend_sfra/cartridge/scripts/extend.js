@@ -103,7 +103,7 @@ function getProductsPayload(productBatch) {
                 continue;
             }
 
-            if (extendAPIMethod !== 'contractsAPI') {
+            if (extendAPIMethod !== 'contractsAPIonSchedule') {
                 price = {
                     currencyCode: product.priceModel.price.getCurrencyCode(),
                     amount: price
@@ -213,7 +213,7 @@ function getLineItems(order) {
         var pLi = order.productLineItems[i];
 
         // Determine whether line item is lead offer
-        if (pLi.custom.postPurchaseLeadToken && (extendAPIMethod === 'ordersAPI')) {
+        if (pLi.custom.postPurchaseLeadToken && (extendAPIMethod === 'ordersAPIonOrderCreate')) {
             pliObj = ordersAPIgetLeadsOfferPayload(pLi);
             lineItems.push(pliObj);
             continue;
@@ -583,7 +583,7 @@ function createOrders(paramObj) {
 function contractsAPIcreateLeadContractId(paramObj) {
     var order = paramObj.order;
     var endpointName = 'contracts';
-    
+
     var requestObject = null;
     var leadsResponse = null;
 

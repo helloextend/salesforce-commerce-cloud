@@ -215,7 +215,7 @@ function getLineItems(order) {
         var pLi = order.productLineItems[i];
 
         // Determine whether line item is lead offer
-        if (pLi.custom.postPurchaseLeadToken && (extendAPIMethod === 'ordersAPI')) {
+        if (pLi.custom.postPurchaseLeadToken && (extendAPIMethod === 'ordersAPIonOrderCreate')) {
             pliObj = ordersAPIgetLeadsOfferPayload(pLi);
             lineItems.push(pliObj);
             continue;
@@ -344,7 +344,11 @@ function getOrdersPayload(paramObj) {
 
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
-    requestObject.lineItems = getLineItems(order);
+    try {
+        requestObject.lineItems = getLineItems(order);
+    } catch (error) {
+        logger.info('Line Items Order Payload Error: {0}', error);
+    }
     return requestObject;
 }
 
