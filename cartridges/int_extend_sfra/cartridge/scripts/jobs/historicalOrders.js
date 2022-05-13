@@ -14,8 +14,8 @@ var Site = require('dw/system/Site').getCurrent();
  */
 exports.execute = function () {
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
-    if (apiMethod !== 'ordersAPI') {
-        logger.info('Current API version should be orders API. Current version is {0}', apiMethod);
+    if (apiMethod !== 'ordersAPIonOrderCreate') {
+        logger.info('Current API version should be orders API on order create. Current version is {0}', apiMethod);
     }
 
     // Current time

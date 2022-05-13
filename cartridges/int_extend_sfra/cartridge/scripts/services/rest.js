@@ -22,7 +22,7 @@ function createServiceCall(configObj) {
             var API_VERSION = null;
             var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-            if (extendAPIMethod === 'contractsAPI') {
+            if (extendAPIMethod === 'contractsAPIonSchedule') {
                 API_VERSION = '2021-04-01';
             } else {
                 API_VERSION = '2021-07-01';

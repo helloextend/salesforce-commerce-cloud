@@ -77,7 +77,7 @@ exports.create = function () {
 
                 var response = null;
 
-                if (apiMethod === 'ordersAPI') {
+                if (apiMethod === 'ordersAPIonOrderCreate') {
                     paramObj.isOrdersApi = true;
                     response = extend.createOrderApiRefunds(paramObj);
                 } else {
@@ -90,7 +90,7 @@ exports.create = function () {
                     continue;
                 }
 
-                if (apiMethod !== 'ordersAPI') {
+                if (apiMethod !== 'ordersAPIonOrderCreate') {
                     if (response.refundAmount.amount === 0) {
                         logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
                         extendRefundStatuses[extendContractId] = refundStatus.REJECT;
