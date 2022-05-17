@@ -246,15 +246,11 @@ function getLineItems(order) {
             }
 
             pliObj.warrantable = true;
-            var counter = 0;
 
             for (var m = 0; m < warrantiesArray.length; m++) {
                 if (!warrantiesArray.length) {
                     break;
                 }
-
-                counter += 1;
-                logger.info('counter = {0}', counter);
 
                 var warrantyLi = warrantiesArray[0];
                 if (productLi.custom.persistentUUID === warrantyLi.custom.parentLineItemUUID) {
@@ -266,7 +262,6 @@ function getLineItems(order) {
                         lineItems.push(pliObj);
                         if (l === (warrantyLi.quantity.value - 1)) {
                             warrantiesArray.splice(0, 1);
-                            logger.info('warrantyArrayLength = {0}', warrantiesArray.length);
                             break;
                         }
                     }
