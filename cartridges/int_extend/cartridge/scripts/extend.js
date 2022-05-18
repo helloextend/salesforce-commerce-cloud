@@ -210,7 +210,6 @@ function getLineItems(order) {
     var warrantyCounter = 0;
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
 
@@ -227,6 +226,7 @@ function getLineItems(order) {
             productsArray.push(pLi);
         }
     }
+
     for (var j = 0; j < productsArray.length; j++) {
         productLi = productsArray[j];
         product = getSFCCProduct(productLi);
@@ -247,7 +247,11 @@ function getLineItems(order) {
 
             pliObj.warrantable = true;
 
-            while (warrantiesArray.length) {
+            for (var m = 0; m < warrantiesArray.length; m++) {
+                if (!warrantiesArray.length) {
+                    break;
+                }
+
                 var warrantyLi = warrantiesArray[0];
                 if (productLi.custom.persistentUUID === warrantyLi.custom.parentLineItemUUID) {
                     for (var l = 0; l < warrantyLi.quantity.value; l++) {

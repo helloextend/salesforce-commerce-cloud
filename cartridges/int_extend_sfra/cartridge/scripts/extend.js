@@ -245,8 +245,13 @@ function getLineItems(order) {
             }
 
             pliObj.warrantable = true;
+            var counter = 0;
 
-            while (warrantiesArray.length) {
+            for (var m = 0; m < warrantiesArray.length; m++) {
+                if (!warrantiesArray.length) {
+                    break;
+                }
+
                 var warrantyLi = warrantiesArray[0];
                 if (productLi.custom.persistentUUID === warrantyLi.custom.parentLineItemUUID) {
                     for (var l = 0; l < warrantyLi.quantity.value; l++) {
@@ -267,7 +272,6 @@ function getLineItems(order) {
     }
     return lineItems;
 }
-
 /**
  * Get Order`s line items objects
  * @param {dw.order.Order} order : API order
