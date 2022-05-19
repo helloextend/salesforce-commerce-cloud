@@ -245,7 +245,6 @@ function getLineItems(order) {
             }
 
             pliObj.warrantable = true;
-            var counter = 0;
 
             for (var m = 0; m < warrantiesArray.length; m++) {
                 if (!warrantiesArray.length) {
@@ -287,9 +286,12 @@ function getOrdersBatchLineItems(order) {
             pliObj.quantity = pLi.quantityValue;
             pliObj.product = getSFCCProduct(pLi);
 
-            if (pLi.custom.persistentUUID && getExtendPlan(pLi, order)) {
+            if (pLi.custom.persistentUUID) {
                 pliObj.warrantable = true;
-                pliObj.plan = getExtendPlan(pLi, order);
+                var plan = getExtendPlan(pLi, order);
+                if (Object.keys(plan).length) {
+                    pliObj.plan = plan;
+                }
             } else if (pLi.custom.isWarrantable) {
                 pliObj.warrantable = true;
             }
