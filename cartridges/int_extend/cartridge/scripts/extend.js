@@ -233,6 +233,7 @@ function getLineItems(order) {
         for (var k = 0; k < productLi.quantity.value; k++) {
             pliObj = {};
             pliObj.product = product;
+            pliObj.lineItemTransactionID = productLi.getUUID();
 
             if (productLi.custom.isWarrantable) {
                 pliObj.quantity = productLi.quantity.value;
