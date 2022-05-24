@@ -206,14 +206,16 @@ function getLineItems(order) {
     var pliObj = null;
     var productLi = null;
     var product = null;
-    var warrantyCounter = 0;
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
 
+        // Determine whether API method is Orders API
+        var ordersAPI = (extendAPIMethod === 'ordersAPIonOrderCreate') || (extendAPIMethod === 'ordersAPIonSchedule');
+
         // Determine whether line item is lead offer
-        if (pLi.custom.postPurchaseLeadToken && (extendAPIMethod === 'ordersAPIonOrderCreate')) {
+        if (pLi.custom.postPurchaseLeadToken && ordersAPI) {
             pliObj = ordersAPIgetLeadsOfferPayload(pLi);
             lineItems.push(pliObj);
             continue;

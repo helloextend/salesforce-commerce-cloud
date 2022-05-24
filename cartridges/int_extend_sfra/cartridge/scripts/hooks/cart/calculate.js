@@ -166,14 +166,13 @@ function calculateProductPrices (basket) {
         // and either the 'netPrice' or the 'grossPrice' based on the current taxation
         // policy
 
-        // handle product line items unrelated to product
         } else if (product === null) {
             productLineItem.setPriceValue(null);
         // handle normal product line items
+        } else if (product.ID.includes('EXTEND')) {
+            productLineItem.setPriceValue(productLineItem.basePrice.valueOrNull);
         } else {
-            if (!product.ID.includes('EXTEND')) {
-                productLineItem.setPriceValue(productPrices.get(product).valueOrNull);
-            }
+            productLineItem.setPriceValue(productPrices.get(product).valueOrNull);
         }
     }
 }
