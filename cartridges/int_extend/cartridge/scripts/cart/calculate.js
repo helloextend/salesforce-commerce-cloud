@@ -179,7 +179,9 @@ function calculateProductPrices(basket) {
         } else if (product === null) {
             productLineItem.setPriceValue(null);
         // handle normal product line items
-        } else if (!product.ID.includes('EXTEND')) {
+        } else if (product.ID.includes('EXTEND')) {
+            productLineItem.setPriceValue(productLineItem.basePrice.valueOrNull);
+        } else {
             productLineItem.setPriceValue(productPrices.get(product).valueOrNull);
         }
     }
