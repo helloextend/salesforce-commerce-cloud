@@ -1,3 +1,7 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable new-cap */
+/* eslint-disable no-loop-func */
+/* eslint-disable valid-jsdoc */
 /* eslint-disable no-continue */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
@@ -38,12 +42,9 @@ function getContractsDefaultPayload(paramObj) {
  */
 function getContractsPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
-    var defaultPayload = getContractsDefaultPayload(paramObj);
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (apiVersion === 'default') {
-        return defaultPayload;
-    }
+    var defaultPayload = getContractsDefaultPayload(paramObj);
 
     var contractCO = paramObj.custom;
     var customer = JSON.parse(contractCO.customer);
@@ -71,10 +72,6 @@ function getContractsPayload(paramObj) {
         amount: plan.purchasePrice
     };
 
-    if (apiVersion === '2021-04-01') {
-        requestObject.isTest = true;
-    }
-
     return requestObject;
 }
 
@@ -84,7 +81,8 @@ function getContractsPayload(paramObj) {
  * @returns {Array} requestObject - payload object for request
  */
 function getProductsPayload(productBatch) {
-    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
     var requestObject = [];
 
     for (var i = 0; i < productBatch.length; i++) {
@@ -106,7 +104,7 @@ function getProductsPayload(productBatch) {
                 continue;
             }
 
-            if (apiVersion !== 'default') {
+            if (extendAPIMethod !== 'contractsAPI') {
                 price = {
                     currencyCode: product.priceModel.price.getCurrencyCode(),
                     amount: price
@@ -209,37 +207,54 @@ function getLineItems(order) {
     var pliObj = null;
     var productLi = null;
     var product = null;
-    var warrantyCounter = 0;
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
     for (var i = 0; i < order.productLineItems.length; i++) {
         var pLi = order.productLineItems[i];
+
+        // Determine whether API method is Orders API
+        var ordersAPI = (extendAPIMethod === 'ordersAPIonOrderCreate') || (extendAPIMethod === 'ordersAPIonSchedule');
+
+        // Determine whether line item is lead offer
+        if (pLi.custom.postPurchaseLeadToken && ordersAPI) {
+            pliObj = ordersAPIgetLeadsOfferPayload(pLi);
+            lineItems.push(pliObj);
+            continue;
+        }
+
         if (pLi.custom.parentLineItemUUID) {
             warrantiesArray.push(pLi);
         } else {
             productsArray.push(pLi);
         }
     }
+
     for (var j = 0; j < productsArray.length; j++) {
         productLi = productsArray[j];
         product = getSFCCProduct(productLi);
         for (var k = 0; k < productLi.quantity.value; k++) {
             pliObj = {};
             pliObj.product = product;
+            pliObj.lineItemTransactionID = productLi.getUUID();
 
             if (productLi.custom.isWarrantable) {
+                pliObj.quantity = productLi.quantity.value;
                 pliObj.warrantable = true;
                 lineItems.push(pliObj);
                 break;
             }
 
             if (!warrantiesArray.length && productLi.custom.persistentUUID) {
-                pliObj.warrantable = true;
-                lineItems.push(pliObj);
                 break;
             }
 
             pliObj.warrantable = true;
 
-            while (warrantiesArray.length) {
+            for (var m = 0; m < warrantiesArray.length; m++) {
+                if (!warrantiesArray.length) {
+                    break;
+                }
+
                 var warrantyLi = warrantiesArray[0];
                 if (productLi.custom.persistentUUID === warrantyLi.custom.parentLineItemUUID) {
                     for (var l = 0; l < warrantyLi.quantity.value; l++) {
@@ -256,6 +271,36 @@ function getLineItems(order) {
                     break;
                 }
             }
+        }
+    }
+    return lineItems;
+}
+
+/**
+ * Get Order`s line items objects
+ * @param {dw.order.Order} order : API order
+ * @return {Array<Object>} array of line items objects
+ */
+function getOrdersBatchLineItems(order) {
+    var lineItems = [];
+    for (var i = 0; i < order.productLineItems.length; i++) {
+        var pLi = order.productLineItems[i];
+        if (!pLi.custom.parentLineItemUUID) {
+            var pliObj = {};
+            pliObj.warrantable = false;
+            pliObj.quantity = pLi.quantityValue;
+            pliObj.product = getSFCCProduct(pLi);
+
+            if (pLi.custom.persistentUUID) {
+                pliObj.warrantable = true;
+                var plan = getExtendPlan(pLi, order);
+                if (Object.keys(plan).length) {
+                    pliObj.plan = plan;
+                }
+            } else if (pLi.custom.isWarrantable) {
+                pliObj.warrantable = true;
+            }
+            lineItems.push(pliObj);
         }
     }
     return lineItems;
@@ -302,16 +347,164 @@ function getOrdersPayload(paramObj) {
     var requestObject = {};
 
     requestObject.storeId = STORE_ID;
-    requestObject.storeName = 'SFCC';
+    requestObject.storeName = Site.getCustomPreferenceValue('extendStoreName');
 
     requestObject.currency = order.getCurrencyCode();
     requestObject.customer = getCustomer(customer, defaultShippingAddress);
 
-    requestObject.isTest = true;
-
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
-    requestObject.lineItems = getLineItems(order);
+    try {
+        requestObject.lineItems = getLineItems(order);
+    } catch (error) {
+        logger.info('Line Items Order Payload Error: {0}', error);
+    }
+    return requestObject;
+}
+
+/**
+ * Get orders payload for specific API version
+ * @param {ArrayList<Product>} orderBatch - array of orders
+ * @returns {Array} requestObject - payload object for request
+ */
+function sendOrdersBatch(orderBatch) {
+    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var requestObject = [];
+
+    for (var i = 0; i < orderBatch.length; i++) {
+        var currentOrder = orderBatch[i];
+        try {
+            var orderObj = {};
+
+            orderObj.storeId = STORE_ID;
+            orderObj.storeName = 'SFCC';
+
+            var billingAddress = currentOrder.getBillingAddress();
+
+            var customer = {
+                billingAddress: {
+                    address1: billingAddress.getAddress1(),
+                    address2: billingAddress.getAddress2(),
+                    city: billingAddress.getCity(),
+                    countryCode: billingAddress.getCountryCode().toString(),
+                    postalCode: billingAddress.getPostalCode(),
+                    province: billingAddress.getStateCode()
+                },
+                email: currentOrder.customerEmail,
+                name: currentOrder.customerName
+            };
+
+            orderObj.currency = currentOrder.getCurrencyCode();
+            orderObj.customer = customer;
+
+            orderObj.isTest = true;
+
+            orderObj.total = Math.ceil(moneyToCents(currentOrder.getTotalGrossPrice()));
+            orderObj.transactionId = currentOrder.orderNo;
+            orderObj.lineItems = getOrdersBatchLineItems(currentOrder);
+
+            requestObject.push(orderObj);
+        } catch (error) {
+            logger.error('Request object could not be created. {0}', error);
+        }
+    }
+    return requestObject;
+}
+
+/**
+ * Get info about plan
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @param {Object} lineItem - leads offer line item
+ * @returns - plan info
+ */
+function getPlanWithLead(paramObj, lineItem) {
+    var plan = {};
+    var purchasePrice = {};
+    var order = paramObj.order;
+
+    purchasePrice.currencyCode = order.currencyCode;
+    purchasePrice.amount = Math.ceil(moneyToCents(lineItem.adjustedNetPrice.divide(lineItem.quantityValue)));
+
+    plan.purchasePrice = purchasePrice;
+    plan.planId = lineItem.getManufacturerSKU();
+
+    return plan;
+}
+
+/**
+ * Get leads request object to make a call via Contracts API
+ * @param {Object} paramObj - object with id of contract and commit type
+ * @param {Object} lineItem - leads offer line item
+ * @returns {Object} - request object
+ */
+function contractsAPIgetLeadsOfferPayload(paramObj, lineItem) {
+    var UUIDUtils = require('dw/util/UUIDUtils');
+    var requestObject = null;
+    var customer = JSON.parse(paramObj.customer);
+    var leadToken = lineItem.custom.postPurchaseLeadToken;
+    var order = paramObj.order;
+
+    var plan = getPlanWithLead(paramObj, lineItem);
+
+    requestObject = {
+        customer: customer,
+        leadToken: leadToken,
+        plan: plan,
+        transactionDate: order.getCreationDate().valueOf(),
+        transactionId: order.orderNo
+    };
+
+    return requestObject;
+}
+
+/**
+ * Process Leads Response
+ * @param {Object} ordersResponse : API response from contracts endpoint
+ * @param {dw.order.Order} order : API order
+ */
+function contractsAPIprocessLeadsResponse(leadsResponse, order, lineItem) {
+    var Transaction = require('dw/system/Transaction');
+    var ArrayList = require('dw/util/ArrayList');
+
+    var ordersLI = order.productLineItems;
+    var isLead = false;
+    var extendContractIds = [];
+
+    if (leadsResponse.id) {
+        for (var i = 0; i < ordersLI.length; i++) {
+            var pLi = ordersLI[i];
+            isLead = (lineItem.getManufacturerSKU() === pLi.getManufacturerSKU()) &&
+                    (lineItem.custom.postPurchaseLeadToken === pLi.custom.postPurchaseLeadToken);
+            if (isLead) {
+                Transaction.wrap(function () {
+                    extendContractIds = ArrayList(pLi.custom.extendContractId || []);
+                    extendContractIds.add(leadsResponse.id);
+                    pLi.custom.extendContractId = extendContractIds;
+                });
+            }
+        }
+    }
+}
+
+/**
+ * Get leads request object to make a call via Orders API
+ * @param {Object} lineItem - leads offer line item
+ * @returns {Object} - request object
+ */
+function ordersAPIgetLeadsOfferPayload(lineItem) {
+    var requestObject = null;
+
+    var plan = {
+        purchasePrice: Math.ceil(moneyToCents(lineItem.adjustedNetPrice.divide(lineItem.quantityValue))),
+        id: lineItem.getManufacturerSKU()
+    };
+
+    requestObject = {
+        leadToken: lineItem.custom.postPurchaseLeadToken,
+        quantity: +lineItem.quantityValue,
+        plan: plan
+    };
+
     return requestObject;
 }
 
@@ -323,6 +516,18 @@ function getOrdersPayload(paramObj) {
 function exportProducts(productBatch) {
     var requestObject = getProductsPayload(productBatch);
     var endpointName = 'products';
+    var response = webService.makeServiceCall(endpointName, requestObject);
+    return response;
+}
+
+/**
+ * Get orders payload and make call on orders endpoint
+ * @param {Array<Product>} orderBatch - array of products
+ * @returns {Object} - response object
+ */
+function sendOrders(orderBatch) {
+    var requestObject = sendOrdersBatch(orderBatch);
+    var endpointName = 'ordersBatch';
     var response = webService.makeServiceCall(endpointName, requestObject);
     return response;
 }
@@ -386,11 +591,55 @@ function createOrders(paramObj) {
     return response;
 }
 
+/**
+ * Make call to contracts endpoint // Contracs API
+ * @param {Object} paramObj - object with id of contract and commit type
+ */
+function contractsAPIcreateLeadContractId(paramObj) {
+    var order = paramObj.order;
+    var endpointName = 'contracts';
+
+    var requestObject = null;
+    var leadsResponse = null;
+
+    var ordersLineItems = order.getProductLineItems();
+    for (var i = 0; i < ordersLineItems.length; i++) {
+        var lineItem = ordersLineItems[i];
+        if (lineItem.custom.postPurchaseLeadToken) {
+            for (var k = 0; k < lineItem.quantityValue; k++) {
+                requestObject = contractsAPIgetLeadsOfferPayload(paramObj, lineItem);
+                leadsResponse = webService.makeServiceCall(endpointName, requestObject);
+                if (leadsResponse) {
+                    contractsAPIprocessLeadsResponse(leadsResponse, order, lineItem);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Make call to orders endpoint // Orders API
+ * @param {Object} paramObj - object with id of contract and commit type
+ */
+function ordersAPIcreateLeadContractId(paramObj) {
+    var order = paramObj.order;
+    var endpointName = 'orders';
+    var apiMethod = 'orders';
+
+    var requestObject = null;
+    var leadsResponse = null;
+
+    var ordersLineItems = order.getProductLineItems();
+}
+
 module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
+    sendOrders: sendOrders,
     createOrderApiRefunds: createOrderApiRefunds,
     getOffer: getOffer,
-    createOrders: createOrders
+    createOrders: createOrders,
+    contractsAPIcreateLeadContractId: contractsAPIcreateLeadContractId,
+    ordersAPIcreateLeadContractId: ordersAPIcreateLeadContractId
 };

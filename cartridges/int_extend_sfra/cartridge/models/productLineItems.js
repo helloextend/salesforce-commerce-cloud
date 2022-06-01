@@ -93,17 +93,19 @@ function createProductLineItemsObject(allLineItems, view) {
         }
 
         // BEGIN Extend integration
-        if (item.custom.parentLineItemUUID && view !== 'order') {
+        if ((item.custom.parentLineItemUUID && view !== 'order') || (!item.custom.parentLineItemUUID && item.custom.isWarranty)) {
             lineItems.pop();
 
             var extendLineItem = JSON.parse(JSON.stringify(newLineItem));
             extendLineItem.productName = item.productName;
-            extendLineItem.price.sales = {
-                currency: item.basePrice.currencyCode,
-                decimalPrice: item.basePrice.toNumberString(),
-                formatted: item.basePrice.toFormattedString(),
-                value: item.basePrice.getDecimalValue()
-            };
+            if (extendLineItem.price) {
+                extendLineItem.price.sales = {
+                    currency: item.basePrice.currencyCode,
+                    decimalPrice: item.basePrice.toNumberString(),
+                    formatted: item.basePrice.toFormattedString(),
+                    value: item.basePrice.getDecimalValue()
+                };
+            }
             extendLineItem.renderedPrice = getRenderedPrice(extendLineItem.price);
 
             lineItems.push(extendLineItem);

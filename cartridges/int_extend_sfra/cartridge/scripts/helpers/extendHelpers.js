@@ -1,3 +1,7 @@
+/* eslint-disable no-redeclare */
+/* eslint-disable no-undef */
+/* eslint-disable block-scoped-var */
+/* eslint-disable consistent-return */
 'use strict';
 
 var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
@@ -10,10 +14,10 @@ var Site = require('dw/system/Site').getCurrent();
  * @returns {Object} - current plan in plans object
  */
 function getUsedPlan(plans, extendPlanId) {
-    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
-    if (apiVersion === 'default' || apiVersion === '2019-08-01') {
-        for (var j = 0; j < plans.length; j++) {
-            var currentPlan = plans[j];
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+    if (extendAPIMethod === 'contractsAPIonSchedule') {
+        for (var j = 0; j < plans.base.length; j++) {
+            var currentPlan = plans.base[j];
             if (currentPlan.id === extendPlanId) {
                 return currentPlan;
             }

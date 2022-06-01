@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-concat */
+/* eslint-disable radix */
 /* eslint-disable no-loop-func */
 /* eslint-disable no-continue */
 /* eslint-disable no-unused-vars */
@@ -184,6 +186,58 @@ function responseStatus(status, message) {
 }
 
 /**
+ *
+ * @param {string} currentWarrantyLi - current warranty list
+ * @param {Object} form - form
+ */
+function updateExtendWarranty(currentWarrantyLi, form) {
+    var quantityInCart = currentWarrantyLi.getQuantity();
+
+    Transaction.wrap(function () {
+        currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(form.quantity, 10));
+    });
+}
+
+/**
+* Adds Extend warranty product line items to cart
+*
+* @transactional
+* @param {Object} cart The Cart model
+* @param {Object} params The params object
+* @param {Object} Product Product model
+*/
+function createExtendLineItem(cart, form, Product) {
+    var currentBasket = cart.object;
+    var quantity = form.quantity.doubleValue || form.Quantity.doubleValue;
+    var warrantyLi;
+
+    // Configure the Extend ProductLineItem
+    var productModel = Product.get('EXTEND-' + form.extendTerm);
+    var shipment = currentBasket.defaultShipment;
+    var productToAdd = productModel.object;
+    var productOptionModel = productModel.updateOptionSelection(form);
+
+    Transaction.wrap(function () {
+        warrantyLi = cart.createProductLineItem(productToAdd, productOptionModel, shipment);
+
+        // Configure the Extend ProductLineItem
+        warrantyLi.setProductName('Extend Protection Plan' + ' for ' + form.productName);
+        warrantyLi.setLineItemText('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + form.productName.value);
+        warrantyLi.setManufacturerSKU(form.extendPlanId);
+        warrantyLi.setPriceValue(parseInt(form.extendPrice, 10) / 100);
+        warrantyLi.setQuantityValue(parseInt(quantity, 10));
+        warrantyLi.custom.isWarranty = true;
+        if (form.leadToken) {
+            warrantyLi.custom.leadExtendId = form.extendPlanId;
+            warrantyLi.custom.leadQuantuty = +form.quantity;
+            warrantyLi.custom.postPurchaseLeadToken = form.leadToken;
+        }
+
+        cart.calculate();
+    });
+}
+
+/**
  * Refund extend warranty from order
  */
 function refund() {
@@ -243,13 +297,14 @@ function refund() {
 
     var RESPONSE = {};
     var products = [];
-    var contracts = [];
-    var product = {};
-    var contract = {};
 
     if (data.products) {
         for (var i = 0; i < data.products.length; i++) {
             var reqProduct = data.products[i];
+
+            // object for requested product
+            var product = {};
+            product.productID = reqProduct.productID;
 
             if (!reqProduct.productID) {
                 errorInRequest(RESPONSE, reqProduct, products, product, [], {}, '', 'no product id provided');
@@ -293,82 +348,84 @@ function refund() {
 
             var refundsCounter = null;
 
-            for (var n = 0; n < reqProduct.qty; n++) {
-                for (var m = 0; m < warrantiesArray.length; m++) {
-                    var warranty = warrantiesArray[m];
+            for (var n = 0; n < warrantiesArray.length; n++) {
+                var contracts = [];
+                var warranty = warrantiesArray[n];
 
-                    var extendContractIds;
-                    var statuses;
+                var extendContractIds;
+                var statuses;
 
-                    product.productID = reqProduct.productID;
-                    product.contracts = contracts;
+                var extendRefundStatuses = JSON.parse(warranty.custom.extendRefundStatuses) || {};
+                statuses = Object.keys(extendRefundStatuses);
 
-                    var extendRefundStatuses = JSON.parse(warranty.custom.extendRefundStatuses) || {};
-                    statuses = Object.keys(extendRefundStatuses);
+                if (!warranty.custom.extendContractId.length || (!statuses && !statuses.length)) {
+                    continue;
+                } else if (statuses.length) {
+                    extendContractIds = statuses;
+                } else {
+                    extendContractIds = warranty.custom.extendContractId;
+                }
 
-                    if (!warranty.custom.extendContractId.length || (!statuses && !statuses.length)) {
-                        continue;
-                    } else if (statuses.length) {
-                        extendContractIds = statuses;
-                    } else {
-                        extendContractIds = warranty.custom.extendContractId;
+                for (var m = 0; m < reqProduct.qty; m++) {
+                    // object for requested contract
+                    var contract = {};
+
+                    var extendContractId = extendContractIds[m];
+
+                    if (refundsCounter >= reqProduct.qty) {
+                        break;
                     }
 
-                    for (var p = 0; p < extendContractIds.length; p++) {
-                        var extendContractId = extendContractIds[n];
+                    refundsCounter++;
 
-                        if (refundsCounter >= reqProduct.qty) {
-                            break;
-                        }
-
-                        refundsCounter++;
-
-                        var isContractRefunded = extendRefundStatuses &&
+                    var isContractRefunded = extendRefundStatuses &&
                                 (extendRefundStatuses[extendContractId] === refundStatus.SUCCESS ||
                                 extendRefundStatuses[extendContractId] === refundStatus.REJECT);
 
-                        if (isContractRefunded) {
-                            contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
-                            continue;
-                        }
+                    if (isContractRefunded) {
+                        contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend has been already refunded');
+                        contracts.push(contract);
+                        continue;
+                    }
 
-                        var paramObj = {
-                            extendContractId: extendContractId,
-                            commit: false
-                        };
+                    var paramObj = {
+                        extendContractId: extendContractId,
+                        commit: false
+                    };
 
-                        var responseFromExtend = extend.createRefund(paramObj);
+                    var responseFromExtend = extend.createRefund(paramObj);
 
-                        if (responseFromExtend.error) {
+                    if (responseFromExtend.error) {
+                        extendRefundStatuses[extendContractId] = refundStatus.ERROR;
+                        contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
+                        contracts.push(contract);
+                        continue;
+                    }
+
+                    if (responseFromExtend.refundAmount.amount === 0) {
+                        extendRefundStatuses[extendContractId] = refundStatus.REJECT;
+                        contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
+                    } else if (responseFromExtend.refundAmount.amount > 0) {
+                        paramObj.commit = true;
+                        responseFromExtend = extend.createRefund(paramObj);
+
+                        if (responseFromExtend.id) {
+                            extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
+                            contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
+                        } else {
                             extendRefundStatuses[extendContractId] = refundStatus.ERROR;
                             contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
-                            continue;
-                        }
-
-                        if (responseFromExtend.refundAmount.amount === 0) {
-                            extendRefundStatuses[extendContractId] = refundStatus.REJECT;
-                            contract[extendContractId] = responseStatus(refundStatus.REJECT, 'extend contract has not been refunded due to the refund amount');
-                        } else if (responseFromExtend.refundAmount.amount > 0) {
-                            paramObj.commit = true;
-                            responseFromExtend = extend.createRefund(paramObj);
-
-                            if (responseFromExtend.id) {
-                                extendRefundStatuses[extendContractId] = refundStatus.SUCCESS;
-                                contract[extendContractId] = responseStatus(refundStatus.SUCCESS, 'extend contract has been successfully refunded');
-                            } else {
-                                extendRefundStatuses[extendContractId] = refundStatus.ERROR;
-                                contract[extendContractId] = responseStatus(refundStatus.ERROR, 'service call error');
-                            }
                         }
                     }
+
+                    contracts.push(contract);
 
                     Transaction.wrap(function () {
                         warranty.custom.extendRefundStatuses = JSON.stringify(extendRefundStatuses);
                     });
                 }
+                product.contracts = contracts;
             }
-            contracts.push(contract);
-            product.contracts = contracts;
             products.push(product);
             RESPONSE.products = products;
         }
@@ -481,6 +538,48 @@ function refund() {
     return;
 }
 
+/**
+ * Post-purchase lead offer
+ */
+function postPurchase() {
+    var res = require('*/cartridge/scripts/util/Response');
+    var BasketMgr = require('dw/order/BasketMgr');
+    var cart = app.getModel('Cart').goc();
+    var ProductModel = app.getModel('Product');
+
+    var currentBasket = BasketMgr.getCurrentOrNewBasket();
+    if (!currentBasket) {
+        return;
+    }
+
+    var form = request.httpParameterMap;
+    if (form.extendPlanId && form.extendPrice && form.extendTerm) {
+        // Determine whether warranty line item already exists for this product line item
+        var currentWarrantyLi = null;
+        var warrantyLis = currentBasket.getProductLineItems('EXTEND-' + form.extendTerm);
+        for (var i = 0; i < warrantyLis.length; i++) {
+            if (warrantyLis[i].custom.leadExtendId === form.extendPlanId.value) {
+                currentWarrantyLi = warrantyLis[i];
+                break;
+            }
+        }
+
+        if (currentWarrantyLi) {
+            updateExtendWarranty(currentWarrantyLi, form);
+        } else {
+            createExtendLineItem(cart, form, ProductModel);
+        }
+
+        var updatedBasket = app.getModel('Cart').get();
+
+        res.renderJSON({
+            updatedBasket: updatedBasket,
+            renderExtendButton: false
+        });
+    }
+    return;
+}
+
 
 /*
 * Module exports
@@ -500,3 +599,7 @@ exports.AddExtendProduct = guard.ensure(['post', 'https'], addExtendProduct);
 /** Refund extend warranty from order.
  * @see {@link module:controllers/Extend~refund} */
 exports.Refund = guard.ensure(['post', 'https'], refund);
+
+/** Post-purchase lead offer
+ * @see {@link module:controllers/Extend~postPurchase} */
+exports.PostPurchase = guard.ensure(['post', 'https'], postPurchase);

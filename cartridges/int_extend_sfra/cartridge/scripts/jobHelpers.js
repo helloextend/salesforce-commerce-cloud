@@ -34,6 +34,21 @@ function getProductLoggerModel(product) {
 }
 
 /**
+ * Returns info about order
+ * @param {Object} order - some order
+ * @returns {Object} - order model
+ */
+function getOrdersLoggerModel(order) {
+    var result = {};
+
+    result.orderNo = order.orderNo;
+    result.currencyCode = order.getCurrencyCode();
+    result.timestampPST = getPSTtime().getTime();
+
+    return result;
+}
+
+/**
  * Returns model for contract
  * @param {Object} order - order
  * @returns {Object} - contract
@@ -109,13 +124,14 @@ function getRefundStatus(order, apiMethod) {
     } else if (denied) {
         return refundStatus.refund_denied;
     }
-    return (apiMethod === 'ordersAPI') ? refundStatus.refund_paid : refundStatus.SUCCESS;
+    return (apiMethod === 'ordersAPIonOrderCreate') ? refundStatus.refund_paid : refundStatus.SUCCESS;
 }
 
 module.exports = {
     getPSTtime: getPSTtime,
     getProductLoggerModel: getProductLoggerModel,
     getContractLoggerModel: getContractLoggerModel,
+    getOrdersLoggerModel: getOrdersLoggerModel,
     refundStatus: refundStatus,
     getRefundStatus: getRefundStatus
 };

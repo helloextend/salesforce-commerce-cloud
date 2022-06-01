@@ -39,9 +39,6 @@ var preferenceMap = {
     extendStoreID: '123456789O12',
     extendGlobalSwitch: true,
     extendImageViewType: 'large',
-    extendAPIVersion: {
-        value:  'default'
-    }
 };
 
 

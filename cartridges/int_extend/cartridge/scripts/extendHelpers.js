@@ -19,10 +19,11 @@ var Site = require('dw/system/Site').getCurrent();
  * @returns {Object} - current plan in plans object
  */
 function getUsedPlan(plans, extendPlanId) {
-    var apiVersion = Site.getCustomPreferenceValue('extendAPIVersion').value;
-    if (apiVersion === 'default' || apiVersion === '2019-08-01') {
-        for (var j = 0; j < plans.length; j++) {
-            var currentPlan = plans[j];
+    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
+    if (extendAPIMethod === 'contractsAPIonSchedule') {
+        for (var j = 0; j < plans.base.length; j++) {
+            var currentPlan = plans.base[j];
             if (currentPlan.id === extendPlanId) {
                 return currentPlan;
             }
@@ -342,9 +343,21 @@ function processOrdersResponse(ordersResponse, order) {
             }
         }
 
+        if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
+            for (var n = 0; n < ordersLI.length; n++) {
+                pLi = ordersLI[n];
+                if (pLi.custom.postPurchaseLeadToken === apiCurrentLI.leadToken) {
+                    matchedLI = pLi;
+                }
+            }
+        }
+
         Transaction.wrap(function () {
+            var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
             if (apiCurrentLI.contractId) {
-                var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
+                extendContractIds.add(apiCurrentLI.contractId);
+                matchedLI.custom.extendContractId = extendContractIds;
+            } else if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
                 extendContractIds.add(apiCurrentLI.contractId);
                 matchedLI.custom.extendContractId = extendContractIds;
             } else if (apiCurrentLI.leadToken) {
@@ -352,6 +365,26 @@ function processOrdersResponse(ordersResponse, order) {
             }
         });
     }
+}
+
+/**
+ * Create order custom object
+ * @param {dw.order.Order} order : API order
+ * @param {string} orderID : id of the order
+ */
+function createExtendOrderQueue(order) {
+    var Transaction = require('dw/system/Transaction');
+    var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+    var pLi = order.productLineItems[0];
+
+    Transaction.wrap(function () {
+        var queueObj = CustomObjectMgr.createCustomObject('ExtendOrderQueue', order.getOrderNo());
+        queueObj.custom.OrderNo = order.getOrderNo();
+        queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
+        queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
+        queueObj.custom.customer = getCustomer(order);
+        queueObj.custom.shippingAddress = getShippingAddress(pLi);
+    });
 }
 
 /**
@@ -363,13 +396,19 @@ function addContractToQueue(order) {
     var extend = require('~/cartridge/scripts/extend');
 
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+    var customer = getCustomer(order);
 
-    if (apiMethod === 'contractsAPI') {
+    if (apiMethod === 'contractsAPIonSchedule') {
         createContractsCO(order);
-    } else {
-        var customer = getCustomer(order);
+        extend.contractsAPIcreateLeadContractId({ order: order, customer: customer });
+    } else if (apiMethod === 'ordersAPIonOrderCreate') {
         var ordersResponse = extend.createOrders({ order: order, customer: customer });
-        processOrdersResponse(ordersResponse, order);
+        if (!empty(ordersResponse.lineItems)) {
+            processOrdersResponse(ordersResponse, order);
+        }
+        extend.ordersAPIcreateLeadContractId({ order: order, customer: customer });
+    } else if (apiMethod === 'ordersAPIonSchedule') {
+        createExtendOrderQueue(order);
     }
 
     return;
@@ -379,5 +418,7 @@ module.exports = {
     createOrUpdateExtendLineItem: createOrUpdateExtendLineItem,
     checkForWarrantyLI: checkForWarrantyLI,
     addContractToQueue: addContractToQueue,
-    validateOffer: validateOffer
+    validateOffer: validateOffer,
+    getCustomer: getCustomer,
+    processOrdersResponse: processOrdersResponse
 };
