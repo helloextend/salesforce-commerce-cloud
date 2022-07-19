@@ -122,7 +122,7 @@ function calculateProductPrices (basket) {
         var productLineItem = productLineItems.next();
 
         // handle non-catalog products
-        if (!productLineItem.catalogProduct || productLineItem.custom.parentLineItemUUID) {
+        if (!productLineItem.catalogProduct) {
             productLineItem.setPriceValue(productLineItem.basePrice.valueOrNull);
             continue;
         }

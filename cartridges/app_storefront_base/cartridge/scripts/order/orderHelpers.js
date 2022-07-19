@@ -6,7 +6,6 @@ var Resource = require('dw/web/Resource');
 var URLUtils = require('dw/web/URLUtils');
 var Locale = require('dw/util/Locale');
 
-
 var OrderModel = require('*/cartridge/models/order');
 
 /**

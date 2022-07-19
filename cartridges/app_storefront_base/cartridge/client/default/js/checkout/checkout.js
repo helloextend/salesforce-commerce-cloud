@@ -91,7 +91,7 @@ var scrollAnimate = require('../components/scrollAnimate');
 
                     //
                     // Submit the Shipping Address Form
-                    //po
+                    //
                     var isMultiShip = $('#checkout-main').hasClass('multi-ship');
                     var formSelector = isMultiShip ?
                         '.multi-shipping .active form' : '.single-shipping .shipping-form';
