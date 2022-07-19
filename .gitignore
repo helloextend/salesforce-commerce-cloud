@@ -5,3 +5,12 @@
 dw.json
 node_modules/
 cartridges/*/cartridge/static/default/fonts/
+cartridges/int_extend_sfra/cartridge/static
+cartridges/*/cartridge/static/default/fonts/
+cartridges/app_storefront_core
+cartridges/app_storefront_pipelines
+cartridges/app_storefront_controllers
+cartridges/int_extend_sfra
+cartridges/int_extend
+.vscode
+coverage
