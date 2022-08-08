@@ -19,7 +19,13 @@ exports.execute = function () {
     while (extendOrdersQueue.hasNext()) {
         var queueOrder = extendOrdersQueue.next();
         var orderNo = queueOrder.custom.OrderNo;
+
         var order = OrderMgr.getOrder(orderNo);
+        var orderToken = order.getOrderToken();
+
+        // Resolves an order using the orderNumber and orderToken.
+        order = OrderMgr.getOrder(orderNo, orderToken);
+
         var customer = extendHelpers.getCustomer(order);
         var apiResponse = extend.createOrders({ order: order, customer: customer });
 

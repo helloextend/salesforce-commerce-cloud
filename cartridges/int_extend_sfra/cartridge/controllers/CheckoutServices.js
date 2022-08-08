@@ -27,6 +27,11 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     }
 
     var order = OrderMgr.getOrder(viewData.orderID);
+    var orderToken = order.getOrderToken();
+
+    // Resolves an order using the orderNumber and orderToken.
+    order = OrderMgr.getOrder(viewData.orderID, orderToken);
+
     var customer = processAPIhelpers.getCustomer(order);
 
     if (apiMethod === 'contractsAPIonSchedule') {
