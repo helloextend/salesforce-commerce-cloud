@@ -286,6 +286,11 @@ function refund() {
         return;
     }
 
+    var apiOrderToken = apiOrder.getOrderToken();
+
+    // Resolves an order using the orderNumber and orderToken.
+    apiOrder = OrderMgr.getOrder(data.orderID, apiOrderToken);
+
     if (!data.products && !data.contracts) {
         response.setStatus(500);
         res.renderJSON({

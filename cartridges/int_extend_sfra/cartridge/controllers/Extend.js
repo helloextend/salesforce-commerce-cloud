@@ -181,6 +181,11 @@ server.post('Refund', server.middleware.https, function (req, res, next) {
         return next();
     }
 
+    var apiOrderToken = apiOrder.getOrderToken();
+
+    // Resolves an order using the orderNumber and orderToken.
+    apiOrder = OrderMgr.getOrder(data.orderID, apiOrderToken);
+
     if (!data.products && !data.contracts) {
         res.setStatusCode(500);
         res.json({

@@ -1,6 +1,6 @@
 {
   "name": "int_extend_sfra",
-  "version": "19.2.0",
+  "version": "22.1.0",
   "description": "Extend SFRA cartridge",
   "devDependencies": {
     "@babel/core": "^7.6.3",
