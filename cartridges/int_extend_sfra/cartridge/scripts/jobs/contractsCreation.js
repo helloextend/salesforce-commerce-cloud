@@ -32,6 +32,10 @@ exports.create = function () {
         if (!contract.error) {
             // Update corresponding order line item with the contract number
             var order = OrderMgr.getOrder(contractCO.custom.orderNo);
+            var orderToken = order.getOrderToken();
+
+            // Resolves an order using the orderNumber and orderToken.
+            order = OrderMgr.getOrder(contractCO.custom.orderNo, orderToken);
 
             if (order) {
                 var orderLogObject = jobHelpers.getContractLoggerModel(order);
