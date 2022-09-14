@@ -9,7 +9,7 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^8.0.6",
     "babel-preset-env": "^1.7.0",
-    "chai": "^4.3.4",
+    "chai": "^4.3.6",
     "css-loader": "^0.28.11",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^5.0.3",
