@@ -3,9 +3,9 @@
   "version": "22.1.0",
   "description": "Extend SFRA cartridge",
   "devDependencies": {
-    "@babel/core": "^7.6.3",
-    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
-    "@babel/preset-env": "^7.6.3",
+    "@babel/core": "^7.18.13",
+    "@babel/plugin-proposal-object-rest-spread": "^7.18.9",
+    "@babel/preset-env": "^7.18.10",
     "babel-core": "^6.26.3",
     "babel-loader": "^8.0.6",
     "babel-preset-env": "^1.7.0",
