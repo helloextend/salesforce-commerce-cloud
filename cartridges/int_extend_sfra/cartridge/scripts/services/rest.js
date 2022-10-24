@@ -131,7 +131,7 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.endpoint = 'orders';
             configObj.method = 'POST';
             configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
+            configObj.API_VERSION = '2022-02-01';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             configObj.mock = mocks.ordersResponseMock;
             break;
@@ -142,6 +142,12 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.extendMethod = 'orders';
             configObj.API_VERSION = '2021-07-01';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
+            break;
+
+        case 'shippingOffers':
+            configObj.endpoint = 'shipping-offers/quotes';
+            configObj.method = 'POST';
+            configObj.API_VERSION = '2022-02-01';
             break;
 
         default:

@@ -152,16 +152,19 @@ function processOrdersResponse(ordersResponse, order) {
     var ArrayList = require('dw/util/ArrayList');
     var responseLI = ordersResponse.lineItems;
     var ordersLI = order.productLineItems;
+    var apiPid = null;
 
     for (var i = 0; i < responseLI.length; i++) {
         var apiCurrentLI = responseLI[i];
-        var apiPid = apiCurrentLI.product.id;
+        if (apiCurrentLI.product) {
+            apiPid = apiCurrentLI.product.id;
+        }
         var matchedLI = null;
         var pLi = null;
         var productLi = null;
         var pid = null;
 
-        if (apiCurrentLI.plan) {
+        if (apiCurrentLI.plan && !apiCurrentLI.quoteId) {
             for (var j = 0; j < ordersLI.length; j++) {
                 pLi = ordersLI[j];
                 if (pLi.productID !== apiPid) {
@@ -176,11 +179,21 @@ function processOrdersResponse(ordersResponse, order) {
                 }
                 break;
             }
-        } else {
+        } else if (apiPid) {
             for (var l = 0; l < ordersLI.length; l++) {
                 pLi = ordersLI[l];
                 pid = pLi.productID;
                 if (pid === apiPid) {
+                    matchedLI = pLi;
+                    break;
+                }
+            }
+        }
+
+        if (apiCurrentLI.quoteId) {
+            for (var m = 0; m < ordersLI.length; m++) {
+                pLi = ordersLI[m];
+                if (pLi.productID === 'EXTEND-SHIPPING-PROTECTION') {
                     matchedLI = pLi;
                     break;
                 }
@@ -206,6 +219,8 @@ function processOrdersResponse(ordersResponse, order) {
                 matchedLI.custom.extendContractId = extendContractIds;
             } else if (apiCurrentLI.leadToken) {
                 matchedLI.custom.leadToken = apiCurrentLI.leadToken;
+            } else if (apiCurrentLI.quoteId) {
+                matchedLI.custom.extendContractId = apiCurrentLI.contractId;
             }
         });
     }
