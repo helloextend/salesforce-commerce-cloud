@@ -4,6 +4,7 @@
 var collections = require('*/cartridge/scripts/util/collections');
 var Transaction = require('dw/system/Transaction');
 var BasketMgr = require('dw/order/BasketMgr');
+var Site = require('dw/system/Site');
 
 /**
  * @function normalizeCartQuantities
@@ -14,12 +15,19 @@ var BasketMgr = require('dw/order/BasketMgr');
  */
 
 function normalizeCartQuantities(basket) {
+    var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippingProtectionHelpers');
+
     var productLineItems = basket.getProductLineItems();
 
     var productsWithWarranty = [];
     var warrantyItems = [];
     var leadsLineItems = [];
- 
+    var productsToShippingProtection = []
+
+    if (basket) {
+        productsToShippingProtection = extendShippingProtectionHelpers.getProductToCreateQuotes(basket)
+    }
+
     collections.forEach(productLineItems, function (lineItem) {
 
         var persistentUUID = lineItem.custom.persistentUUID || null;
@@ -55,6 +63,40 @@ function normalizeCartQuantities(basket) {
 
         Transaction.wrap(function () {
             applyQuantityLogic(mappedLineItemProducts);
+        });
+    }
+
+    var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        Transaction.wrap(function () {
+            extendShippingProtectionNormalizeCart(basket, productsToShippingProtection);
+        });
+    }
+}
+
+/**
+ * Normalize cart after removing all the product (remove extend Shipping Protectio)
+ * @param {Object} basket - current basket
+ */
+function extendShippingProtectionNormalizeCart (basket, productsToShippingProtection) {
+    var isShippingProtectionFound = false;
+    var shippingProtectionLineItem = null;
+
+    var allLineItems = basket.getAllProductLineItems();
+    collections.forEach(allLineItems, function (productLineItem) {
+        if (productLineItem.custom.isExtendShippingProtection) {
+            isShippingProtectionFound = true;
+            shippingProtectionLineItem = productLineItem;
+        }
+    });
+
+    if (!productsToShippingProtection.length && shippingProtectionLineItem ) {
+        basket.removeProductLineItem(shippingProtectionLineItem);
+
+        Transaction.wrap(function () {
+            basket.custom.isExtendShippingProtectionAdded = false;
         });
     }
 }

@@ -1,6 +1,9 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-useless-concat */
 /* eslint-disable valid-jsdoc */
 'use strict';
+
+const { data } = require("jquery");
 
 var Extend = window.Extend || undefined;
 
@@ -78,7 +81,8 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
 function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
     var hasExtendUpsell = $('.minicart').find('.card.uuid-' + uuid).find('#extend-offer-' + uuid).length > 0;
     var isRenderButton = $('#footercontent').find('input[name=noRenderButton]').length;
-    if (!hasExtendUpsell && !isRenderButton) {
+    var isShippingProtecting = pid === 'EXTEND-SHIPPING-PROTECTION' ? true : false;
+    if (!hasExtendUpsell && !isRenderButton && !isShippingProtecting) {
         $('<div class="extend-upsell-style" id="extend-offer-' + uuid + '" data-pid=' + pid + '></div>')
             .insertAfter('.minicart .product-summary ' + '.item-' + uuid)
             .ready(function () {
@@ -201,7 +205,6 @@ function updateUpsellBtns() {
         renderUpsellBtnsMiniCart();
     });
 }
-
 
 module.exports = {
     initExtend: initExtend,

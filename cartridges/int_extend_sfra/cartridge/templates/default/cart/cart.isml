@@ -2,6 +2,11 @@
     <isscript>
         var assets = require('*/cartridge/scripts/assets.js');
         assets.addCss('/css/cart.css');
+        assets.addJs('/js/extendShippingProtection.js');
+
+        var EXT_GLOBAL_SWITCH = dw.system.Site.current.preferences.custom.extendGlobalSwitch;
+        var EXT_SHIPPING_SWITCH = dw.system.Site.current.preferences.custom.extendShippingProtectionSwitch;
+
     </isscript>
 
     <isif condition="${pdict.reportingURLs && pdict.reportingURLs.length}">
@@ -72,9 +77,15 @@
                     <div class="coupons-and-promos">
                         <isinclude template="cart/cartCouponDisplay" />
                     </div>
-                    <div class="row">
-                        <isinclude template="cart/cartShippingMethodSelection" />
-                    </div>
+
+                   <iscomment> In case of Extend Shipping Switcher if turned on default shipping method doesnt work </iscomment>
+                    <isif condition="${!EXT_SHIPPING_SWITCH}">
+                    <link rel="stylesheet" href="${URLUtils.staticURL('/css/extendSP.css')}" />
+                        <div class="row">
+                            <isinclude template="cart/cartShippingMethodSelection" />
+                        </div>
+                    </isif>
+
                     <isinclude template="cart/cartTotals" />
                     <span hidden class="sub-total">${pdict.totals.subTotal}</span>
                     <div class="row">
@@ -83,6 +94,15 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Extend Shipping Protection -->
+                <isif condition="${EXT_GLOBAL_SWITCH && EXT_SHIPPING_SWITCH}">
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="extend-shipping-offer"></div>
+                        </div>
+                    </div>
+                </isif>
             </div>
             <isinclude template="cart/cartRemoveProductModal"/>
         </div>
@@ -92,4 +112,6 @@
     <div class="container">
         <isslot id="cart-recommendations-m" description="Recommended products" context="global" />
     </div>
+
+    <input type="hidden" name="extend-shipping-offer" value="${URLUtils.url('Cart-AddExtendShippingOffer')}">
 </isdecorate>

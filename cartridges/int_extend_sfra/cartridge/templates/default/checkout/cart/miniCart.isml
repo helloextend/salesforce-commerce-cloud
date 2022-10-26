@@ -31,27 +31,29 @@
         </div>
         <div class="product-summary">
             <isloop items="${pdict.items}" var="lineItem">
-                <div class="row">
-                    <div class="col-12">
-                        <isif condition="${lineItem.bonusProductLineItemUUID === 'bonus'}">
-                            <div class="card ${miniCart ? 'bonus-product-line-item' : ''} uuid-${lineItem.UUID}">
-                                <div class="card-body">
-                                    <isinclude template="checkout/productCard/bonusProductCard" />
+                <isif condition="${lineItem.id !== 'EXTEND-SHIPPING-PROTECTION'}">
+                    <div class="row">
+                        <div class="col-12">
+                            <isif condition="${lineItem.bonusProductLineItemUUID === 'bonus'}">
+                                <div class="card ${miniCart ? 'bonus-product-line-item' : ''} uuid-${lineItem.UUID}">
+                                    <div class="card-body">
+                                        <isinclude template="checkout/productCard/bonusProductCard" />
+                                    </div>
                                 </div>
-                            </div>
-                        <iselse/>
-                            <div class="card uuid-${lineItem.UUID}">
-                                <div class="card-body">
-                                    <isif condition="${lineItem.noProduct === true}">
-                                        <isinclude template="checkout/productCard/uncategorizedProductCard" />
-                                    <iselse/>
-                                        <isinclude template="checkout/productCard/productCard" />
-                                    </isif>
+                            <iselse/>
+                                <div class="card uuid-${lineItem.UUID}">
+                                    <div class="card-body">
+                                        <isif condition="${lineItem.noProduct === true}">
+                                            <isinclude template="checkout/productCard/uncategorizedProductCard" />
+                                        <iselse/>
+                                            <isinclude template="checkout/productCard/productCard" />
+                                        </isif>
+                                    </div>
                                 </div>
-                            </div>
-                        </isif>
+                            </isif>
+                        </div>
                     </div>
-                </div>
+                </isif>
             </isloop>
         </div>
     </div>

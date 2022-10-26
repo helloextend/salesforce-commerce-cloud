@@ -110,6 +110,26 @@ function createProductLineItemsObject(allLineItems, view) {
 
             lineItems.push(extendLineItem);
         }
+
+        // Extend Shipping Protection Item
+        if (item.custom.isExtendShippingProtection) {
+            lineItems.pop();
+
+            var shippingProtectionLineItem = JSON.parse(JSON.stringify(newLineItem));
+            shippingProtectionLineItem.productName = item.productName;
+            if (shippingProtectionLineItem.price) {
+                shippingProtectionLineItem.price.sales = {
+                    currency: item.basePrice.currencyCode,
+                    decimalPrice: item.basePrice.toNumberString(),
+                    formatted: item.basePrice.toFormattedString(),
+                    value: item.basePrice.getDecimalValue()
+                };
+            }
+            shippingProtectionLineItem.renderedPrice = getRenderedPrice(shippingProtectionLineItem.price);
+
+            lineItems.push(shippingProtectionLineItem);
+        }
+
         // END Extend integration
     });
     return lineItems;

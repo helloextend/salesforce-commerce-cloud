@@ -338,6 +338,7 @@ function getCustomer(customer, address) {
  */
 function getOrdersPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
     var order = paramObj.order;
     var customer = JSON.parse(paramObj.customer);
     var defaultShipment = order.getDefaultShipment();
@@ -353,6 +354,10 @@ function getOrdersPayload(paramObj) {
     requestObject.total = Math.ceil(moneyToCents(order.getTotalGrossPrice()));
     requestObject.transactionId = order.orderNo;
     requestObject.lineItems = getLineItems(order);
+
+    var extendShippingProtectionLineItem = extendShippingProtectionHelpers.createShippingProtectionContractLine(order);
+    requestObject.lineItems.push(extendShippingProtectionLineItem);
+
     return requestObject;
 }
 
@@ -626,6 +631,63 @@ function ordersAPIcreateLeadContractId(paramObj) {
     var ordersLineItems = order.getProductLineItems();
 }
 
+/**
+ * Creates object of items to creates a request
+ * @param {Array} products - array of products
+ */
+function shippingOfferGetItems(products) {
+    var collections = require('*/cartridge/scripts/util/collections');
+
+    var items = [];
+
+    for (var i = 0; i < products.length; i++) {
+        var product = products[i];
+
+        var item = {};
+
+        var dividedPurchasePrice = product.adjustedNetPrice.divide(product.quantityValue);
+
+        item.referenceId = product.getProductID();
+        item.quantity = product.quantityValue;
+        item.purchasePrice = Math.ceil(moneyToCents(dividedPurchasePrice));
+        item.productName = product.productName;
+
+        items.push(item);
+    }
+
+    return items;
+}
+
+
+/**
+ * Make call to SHIPPING OFFERS API to creates the quotes
+ * @param {string} storeID - storeID
+ * @param {Array} products - array of product in cart
+ */
+function createsShippingOfferQutes(storeID, products) {
+    var endpointName = 'shippingOffers';
+    var apiMethod = 'shippingOffers';
+
+    var items = shippingOfferGetItems(products);
+    var currency = products[0].price.currencyCode;
+
+    var requestObject = {
+        storeId: storeID,
+        currency: currency,
+        items: items
+    };
+
+    var response = webService.makeServiceCall(endpointName, requestObject);
+
+    // return response and cart items in Extend format
+    var returnedData = {};
+
+    returnedData.response = response;
+    returnedData.items = items;
+
+    return returnedData;
+}
+
 module.exports = {
     exportProducts: exportProducts,
     createContracts: createContracts,
@@ -635,5 +697,6 @@ module.exports = {
     getOffer: getOffer,
     createOrders: createOrders,
     contractsAPIcreateLeadContractId: contractsAPIcreateLeadContractId,
-    ordersAPIcreateLeadContractId: ordersAPIcreateLeadContractId
+    ordersAPIcreateLeadContractId: ordersAPIcreateLeadContractId,
+    createsShippingOfferQutes: createsShippingOfferQutes
 };

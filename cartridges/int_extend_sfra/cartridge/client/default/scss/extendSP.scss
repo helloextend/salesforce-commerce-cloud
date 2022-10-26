@@ -1,0 +1,12 @@
+// extend shipping protection
+
+#extend-shipping-offer {
+    display: flex;
+    justify-content: flex-start;
+}
+
+@media (max-width: 749px) {
+    #extend-shipping-offer {
+        justify-content: start;
+    }
+}
