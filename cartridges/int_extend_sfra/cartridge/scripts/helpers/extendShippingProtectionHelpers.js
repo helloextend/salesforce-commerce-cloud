@@ -156,10 +156,9 @@ function updateShippingProtectionPriceValue(currentBasket, storeID) {
     // new Extend Shipping Protection value
     var newESPvalue = getShippingProtectionPriceValue(currentBasket, storeID);
 
-    currentBasket.removeProductLineItem(extendShippingProtectionLineItem);
-    var shippingProtectionProduct = ProductMgr.getProduct('EXTEND-SHIPPING-PROTECTION');
-
-    addExtendShippingProtectionToCart(currentBasket, shippingProtectionProduct, newESPvalue);
+    Transaction.wrap(function () {
+        extendShippingProtectionLineItem.setPriceValue(parseFloat(newESPvalue));
+    });
 }
 
 /**

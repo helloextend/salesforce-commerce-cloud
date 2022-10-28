@@ -340,6 +340,7 @@ function getCustomer(customer, address) {
  */
 function getOrdersPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippingProtectionHelpers');
     var order = paramObj.order;
     var customer = JSON.parse(paramObj.customer);
     var defaultShipment = order.getDefaultShipment();
@@ -356,6 +357,8 @@ function getOrdersPayload(paramObj) {
     requestObject.transactionId = order.orderNo;
     try {
         requestObject.lineItems = getLineItems(order);
+        var extendShippingProtectionLineItem = extendShippingProtectionHelpers.createShippingProtectionContractLine(order);
+        requestObject.lineItems.push(extendShippingProtectionLineItem);
     } catch (error) {
         logger.info('Line Items Order Payload Error: {0}', error);
     }

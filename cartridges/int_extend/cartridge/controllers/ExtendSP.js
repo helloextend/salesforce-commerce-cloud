@@ -14,16 +14,17 @@
  * @module controllers/ExtendSP
  */
 
+/* Script Modules */
+var app = require('*/cartridge/scripts/app');
+var guard = require('*/cartridge/scripts/guard');
+var collections = require('*/cartridge/scripts/util/collections');
+
 /* API Includes */
 var Transaction = require('dw/system/Transaction');
 var URLUtils = require('dw/web/URLUtils');
 var Site = require('dw/system/Site');
 var BasketMgr = require('dw/order/BasketMgr');
-
-/* Script Modules */
-var app = require('*/cartridge/scripts/app');
-var guard = require('*/cartridge/scripts/guard');
-var collections = require('*/cartridge/scripts/util/collections');
+var Product = app.getModel('Product');
 
 /* EXTEND HELPERS*/
 var extendHelpers = require('*/cartridge/scripts/extendHelpers');
@@ -79,6 +80,8 @@ function shippingProtectionCreateQuotes() {
             // Add quotes info to order info to create a shipping protection plan line item
             Transaction.wrap(function () {
                 shippingProtectionLineItem.custom.extendShippingQuoteId = shippingOfferQuotes.id;
+
+                cart.calculate();
             });
         }
 
@@ -125,14 +128,14 @@ function doesShippingProtectionExists() {
  * Add Extend Shipping Offer via cart
  */
 function addExtendShippingOffer() {
-    var currentBasket = cart.object;
-
-    if (!currentBasket) {
+    if (!cart) {
         return;
     }
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
-        extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(currentBasket);
+        var params = request.httpParameterMap;
+
+        extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(cart, params, Product);
 
         var basket = app.getModel('Cart').get();
 
@@ -189,6 +192,41 @@ function removeShippingProtection() {
     return;
 }
 
+/**
+ * Update Shipping Protection Value
+ */
+function updateShippingProtection() {
+    if (!cart) {
+        return;
+    }
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        var params = request.httpParameterMap;
+
+        var isShippingProtectionFound = false;
+        var shippingProtectionLineItem = null;
+
+        Transaction.wrap(function () {
+            var allLineItems = cart.object.getAllProductLineItems();
+            collections.forEach(allLineItems, function (productLineItem) {
+                if (productLineItem.custom.isExtendShippingProtection) {
+                    isShippingProtectionFound = true;
+                    shippingProtectionLineItem = productLineItem;
+                }
+            });
+
+            if (isShippingProtectionFound && shippingProtectionLineItem) {
+                extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(cart, params, Product);
+            }
+
+            shippingProtectionLineItem.custom.isESPupdated = false;
+            cart.calculate();
+        });
+    }
+
+    return;
+}
+
 /*
 * Module exports
 */
@@ -207,9 +245,13 @@ exports.DoesShippingProtectionExists = guard.ensure(['get', 'https'], doesShippi
 
 /** Add Extend Shipping Offer via cart.
  * @see {@link module:controllers/ExtendSP~addExtendShippingOffer} */
-exports.AddExtendShippingOffer = guard.ensure(['get', 'https'], addExtendShippingOffer);
+exports.AddExtendShippingOffer = guard.ensure(['post', 'https'], addExtendShippingOffer);
 
 /** Add Extend Shipping Offer via cart.
  * @see {@link module:controllers/ExtendSP~removeShippingProtection} */
 exports.RemoveShippingProtection = guard.ensure(['get', 'https'], removeShippingProtection);
+
+/** Add Extend Shipping Offer via cart.
+ * @see {@link module:controllers/ExtendSP~updateShippingProtection} */
+exports.UpdateShippingProtection = guard.ensure(['post', 'https'], updateShippingProtection);
 

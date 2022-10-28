@@ -170,7 +170,7 @@
 								</isscript>
 
 								<iscomment>	Skip bonus-choice products in first pass.	</iscomment>
-								<isif condition="${lineItem.bonusDiscountLineItem == null}">
+								<isif condition="${lineItem.bonusDiscountLineItem == null && lineItem.productID !== 'EXTEND-SHIPPING-PROTECTION'}">
 									<tr class="cart-row" data-uuid="${lineItem.getUUID()}">
 										<td class="item-image">
 											<isif condition="${lineItem.product != null && lineItem.product.getImage('small',0) != null}">

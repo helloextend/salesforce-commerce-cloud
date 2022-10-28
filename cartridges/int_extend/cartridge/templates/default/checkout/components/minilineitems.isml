@@ -72,55 +72,56 @@
 
 	<iscomment>product line items (only rendered if we haven't add a gift certificate to the basket)</iscomment>
 		<isloop items="${pliList}" var="productLineItem" status="loopstate">
-
 			<div class="mini-cart-product">
-				<span class="mini-cart-toggle fa"></span>
-				<div class="mini-cart-image">
-					<isif condition="${productLineItem.product != null && productLineItem.product.getImage('small',0) != null}">
-						<img src="${productLineItem.product.getImage('small',0).getURL()}" alt="${productLineItem.product.getImage('small',0).alt}" title="${productLineItem.product.getImage('small',0).title}"/>
-					<iselse/>
-						<img src="${URLUtils.staticURL('/images/noimagesmall.png')}" alt="${productLineItem.productName}"  title="${productLineItem.productName}"/>
-					</isif>
-				</div>
-
-				<div class="mini-cart-name">
-					<isset name="itemUrl" value="${empty(productLineItem.categoryID) ? URLUtils.http('Product-Show','pid', productLineItem.productID) : URLUtils.http('Product-Show','pid', productLineItem.productID, 'cgid', productLineItem.categoryID)}" scope="page"/>
-
-                    <a
-                        href="${itemUrl}"
-                        data-is-extend-product="${productLineItem.custom.parentLineItemUUID ? true : false}"
-                        title="${Resource.msgf('product.label','product',null, productLineItem.productName)}">
-                    <isprint value="${productLineItem.productName}"/>
-                    </a>
-				</div>
-
-				<div class="mini-cart-attributes">
-					<isdisplayvariationvalues product="${productLineItem.product}"/>
-				</div>
-
-				<isdisplayproductavailability p_productli="${productLineItem}" p_displayinstock="${false}" p_displaypreorder="${true}" p_displaybackorder="${true}"/>
-
-				<div class="mini-cart-pricing">
-
-					<span class="label">${Resource.msg('global.qty','locale',null)}:</span>
-					<span class="value"><isprint value="${productLineItem.quantity}"/></span>
-
-					<isif condition="${productLineItem.bonusProductLineItem}">
-						<isset name="bonusProductPrice" value="${productLineItem.getAdjustedPrice()}" scope="page"/>
-						<isinclude template="checkout/components/displaybonusproductprice" />
-						<isprint value="${bonusProductPriceValue}" />
-					<iselse/>
-						<isset name="productTotal" value="${productLineItem.adjustedPrice}" scope="page"/>
-						<isif condition="${productLineItem.optionProductLineItems.size() > 0}">
-							<isloop items="${productLineItem.optionProductLineItems}" var="optionLI">
-								<isset name="productTotal" value="${productTotal.add(optionLI.adjustedPrice)}" scope="page"/>
-							</isloop>
+				<isif condition="${productLineItem.productID !== 'EXTEND-SHIPPING-PROTECTION'}">
+					<span class="mini-cart-toggle fa"></span>
+					<div class="mini-cart-image">
+						<isif condition="${productLineItem.product != null && productLineItem.product.getImage('small',0) != null}">
+							<img src="${productLineItem.product.getImage('small',0).getURL()}" alt="${productLineItem.product.getImage('small',0).alt}" title="${productLineItem.product.getImage('small',0).title}"/>
+						<iselse/>
+							<img src="${URLUtils.staticURL('/images/noimagesmall.png')}" alt="${productLineItem.productName}"  title="${productLineItem.productName}"/>
 						</isif>
-						<span class="mini-cart-price"><isprint value="${productTotal}"/></span>
-					</isif>
+					</div>
 
-				</div>
+					<div class="mini-cart-name">
+						<isset name="itemUrl" value="${empty(productLineItem.categoryID) ? URLUtils.http('Product-Show','pid', productLineItem.productID) : URLUtils.http('Product-Show','pid', productLineItem.productID, 'cgid', productLineItem.categoryID)}" scope="page"/>
 
+						<a
+							href="${itemUrl}"
+							data-is-extend-product="${productLineItem.custom.parentLineItemUUID ? true : false}"
+							title="${Resource.msgf('product.label','product',null, productLineItem.productName)}">
+						<isprint value="${productLineItem.productName}"/>
+						</a>
+					</div>
+
+					<div class="mini-cart-attributes">
+						<isdisplayvariationvalues product="${productLineItem.product}"/>
+					</div>
+
+					<isdisplayproductavailability p_productli="${productLineItem}" p_displayinstock="${false}" p_displaypreorder="${true}" p_displaybackorder="${true}"/>
+
+					<div class="mini-cart-pricing">
+
+						<span class="label">${Resource.msg('global.qty','locale',null)}:</span>
+						<span class="value"><isprint value="${productLineItem.quantity}"/></span>
+
+						<isif condition="${productLineItem.bonusProductLineItem}">
+							<isset name="bonusProductPrice" value="${productLineItem.getAdjustedPrice()}" scope="page"/>
+							<isinclude template="checkout/components/displaybonusproductprice" />
+							<isprint value="${bonusProductPriceValue}" />
+						<iselse/>
+							<isset name="productTotal" value="${productLineItem.adjustedPrice}" scope="page"/>
+							<isif condition="${productLineItem.optionProductLineItems.size() > 0}">
+								<isloop items="${productLineItem.optionProductLineItems}" var="optionLI">
+									<isset name="productTotal" value="${productTotal.add(optionLI.adjustedPrice)}" scope="page"/>
+								</isloop>
+							</isif>
+							<span class="mini-cart-price"><isprint value="${productTotal}"/></span>
+						</isif>
+
+					</div>
+				</isif>
+			
 			</div>
 
 			<isset name="itemCount" value="${itemCount+1}" scope="page"/>
