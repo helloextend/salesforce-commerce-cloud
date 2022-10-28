@@ -15,6 +15,9 @@ var Transaction = require('dw/system/Transaction');
 var collections = require('*/cartridge/scripts/util/collections');
 var ProductMgr = require('dw/catalog/ProductMgr');
 
+/* Script Modules */
+var app = require('*/cartridge/scripts/app');
+
 /**
  * Converted cents to dollars
  * @param {number} productValue - product price value via cents
@@ -140,7 +143,7 @@ function getShippingProtectionPriceValue(currentBasket, storeID) {
  * Update ESP Price Value
  * @param {object} currentBasket - current basket
  */
-function updateShippingProtectionPriceValue(cart, storeID, Product) {
+function updateShippingProtectionPriceValue(cart, params, storeID, shippingProtectionProduct) {
     var currentBasket = cart.object;
     if (!currentBasket) {
         return;
@@ -158,10 +161,9 @@ function updateShippingProtectionPriceValue(cart, storeID, Product) {
     // new Extend Shipping Protection value
     var newESPvalue = getShippingProtectionPriceValue(currentBasket, storeID);
 
-    currentBasket.removeProductLineItem(extendShippingProtectionLineItem);
-    var shippingProtectionProduct = Product.get('EXTEND-SHIPPING-PROTECTION');
-
-    addExtendShippingProtectionToCart(cart, shippingProtectionProduct, newESPvalue);
+    Transaction.wrap(function () {
+        extendShippingProtectionLineItem.setPriceValue(parseFloat(newESPvalue));
+    });
 }
 
 /**
@@ -177,12 +179,21 @@ function createOrUpdateExtendShippingProtectionQuote(cart, params, Product) {
         var storeID = Site.getCurrent().getCustomPreferenceValue('extendStoreID');
     
         var isExtendShippingProtectionAdded = checkingForESP(currentBasket);
+
+        if (!Product) {
+            var Product = app.getModel('Product');
+        }
+
+        if (!params) {
+            var params = request.httpParameterMap;
+        }
+
+        var shippingProtectionProduct = Product.get('EXTEND-SHIPPING-PROTECTION');
     
         if (!isExtendShippingProtectionAdded) {
             // Get the quote to get ESP price
             // In case ESP HASN'T been added to the cart
-    
-            var shippingProtectionProduct = Product.get('EXTEND-SHIPPING-PROTECTION');
+
             var shippingProtectionPriceValue = getShippingProtectionPriceValue(currentBasket, storeID);
 
             if (shippingProtectionPriceValue) {
@@ -192,7 +203,7 @@ function createOrUpdateExtendShippingProtectionQuote(cart, params, Product) {
             // Update the quotes to get new ESP price
             // In case ESP has been added to the cart earlier
     
-            updateShippingProtectionPriceValue(cart, params, storeID, Product);
+            updateShippingProtectionPriceValue(cart, params, storeID, shippingProtectionProduct);
         }
     }
 }

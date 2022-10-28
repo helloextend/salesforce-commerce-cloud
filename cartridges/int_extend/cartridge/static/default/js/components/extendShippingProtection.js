@@ -96,21 +96,18 @@ function removeShippingProtection() {
 
     if (isShippingProtectionInCart) {
         var isShippingProtection = false;
-        $.spinner().start();
 
         $.ajax({
             url: removeShippingProtectionUrl,
             type: 'get',
             dataType: 'json',
-            success: function (data) {
-                $('body').trigger('cart:update', data);
+            success: function () {
                 changeClassName(isShippingProtection);
                 window.location.reload();
-                $.spinner().stop();
             },
-            error: function (err) {
+            error: function () {
+                console.log('Error occurred: Shipping protection has not been deleted');
                 window.location.reload();
-                $.spinner().stop();
             }
         });
     }
@@ -126,20 +123,38 @@ function addShippingProtection() {
 
     if (!isShippingProtectionInCart) {
         var isShippingProtection = true;
-        $.spinner().start();
 
         $.ajax({
             url: addShippingProtectionUrl,
             method: 'POST',
-            success: function (data) {
-                $('body').trigger('cart:update', data);
+            success: function () {
                 changeClassName(isShippingProtection);
                 window.location.reload();
-                $.spinner().stop();
             },
             error: function () {
+                console.log('Error occurred: Shipping protection has not been added to the card');
                 window.location.reload();
-                $.spinner().stop();
+            }
+        });
+    }
+}
+
+/**
+ * Update Shipping Protection Value
+ */
+function updateShippingProtection() {
+    var updateShippingProtectionUrl = window.EXT_SP_UPDATE;
+
+    var isShippingProtectionInCart = checkTheShippingAvailibility();
+
+    if (isShippingProtectionInCart) {
+        $.ajax({
+            url: updateShippingProtectionUrl,
+            method: 'POST',
+            success: function () {},
+            error: function () {
+                console.log('Error occurred: Shipping protection has not been updated');
+                window.location.reload();
             }
         });
     }
@@ -183,7 +198,6 @@ function renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart) {
             },
             onUpdate: function (quote) {
                 console.log('call back to update sp plan in cart', quote);
-                window.location.reload();
             }
         });
     }
@@ -221,4 +235,7 @@ function initCartOffers() {
 
 $(document).ready( function () {
     initCartOffers();
+    $('body').on('click', '#update-cart', function () {
+        updateShippingProtection();
+    });
 });
