@@ -18,6 +18,8 @@ var jobHelpers = require('~/cartridge/scripts/jobHelpers');
 exports.execute = function () {
     var productsIterator = ProductMgr.queryAllSiteProducts();
     var productsBatch = new ArrayList();
+    var isRequestValid = null;
+    var requestLength = null;
 
     logger.info('Starting processing new products...');
 
@@ -27,15 +29,25 @@ exports.execute = function () {
         if ((product.isProduct() || product.isVariant()) && product.isOnline()) {
             productsBatch.push(product);
 
+            isRequestValid = jobHelpers.isRequestValid(productsBatch).isValid;
+
+            if (isRequestValid) {
+                continue;
+            } else {
+                productsBatch.pop();
+                extend.exportProducts(productsBatch);
+                requestLength = jobHelpers.isRequestValid(productsBatch).requestLength;
+
+                logger.info('Request length is {0}: ', requestLength);
+
+                productsBatch.clear();
+                productsBatch.push(product);
+            }
+
             var productLogObject = jobHelpers.getProductLoggerModel(product);
             logger.info(JSON.stringify(productLogObject));
         } else {
             continue;
-        }
-
-        if (productsBatch.length === 100) {
-            extend.exportProducts(productsBatch);
-            productsBatch.clear();
         }
     }
 

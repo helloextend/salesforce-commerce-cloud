@@ -3,6 +3,34 @@
 /* eslint-disable camelcase */
 'use strict';
 
+var extend = require('~/cartridge/scripts/extend');
+
+/**
+ * Check the length of the request. Should be less than 2000 characters
+ * @param {Array} productsBatch - array of product
+ * @returns {Object} validated object info
+ */
+function isRequestValid(productsBatch) {
+    var requestObj = extend.getProductsPayload(productsBatch);
+
+    var requestStr = JSON.stringify(requestObj);
+    var requestLength = requestStr.length;
+
+    var validObj = {};
+
+    if (requestLength > 2000) {
+        validObj.isValid = false;
+        validObj.requestLength = requestLength;
+
+        return validObj;
+    }
+
+    validObj.isValid = true;
+    validObj.requestLength = requestLength;
+
+    return validObj;
+}
+
 /**
  * Returns current time
  * @returns {string} - current time
@@ -128,6 +156,7 @@ function getRefundStatus(order, apiMethod) {
 }
 
 module.exports = {
+    isRequestValid: isRequestValid,
     getPSTtime: getPSTtime,
     getProductLoggerModel: getProductLoggerModel,
     getContractLoggerModel: getContractLoggerModel,

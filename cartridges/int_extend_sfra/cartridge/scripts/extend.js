@@ -690,6 +690,7 @@ function createsShippingOfferQutes(storeID, products) {
 
 module.exports = {
     exportProducts: exportProducts,
+    getProductsPayload: getProductsPayload,
     createContracts: createContracts,
     createRefund: createRefund,
     sendOrders: sendOrders,
