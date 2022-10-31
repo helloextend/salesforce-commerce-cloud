@@ -113,7 +113,14 @@ function getProductsPayload(productBatch) {
             var productObj = {};
             productObj.brand = product.getBrand();
             productObj.category = category;
-            productObj.description = !empty(product.getShortDescription()) ? product.getShortDescription().getMarkup() : '';
+
+            // description should be less than 2000 characters
+            var description = !empty(product.getShortDescription()) ? product.getShortDescription().getMarkup().trim() : '';
+            if (description) {
+                description = (description.length > 2000) ? description.substring(0, 2000) : description;
+            }
+
+            productObj.description = description;
             productObj.imageUrl = product.getImage(EXTEND_IMAGE_VIEW_TYPE, 0) ? product.getImage(EXTEND_IMAGE_VIEW_TYPE, 0).getAbsURL().toString() : '';
             productObj.mfrWarranty = {
                 parts: product.custom.mfrWarrantyParts,
