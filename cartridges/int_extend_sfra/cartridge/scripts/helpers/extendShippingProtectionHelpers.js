@@ -26,6 +26,36 @@ function getMoneyInDollars(productValue) {
 }
 
 /**
+ * Process extend shipping protecting config
+ * @param {Object} cart - cart
+ * @param {string} attachBehavior - extend shipping protection default statuses
+ * OPT_IN: means that the offer is NOT selected by default, and the customer must choose to add it.
+ * OPT_OUT: means that the offer is selected by default and will be included in the order unless the customer deselects it.
+ * OPT_MERCHANT: means that shipping protection is included in every eligible order automatically, at the merchant’s choice
+ */
+function processExtendShippingProtectionConfig(currentBasket, attachBehavior) {
+    if (attachBehavior === 'OPT_IN') {
+        // checkbox should be unchecked
+        return;
+    } else if (attachBehavior === 'OPT_OUT') {
+        // checkbox should be checked
+        processOptOutAttachBehavior(currentBasket);
+    }
+}
+
+/**
+ * Process OPT_OUT attachBehavior
+ * @param {Object} cart - object
+ */
+function processOptOutAttachBehavior(currentBasket) {
+    try {
+        createOrUpdateExtendShippingProtectionQuote(currentBasket);
+    } catch (error) {
+        logger.error('Could not to process OPT_OUT extend shipping protection attachBehavior. {0}', error);
+    }
+}
+
+/**
  * Create array of products to make a call to SP Api to create ESP quotes
  * @param {Object} currentBasket - current Basket
  * @returns array of product to create ESP quotes
@@ -221,6 +251,7 @@ function createShippingProtectionContractLine(order) {
 }
 
 module.exports = {
+    processExtendShippingProtectionConfig: processExtendShippingProtectionConfig,
     createOrUpdateExtendShippingProtectionQuote: createOrUpdateExtendShippingProtectionQuote,
     checkingForESP: checkingForESP,
     getProductToCreateQuotes: getProductToCreateQuotes,
