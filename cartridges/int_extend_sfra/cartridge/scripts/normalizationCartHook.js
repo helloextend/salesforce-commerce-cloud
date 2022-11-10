@@ -96,6 +96,7 @@ function extendShippingProtectionNormalizeCart (basket, productsToShippingProtec
 
         Transaction.wrap(function () {
             basket.custom.isExtendShippingProtectionAdded = false;
+            basket.custom.isExtendShippingProtectionRemoved = true;
         });
     }
 }

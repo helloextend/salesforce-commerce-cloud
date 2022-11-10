@@ -665,6 +665,17 @@ function shippingOfferGetItems(products) {
     return items;
 }
 
+/**
+ * Get extend shipping protection status // Orders API
+ * @param {string} storeID - storeID
+ * @returns - response object
+ */
+function getExtendShippingProtectionConfig() {
+    var endpointName = 'shippingOffersConfig';
+    var response = webService.makeServiceCall(endpointName);
+    return response;
+}
+
 
 /**
  * Make call to SHIPPING OFFERS API to creates the quotes
@@ -672,8 +683,7 @@ function shippingOfferGetItems(products) {
  * @param {Array} products - array of product in cart
  */
 function createsShippingOfferQutes(storeID, products) {
-    var endpointName = 'shippingOffers';
-    var apiMethod = 'shippingOffers';
+    var endpointName = 'shippingOffersQuotes';
 
     var items = shippingOfferGetItems(products);
     var currency = products[0].price.currencyCode;
@@ -705,5 +715,6 @@ module.exports = {
     createOrders: createOrders,
     contractsAPIcreateLeadContractId: contractsAPIcreateLeadContractId,
     ordersAPIcreateLeadContractId: ordersAPIcreateLeadContractId,
+    getExtendShippingProtectionConfig: getExtendShippingProtectionConfig,
     createsShippingOfferQutes: createsShippingOfferQutes
 };

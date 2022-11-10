@@ -25,6 +25,7 @@ var URLUtils = require('dw/web/URLUtils');
 var Site = require('dw/system/Site');
 var BasketMgr = require('dw/order/BasketMgr');
 var Product = app.getModel('Product');
+var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 
 /* EXTEND HELPERS*/
 var extendHelpers = require('*/cartridge/scripts/extendHelpers');
@@ -44,6 +45,41 @@ var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('ext
 /* The variables used in each function */
 var response = require('*/cartridge/scripts/util/Response');
 var cart = app.getModel('Cart').goc();
+
+/**
+ * Get the Extend Shipping Protection Config.
+ * Return the ESP default behaviour:
+ */
+function getConfig() {
+    var currentBasket = cart.object;
+
+    if (!currentBasket) {
+        return;
+    }
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        try {
+            var extendShippingProtectionConfig = extendProcessAPIHelpers.getExtendShippingProtectionConfig();
+            var attachBehavior = extendShippingProtectionConfig.config.attachBehavior;
+
+            Transaction.wrap(function () {
+                currentBasket.custom.extendShippingProtectionAttachBehaviour = attachBehavior;
+            });
+
+            extendShippingProtectionHelpers.processExtendShippingProtectionConfig(cart, attachBehavior);
+
+            response.renderJSON({
+                attachBehavior: attachBehavior
+            });
+        } catch (error) {
+            logger.error('Failed to receive Extend Shipping Protection config. {0}', error);
+        }
+
+        var testVariable = null;
+    }
+
+    return;
+}
 
 /**
  * Create Extend Shipping Protection Quotes. Make a call to Shipping API.
@@ -76,6 +112,11 @@ function shippingProtectionCreateQuotes() {
             }
         });
 
+        var attachBehavior = currentBasket.custom.extendShippingProtectionAttachBehaviour;
+
+        var isExtendShippingProtectionAdded = currentBasket.custom.isExtendShippingProtectionAdded;
+        var isExtendShippingProtectionRemoved = currentBasket.custom.isExtendShippingProtectionRemoved;
+
         if (shippingProtectionLineItem) {
             // Add quotes info to order info to create a shipping protection plan line item
             Transaction.wrap(function () {
@@ -89,35 +130,10 @@ function shippingProtectionCreateQuotes() {
 
         response.renderJSON({
             cartItems: cartItems,
+            attachBehavior: attachBehavior,
+            isExtendShippingProtectionAdded: isExtendShippingProtectionAdded,
+            isExtendShippingProtectionRemoved: isExtendShippingProtectionRemoved,
             cart: basket
-        });
-    }
-
-    return;
-}
-
-/**
- * Check does shipping protection is in the cart
- */
-function doesShippingProtectionExists() {
-    var currentBasket = cart.object;
-
-    if (!currentBasket) {
-        return;
-    }
-
-    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
-        var isShippingProtectionInCart = false;
-
-        var allLineItems = currentBasket.getAllProductLineItems();
-        collections.forEach(allLineItems, function (productLineItem) {
-            if (productLineItem.custom.isExtendShippingProtection) {
-                isShippingProtectionInCart = true;
-            }
-        });
-
-        response.renderJSON({
-            isShippingProtectionInCart: isShippingProtectionInCart
         });
     }
 
@@ -170,23 +186,17 @@ function removeShippingProtection() {
                 }
             });
 
-            if (isShippingProtectionFound && shippingProtectionLineItem) {
+            if (!shippingProtectionLineItem) {
+                return;
+            } else if (isShippingProtectionFound && shippingProtectionLineItem) {
                 currentBasket.removeProductLineItem(shippingProtectionLineItem);
             }
 
             currentBasket.custom.isExtendShippingProtectionAdded = false;
+            currentBasket.custom.isExtendShippingProtectionRemoved = true;
 
             cart.calculate();
         });
-
-        if (isShippingProtectionFound) {
-            var basket = app.getModel('Cart').get();
-            response.renderJSON({
-                cart: basket
-            });
-        } else {
-            response.setStatus(500);
-        }
     }
 
     return;
@@ -235,13 +245,13 @@ function updateShippingProtection() {
 * Exposed methods.
 */
 
+/** Get the Extend Shipping Protection Config.
+ * @see {@link module:controllers/ExtendSP~getConfig} */
+exports.GetConfig = guard.ensure(['get', 'https'], getConfig);
+
 /** Create Extend Shipping Protection Quotes. Make a call to Shipping API.
  * @see {@link module:controllers/ExtendSP~shippingProtectionCreateQuotes} */
 exports.ShippingProtectionCreateQuotes = guard.ensure(['post', 'https'], shippingProtectionCreateQuotes);
-
-/** Check does shipping protection is in the cart.
- * @see {@link module:controllers/ExtendSP~doesShippingProtectionExists} */
-exports.DoesShippingProtectionExists = guard.ensure(['get', 'https'], doesShippingProtectionExists);
 
 /** Add Extend Shipping Offer via cart.
  * @see {@link module:controllers/ExtendSP~addExtendShippingOffer} */

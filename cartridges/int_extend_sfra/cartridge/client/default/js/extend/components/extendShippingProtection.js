@@ -7,9 +7,6 @@ const { data } = require("jquery");
 
 var Extend = window.Extend || undefined;
 
-var ESPinCart = '.js-extendShippingProtectionInCart';
-var NoESPinCart = '.js-noExtendShippingProtectionInCart';
-
 // EXTEND SHIPPING PROTECTION
 
 /**
@@ -24,64 +21,18 @@ function initExtend() {
 }
 
 /**
- * Check does shipping offer exists in cart
- * @returns isShippingProtectionInCart
+ * Get and process extend shipping protection config
  */
-function doesShippingOfferExists() {
-    var url = window.EXT_CART_SP_CHECK;
-    $.ajax({
-        url: url,
-        type: 'get',
-        dataType: 'json',
-        success: function (data) {
-            var isShippingProtectionInCart = data.isShippingProtectionInCart;
-            addESPclassName(isShippingProtectionInCart);
-        },
-        error: function () {}
-    });
-}
+function getAndProcessExtendShippingProtectionConfig() {
+    var getESPConfigUrl = window.EXT_ESP_GET_CONFIG;
 
-/**
- * Add class to $footer depends on ESP availibility in the cart
- */
-function addESPclassName(isShippingProtectionInCart) {
-    var $footer = $('#footercontent');
-
-    if (isShippingProtectionInCart) {
-        $footer.addClass(ESPinCart);
-    } else {
-        $footer.addClass(NoESPinCart);
-    }
-}
-
-/**
- * Check the SP availibility
- * @returns isExtendShippingInCart
- */
-function checkTheShippingAvailibility() {
-    var isExtendShippingInCart = false;
-
-    var $footer = $('#footercontent');
-
-    if ($footer.hasClass(ESPinCart)) {
-        isExtendShippingInCart = true;
-    } else if ($footer.hasClass(NoESPinCart)) {
-        isExtendShippingInCart = false;
-    }
-
-    return isExtendShippingInCart;
-}
-
-/**
- * Change the class depending on ESP availibility
- * @param {Boolean} isShippingProtection - boolean value
- */
-function changeClassName(isShippingProtection) {
-    var $footer = $('#footercontent');
-    if (!isShippingProtection) {
-        $footer.removeClass(ESPinCart).addClass(NoESPinCart);
-    } else {
-        $footer.removeClass(NoESPinCart).addClass(ESPinCart);
+    if (getESPConfigUrl) {
+        $.ajax({
+            url: getESPConfigUrl,
+            method: 'GET',
+            success: function () {},
+            error: function () {}
+        });
     }
 }
 
@@ -91,11 +42,7 @@ function changeClassName(isShippingProtection) {
 function removeShippingProtection() {
     var removeShippingProtectionUrl = window.EXT_SP_REMOVEFROMCART;
 
-    var isShippingProtectionInCart = checkTheShippingAvailibility();
-
-    if (isShippingProtectionInCart) {
-
-        var isShippingProtection = false;
+    if (removeShippingProtectionUrl) {
         $.spinner().start();
 
         $.ajax({
@@ -103,8 +50,7 @@ function removeShippingProtection() {
             type: 'get',
             dataType: 'json',
             success: function (data) {
-                $('body').trigger('cart:update', data);
-                changeClassName(isShippingProtection);
+                // $('body').trigger('cart:update', data);
                 window.location.reload();
                 $.spinner().stop();
             },
@@ -123,19 +69,13 @@ function removeShippingProtection() {
 function addShippingProtection() {
     var addShippingProtectionUrl = window.EXT_SP_ADDTOCART;
 
-    var isShippingProtectionInCart = checkTheShippingAvailibility();
-
-    if (!isShippingProtectionInCart) {
-
-        var isShippingProtection = true;
+    if (addShippingProtectionUrl) {
         $.spinner().start();
 
         $.ajax({
             url: addShippingProtectionUrl,
             method: 'POST',
-            success: function (data) {
-                $('body').trigger('cart:update', data);
-                changeClassName(isShippingProtection)
+            success: function () {
                 window.location.reload();
                 $.spinner().stop();
             },
@@ -203,7 +143,7 @@ function initCartOffers() {
         return;
     }
 
-    doesShippingOfferExists();
+    getAndProcessExtendShippingProtectionConfig();
 
     var createShippingQuotes = window.EXT_CREATE_SP_QUOTES;
 
@@ -214,7 +154,20 @@ function initCartOffers() {
             success: function (data) {
                 var shippingOffersItem = data.cartItems;
 
-                var isShippingProtectionInCart = checkTheShippingAvailibility();
+                var attachBehavior = data.attachBehavior;
+
+                var isShippingProtectionInCart;
+                var isExtendShippingProtectionAdded = data.isExtendShippingProtectionAdded;
+                var isExtendShippingProtectionRemoved = data.isExtendShippingProtectionRemoved;
+
+                if (attachBehavior === 'OPT_IN' && !isExtendShippingProtectionAdded && !isExtendShippingProtectionRemoved) {
+                    isShippingProtectionInCart = true;
+                    addShippingProtection();
+                } else {
+                    isShippingProtectionInCart = false;
+                }
+
+                isShippingProtectionInCart = isExtendShippingProtectionAdded || isShippingProtectionInCart;
 
                 renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart);
             },

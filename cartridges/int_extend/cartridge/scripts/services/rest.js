@@ -147,7 +147,13 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             break;
 
-        case 'shippingOffers':
+        case 'shippingOffersConfig':
+            configObj.endpoint = 'shipping-offers/config?storeId=' + STORE_ID;
+            configObj.method = 'GET';
+            configObj.API_VERSION = '2022-02-01';
+            break;
+
+        case 'shippingOffersQuotes':
             configObj.endpoint = 'shipping-offers/quotes';
             configObj.method = 'POST';
             configObj.API_VERSION = '2022-02-01';
