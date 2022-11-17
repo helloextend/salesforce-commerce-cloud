@@ -1,18 +1,18 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable radix */
 /** This helper implements the logic of adding a new line item to the cart and processing it  */
 
 /* eslint-disable no-useless-concat */
 
 'use strict';
 
-var Transaction = require('dw/system/Transaction');
-var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
-
 /**
- *
+ * Set the quantity
  * @param {string} currentWarrantyLi - current warranty list
  * @param {Object} form - form
  */
 function updateExtendWarranty(currentWarrantyLi, form) {
+    var Transaction = require('dw/system/Transaction');
     var quantityInCart = currentWarrantyLi.getQuantity();
 
     Transaction.wrap(function () {
@@ -22,12 +22,14 @@ function updateExtendWarranty(currentWarrantyLi, form) {
 
 /**
  * Handle Extend add to cart
- * @param {dw.order.Basket} currentBasket - current basket
- * @param {dw.catalog.Product} product - product
- * @param {dw.order.ProductLineItem} parentLineItem - parent line item
- * @param {Object} form - form
+ * @param {Object} currentBasket - current basket
+ * @param {Object} product - current product
+ * @param {Object} parentLineItem - parrent line item
+ * @param {Object} form - info about the extension (id etc.)
  */
 function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
+    var Transaction = require('dw/system/Transaction');
+    var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
     var warrantyLi;
 
     if (!currentBasket) {
@@ -48,16 +50,13 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
 
     // Configure the Extend ProductLineItem
     Transaction.wrap(function () {
-        warrantyLi.setProductName('Extend Protection Plan' + ' for ' + form.productName);
+        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + parentLineItem.productName);
         warrantyLi.setManufacturerSKU(form.extendPlanId);
         warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
         warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
-        warrantyLi.custom.isWarranty = true;
-        if (form.leadToken) {
-            warrantyLi.custom.leadExtendId = form.extendPlanId;
-            warrantyLi.custom.leadQuantuty = +form.quantity;
-            warrantyLi.custom.postPurchaseLeadToken = form.leadToken;
-        }
+        warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
+        warrantyLi.custom.persistentUUID = warrantyLi.UUID;
+        parentLineItem.custom.persistentUUID = parentLineItem.UUID;
     });
 }
 
