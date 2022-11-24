@@ -10,17 +10,6 @@ var Extend = window.Extend || undefined;
 // EXTEND SHIPPING PROTECTION
 
 /**
- * Extend config is initialized
- */
-function initExtend() {
-    $(document).ready(function () {
-        var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
-        var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
-        Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
-    });
-}
-
-/**
  * Get and process extend shipping protection config
  */
 function getAndProcessExtendShippingProtectionConfig() {
@@ -43,20 +32,21 @@ function removeShippingProtection() {
     var removeShippingProtectionUrl = window.EXT_SP_REMOVEFROMCART;
 
     if (removeShippingProtectionUrl) {
-        $.spinner().start();
-
         $.ajax({
             url: removeShippingProtectionUrl,
-            type: 'get',
-            dataType: 'json',
-            success: function (data) {
-                // $('body').trigger('cart:update', data);
-                window.location.reload();
+            type: 'POST',
+            success: function () {
+                $.spinner().start();
+                setTimeout(function () {
+                    window.location.reload();
+                }, 500)
                 $.spinner().stop();
             },
             error: function () {
                 console.log('Error occurred: Shipping protection has not been deleted');
-                window.location.reload();
+                setTimeout(function () {
+                    window.location.reload();
+                }, 500);
                 $.spinner().stop();
             }
         });
@@ -70,13 +60,14 @@ function addShippingProtection() {
     var addShippingProtectionUrl = window.EXT_SP_ADDTOCART;
 
     if (addShippingProtectionUrl) {
-        $.spinner().start();
-
         $.ajax({
             url: addShippingProtectionUrl,
-            method: 'POST',
+            type: 'POST',
             success: function () {
-                window.location.reload();
+                $.spinner().start();
+                setTimeout(function () {
+                    window.location.reload();
+                }, 500);
                 $.spinner().stop();
             },
             error: function () {
@@ -136,9 +127,6 @@ function renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart) {
  * Init cart shipping protection
  */
 function initCartOffers() {
-
-    initExtend();
-
     if (window.EXT_IS_CONTRACTS_API) {
         return;
     }
@@ -157,17 +145,20 @@ function initCartOffers() {
                 var attachBehavior = data.attachBehavior;
 
                 var isShippingProtectionInCart;
+                var isExtendShippingProtectionAttend = data.isExtendShippingProtectionAttend;
                 var isExtendShippingProtectionAdded = data.isExtendShippingProtectionAdded;
-                var isExtendShippingProtectionRemoved = data.isExtendShippingProtectionRemoved;
+                var isExtendShippingProtectionRemoved = data.isExtendShippingProtectionRemoved
 
-                if (attachBehavior === 'OPT_IN' && !isExtendShippingProtectionAdded && !isExtendShippingProtectionRemoved) {
+                if (attachBehavior === 'OPT_OUT' && !isExtendShippingProtectionAttend && !isExtendShippingProtectionRemoved) {
                     isShippingProtectionInCart = true;
                     addShippingProtection();
+                } else if (isExtendShippingProtectionAdded) {
+                    isShippingProtectionInCart = true;
+                } else if (isExtendShippingProtectionRemoved) {
+                    isShippingProtectionInCart = false;
                 } else {
                     isShippingProtectionInCart = false;
                 }
-
-                isShippingProtectionInCart = isExtendShippingProtectionAdded || isShippingProtectionInCart;
 
                 renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart);
             },

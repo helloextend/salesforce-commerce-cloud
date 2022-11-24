@@ -51,7 +51,9 @@ function processExtendShippingProtectionConfig(cart, attachBehavior) {
  */
 function processOptOutAttachBehavior(cart) {
     try {
-        createOrUpdateExtendShippingProtectionQuote(cart, params, Product);
+        if (!currentBasket.custom.isExtendShippingProtectionRemoved) {
+            createOrUpdateExtendShippingProtectionQuote(cart, params, Product);
+        }
     } catch (error) {
         logger.error('Could not to process OPT_OUT extend shipping protection attachBehavior. {0}', error);
     }
@@ -83,18 +85,22 @@ function getProductToCreateQuotes(currentBasket) {
  * @param {Object} currentBasket - current Basket
  * @returns {boolean} is ESP in the cart
  */
-function checkingForESP(currentBasket) {
+function isExtendShippingProtectionAttend(currentBasket) {
     var isESPinCart = false;
 
     if (!currentBasket) {
         return;
     }
 
-    var allLineItems = currentBasket.getAllProductLineItems();
-    collections.forEach(allLineItems, function (productLineItem) {
-        if (productLineItem.custom.isExtendShippingProtection) {
-            isESPinCart = true;
-        }
+    Transaction.wrap(function () {
+        var allLineItems = currentBasket.getAllProductLineItems();
+        collections.forEach(allLineItems, function (productLineItem) {
+            if (productLineItem.custom.isExtendShippingProtection) {
+                currentBasket.custom.isExtendShippingProtectionAdded = true;
+                currentBasket.custom.isExtendShippingProtectionRemoved = false;
+                isESPinCart = true;
+            }
+        });
     });
 
     return isESPinCart;
@@ -209,7 +215,7 @@ function createOrUpdateExtendShippingProtectionQuote(cart, params, Product) {
         var currentBasket = cart.object;
         var storeID = Site.getCurrent().getCustomPreferenceValue('extendStoreID');
     
-        var isExtendShippingProtectionAdded = checkingForESP(currentBasket);
+        var isExtendShippingProtectionAdded = isExtendShippingProtectionAttend(currentBasket);
 
         if (!Product) {
             var Product = app.getModel('Product');
@@ -253,18 +259,19 @@ function createShippingProtectionContractLine(order) {
         }
     });
 
-    var extendShippingQuoteId = extendShippingProtectionLineItem.custom.extendShippingQuoteId;
+    var isExtendShippingProtection = Site.getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+    if (!extendShippingProtectionLineItem || !isExtendShippingProtection) {
+        return;
+    }
 
     var shippingProtectionLineItem = {};
     var shipmentInfo = [];
 
     shippingProtectionLineItem.type = 'shipments';
 
-    var isExtendShippingProtection = Site.getCustomPreferenceValue('extendShippingProtectionSwitch');
-
-    if (isExtendShippingProtection) {
-        shippingProtectionLineItem.quoteId = extendShippingQuoteId;
-    }
+    var extendShippingQuoteId = extendShippingProtectionLineItem.custom.extendShippingQuoteId;
+    shippingProtectionLineItem.quoteId = extendShippingQuoteId;
 
     shippingProtectionLineItem.shipmentInfo = [];
 
@@ -272,9 +279,9 @@ function createShippingProtectionContractLine(order) {
 }
 
 module.exports = {
+    isExtendShippingProtectionAttend: isExtendShippingProtectionAttend,
     processExtendShippingProtectionConfig: processExtendShippingProtectionConfig,
     createOrUpdateExtendShippingProtectionQuote: createOrUpdateExtendShippingProtectionQuote,
-    checkingForESP: checkingForESP,
     getProductToCreateQuotes: getProductToCreateQuotes,
     createShippingProtectionContractLine: createShippingProtectionContractLine
 };
