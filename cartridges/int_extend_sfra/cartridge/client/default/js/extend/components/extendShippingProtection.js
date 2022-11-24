@@ -10,6 +10,17 @@ var Extend = window.Extend || undefined;
 // EXTEND SHIPPING PROTECTION
 
 /**
+ * Extend config is initialized
+ */
+function initExtend() {
+    $(document).ready(function () {
+        var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
+        var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
+        Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+    });
+}
+
+/**
  * Get and process extend shipping protection config
  */
 function getAndProcessExtendShippingProtectionConfig() {
@@ -130,6 +141,8 @@ function initCartOffers() {
     if (window.EXT_IS_CONTRACTS_API) {
         return;
     }
+
+    initExtend();
 
     getAndProcessExtendShippingProtectionConfig();
 
