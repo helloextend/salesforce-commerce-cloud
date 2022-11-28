@@ -74,8 +74,6 @@ function getConfig() {
         } catch (error) {
             logger.error('Failed to receive Extend Shipping Protection config. {0}', error);
         }
-
-        var testVariable = null;
     }
 
     return;
@@ -114,6 +112,7 @@ function shippingProtectionCreateQuotes() {
 
         var attachBehavior = currentBasket.custom.extendShippingProtectionAttachBehaviour;
 
+        var isExtendShippingProtectionAttend = extendShippingProtectionHelpers.isExtendShippingProtectionAttend(currentBasket);
         var isExtendShippingProtectionAdded = currentBasket.custom.isExtendShippingProtectionAdded;
         var isExtendShippingProtectionRemoved = currentBasket.custom.isExtendShippingProtectionRemoved;
 
@@ -131,6 +130,7 @@ function shippingProtectionCreateQuotes() {
         response.renderJSON({
             cartItems: cartItems,
             attachBehavior: attachBehavior,
+            isExtendShippingProtectionAttend: isExtendShippingProtectionAttend,
             isExtendShippingProtectionAdded: isExtendShippingProtectionAdded,
             isExtendShippingProtectionRemoved: isExtendShippingProtectionRemoved,
             cart: basket
