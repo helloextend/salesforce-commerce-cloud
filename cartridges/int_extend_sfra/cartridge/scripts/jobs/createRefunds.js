@@ -35,6 +35,7 @@ exports.create = function () {
 
     while (canceledOrders.hasNext()) {
         var currentOrder = canceledOrders.next();
+        var shippingStatus = currentOrder.shippingStatus.value;
 
         for (var i = 0; i < currentOrder.productLineItems.length; i++) {
             var pLi = currentOrder.productLineItems[i];
@@ -42,6 +43,14 @@ exports.create = function () {
             var statuses;
             var extendRefundStatuses = JSON.parse(pLi.custom.extendRefundStatuses) || {};
             statuses = Object.keys(extendRefundStatuses);
+
+            var productID = pLi.getProductID();
+
+            // shippingStatus === 0 - NOT_SHIPPED
+            // shippingStatus === 2 - SHIPPED
+            if ((shippingStatus === 2) && (productID === 'EXTEND-SHIPPING-PROTECTION')) {
+                continue;
+            }
 
             if (!pLi.custom.extendContractId.length || (!statuses && !statuses.length)) {
                 continue;
