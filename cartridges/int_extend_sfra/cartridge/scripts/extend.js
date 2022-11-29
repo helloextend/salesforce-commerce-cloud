@@ -315,7 +315,9 @@ function getOrdersPayload(paramObj) {
     requestObject.lineItems = getLineItems(order);
 
     var extendShippingProtectionLineItem = extendShippingProtectionHelpers.createShippingProtectionContractLine(order);
-    requestObject.lineItems.push(extendShippingProtectionLineItem);
+    if (extendShippingProtectionLineItem) {
+        requestObject.lineItems.push(extendShippingProtectionLineItem);
+    }
 
     return requestObject;
 }

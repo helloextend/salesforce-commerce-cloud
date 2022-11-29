@@ -163,17 +163,20 @@ function initCartOffers() {
                 var attachBehavior = data.attachBehavior;
 
                 var isShippingProtectionInCart;
+                var isExtendShippingProtectionAttend = data.isExtendShippingProtectionAttend;
                 var isExtendShippingProtectionAdded = data.isExtendShippingProtectionAdded;
-                var isExtendShippingProtectionRemoved = data.isExtendShippingProtectionRemoved;
+                var isExtendShippingProtectionRemoved = data.isExtendShippingProtectionRemoved
 
-                if (attachBehavior === 'OPT_OUT' && !isExtendShippingProtectionAdded && !isExtendShippingProtectionRemoved) {
+                if (attachBehavior === 'OPT_OUT' && !isExtendShippingProtectionAttend && !isExtendShippingProtectionRemoved) {
                     isShippingProtectionInCart = true;
                     addShippingProtection();
+                } else if (isExtendShippingProtectionAdded) {
+                    isShippingProtectionInCart = true;
+                } else if (isExtendShippingProtectionRemoved) {
+                    isShippingProtectionInCart = false;
                 } else {
                     isShippingProtectionInCart = false;
                 }
-
-                isShippingProtectionInCart = isExtendShippingProtectionAdded || isShippingProtectionInCart;
 
                 renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart);
             },

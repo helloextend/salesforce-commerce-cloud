@@ -550,6 +550,7 @@ server.post('ShippingProtectionCreateQuotes', function (req, res, next) {
 
         var attachBehavior = currentBasket.custom.extendShippingProtectionAttachBehaviour;
 
+        var isExtendShippingProtectionAttend = extendShippingProtectionHelpers.isExtendShippingProtectionAttend(currentBasket);
         var isExtendShippingProtectionAdded = currentBasket.custom.isExtendShippingProtectionAdded;
         var isExtendShippingProtectionRemoved = currentBasket.custom.isExtendShippingProtectionRemoved;
 
@@ -566,6 +567,7 @@ server.post('ShippingProtectionCreateQuotes', function (req, res, next) {
             cartItems: cartItems,
             cart: basketModel,
             attachBehavior: attachBehavior,
+            isExtendShippingProtectionAttend: isExtendShippingProtectionAttend,
             isExtendShippingProtectionAdded: isExtendShippingProtectionAdded,
             isExtendShippingProtectionRemoved: isExtendShippingProtectionRemoved
         });
@@ -613,7 +615,7 @@ server.post('AddExtendShippingOffer', function (req, res, next) {
 /**
  * Remove Shipping Protection from the cart
  */
-server.get('RemoveShippingProtection', function (req, res, next) {
+server.post('RemoveShippingProtection', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var Resource = require('dw/web/Resource');
     var Site = require('dw/system/Site');
@@ -641,26 +643,32 @@ server.get('RemoveShippingProtection', function (req, res, next) {
     
         var isShippingProtectionFound = false;
         var shippingProtectionLineItem = null;
-    
+
+        var allLineItems = currentBasket.getAllProductLineItems();
+        collections.forEach(allLineItems, function (productLineItem) {
+            if (productLineItem.custom.isExtendShippingProtection) {
+                isShippingProtectionFound = true;
+                shippingProtectionLineItem = productLineItem;
+            }
+        });
+
         Transaction.wrap(function () {
-            var allLineItems = currentBasket.getAllProductLineItems();
-            collections.forEach(allLineItems, function (productLineItem) {
-                if (productLineItem.custom.isExtendShippingProtection) {
-                    isShippingProtectionFound = true;
-                    shippingProtectionLineItem = productLineItem;
-                }
-            });
-    
             if (!shippingProtectionLineItem) {
                 return;
             } else if (isShippingProtectionFound && shippingProtectionLineItem) {
                 currentBasket.removeProductLineItem(shippingProtectionLineItem);
             }
-    
+
             currentBasket.custom.isExtendShippingProtectionAdded = false;
             currentBasket.custom.isExtendShippingProtectionRemoved = true;
 
             basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+
+        var basketModel = new CartModel(currentBasket);
+
+        res.json({
+            cart: basketModel
         });
     }
 

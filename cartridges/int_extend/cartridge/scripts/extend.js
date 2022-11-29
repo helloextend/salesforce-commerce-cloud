@@ -315,7 +315,9 @@ function getOrdersPayload(paramObj) {
     try {
         requestObject.lineItems = getLineItems(order);
         var extendShippingProtectionLineItem = extendShippingProtectionHelpers.createShippingProtectionContractLine(order);
-        requestObject.lineItems.push(extendShippingProtectionLineItem);
+        if (extendShippingProtectionLineItem) {
+            requestObject.lineItems.push(extendShippingProtectionLineItem);
+        }
     } catch (error) {
         logger.info('Line Items Order Payload Error: {0}', error);
     }
