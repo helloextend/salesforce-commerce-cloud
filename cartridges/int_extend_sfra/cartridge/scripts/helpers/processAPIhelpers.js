@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable new-cap */
 /* eslint-disable no-loop-func */
 /* eslint-disable no-continue */
@@ -240,6 +241,22 @@ function processPostPurchase(ordersLI, apiCurrentLI) {
 }
 
 /**
+ * Get orders payload for specific API version
+ * @param {ArrayList<Product>} order - array of orders
+ */
+function markOrderAsSent(order) {
+    var Transaction = require('dw/system/Transaction');
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    try {
+        Transaction.wrap(function () {
+            order.custom.doesSentToExtend = 'The current order has been sent to the Extend';
+        });
+    } catch (error) {
+        logger.error('The error occurred during the orders processing', error);
+    }
+}
+
+/**
  * Process Orders Response
  * @param {Object} ordersResponse : API response from orders endpoint
  * @param {dw.order.Order} order : API order
@@ -295,5 +312,6 @@ module.exports = {
     getCustomer: getCustomer,
     createContractsCO: createContractsCO,
     createExtendOrderQueue: createExtendOrderQueue,
+    markOrderAsSent: markOrderAsSent,
     processOrdersResponse: processOrdersResponse
 };

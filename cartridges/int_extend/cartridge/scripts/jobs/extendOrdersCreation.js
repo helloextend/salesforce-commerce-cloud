@@ -32,8 +32,9 @@ exports.execute = function () {
         if (!apiResponse.error) {
             extendHelpers.processOrdersResponse(apiResponse, order);
 
-            // Decrement queue
+            // Decrement queue and mark the order as a sent to Extend service
             Transaction.wrap(function () {
+                order.custom.doesSentToExtend = 'The current order has been sent to the Extend';
                 CustomObjectMgr.remove(queueOrder);
             });
         } else {

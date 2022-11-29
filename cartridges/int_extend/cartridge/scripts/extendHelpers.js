@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
@@ -396,6 +397,22 @@ function processPostPurchase(ordersLI, apiCurrentLI) {
 }
 
 /**
+ * Get orders payload for specific API version
+ * @param {ArrayList<Product>} order - array of orders
+ */
+function markOrderAsSent(order) {
+    var Transaction = require('dw/system/Transaction');
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    try {
+        Transaction.wrap(function () {
+            order.custom.doesSentToExtend = 'The current order has been sent to the Extend';
+        });
+    } catch (error) {
+        logger.error('The error occurred during the orders processing', error);
+    }
+}
+
+/**
  * Process Orders Response
  * @param {Object} ordersResponse : API response from orders endpoint
  * @param {dw.order.Order} order : API order
@@ -487,6 +504,7 @@ function addContractToQueue(order) {
             processOrdersResponse(ordersResponse, order);
         }
         extend.ordersAPIcreateLeadContractId({ order: order, customer: customer });
+        markOrderAsSent(order);
     } else if (apiMethod === 'ordersAPIonSchedule') {
         createExtendOrderQueue(order);
     }
@@ -500,5 +518,6 @@ module.exports = {
     addContractToQueue: addContractToQueue,
     validateOffer: validateOffer,
     getCustomer: getCustomer,
+    markOrderAsSent: markOrderAsSent,
     processOrdersResponse: processOrdersResponse
 };

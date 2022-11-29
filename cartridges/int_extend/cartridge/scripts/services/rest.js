@@ -139,11 +139,11 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.mock = mocks.ordersResponseMock;
             break;
 
-        case 'ordersBatch':
-            configObj.endpoint = 'orders/batch';
+        case 'historicalOrdersBatch':
+            configObj.endpoint = 'orders/batch?historical=true';
             configObj.method = 'POST';
             configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
+            configObj.API_VERSION = '2022-02-01';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             break;
 
