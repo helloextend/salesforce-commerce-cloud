@@ -87,7 +87,9 @@ exports.create = function () {
 
                 var response = null;
 
-                if (apiMethod === 'ordersAPI') {
+                // Determine whether API method is Orders API
+                var orderApiMethod = (apiMethod === 'ordersAPIonOrderCreate') || (apiMethod === 'ordersAPIonSchedule');
+                if (orderApiMethod) {
                     paramObj.isOrdersApi = true;
                     response = extend.createOrderApiRefunds(paramObj);
                 } else {
@@ -100,7 +102,7 @@ exports.create = function () {
                     continue;
                 }
 
-                if (apiMethod !== 'ordersAPI') {
+                if (!orderApiMethod) {
                     if (response.refundAmount.amount === 0) {
                         logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
                         extendRefundStatuses[extendContractId] = refundStatus.REJECT;
