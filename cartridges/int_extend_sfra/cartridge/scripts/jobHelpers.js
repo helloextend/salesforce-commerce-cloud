@@ -124,7 +124,10 @@ function getRefundStatus(order, apiMethod) {
     } else if (denied) {
         return refundStatus.refund_denied;
     }
-    return (apiMethod === 'ordersAPIonOrderCreate') ? refundStatus.refund_paid : refundStatus.SUCCESS;
+
+    // Determine whether API method is Orders API
+    var orderApiMethod = (apiMethod === 'ordersAPIonOrderCreate') || (apiMethod === 'ordersAPIonSchedule');
+    return orderApiMethod ? refundStatus.refund_paid : refundStatus.SUCCESS;
 }
 
 module.exports = {
