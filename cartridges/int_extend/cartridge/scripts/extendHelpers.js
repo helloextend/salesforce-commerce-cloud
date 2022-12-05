@@ -416,7 +416,7 @@ function processOrdersResponse(ordersResponse, order) {
         var matchedLI = null;
 
         if (apiCurrentLI.plan && !apiCurrentLI.quoteId) {
-            matchedLI = processContracts(apiPid, ordersLI, apiCurrentLI);
+            matchedLI = processContracts(apiPid, ordersLI, apiCurrentLI) || processPostPurchase(ordersLI, apiCurrentLI);
         } else if (apiCurrentLI.leadToken && (apiCurrentLI.type === 'lead')) {
             matchedLI = processLeadToken(apiPid, ordersLI);
         } else if (apiCurrentLI.quoteId && (apiCurrentLI.type === 'shipments')) {
