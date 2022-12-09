@@ -50,13 +50,20 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
 
     // Configure the Extend ProductLineItem
     Transaction.wrap(function () {
-        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + parentLineItem.productName);
+        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + form.productName);
         warrantyLi.setManufacturerSKU(form.extendPlanId);
         warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
         warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
-        warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
         warrantyLi.custom.persistentUUID = warrantyLi.UUID;
-        parentLineItem.custom.persistentUUID = parentLineItem.UUID;
+        warrantyLi.custom.isWarranty = true;
+        if (parentLineItem) {
+            warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
+            parentLineItem.custom.persistentUUID = parentLineItem.UUID;
+        } else if (form.leadToken) {
+            warrantyLi.custom.leadExtendId = form.extendPlanId;
+            warrantyLi.custom.leadQuantuty = +form.quantity;
+            warrantyLi.custom.postPurchaseLeadToken = form.leadToken;
+        }
     });
 }
 

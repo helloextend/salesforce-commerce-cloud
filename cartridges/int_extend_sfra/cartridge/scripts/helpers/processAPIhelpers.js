@@ -273,7 +273,7 @@ function processOrdersResponse(ordersResponse, order) {
 
         Transaction.wrap(function () {
             var extendContractIds = ArrayList(matchedLI.custom.extendContractId || []);
-            var leadContractId = ArrayList(matchedLI.custom.leadContractId || []);
+            var leadToken = ArrayList(matchedLI.custom.leadToken || []);
             if (apiCurrentLI.contractId) {
                 extendContractIds.add(apiCurrentLI.contractId);
                 matchedLI.custom.extendContractId = extendContractIds;
@@ -281,9 +281,7 @@ function processOrdersResponse(ordersResponse, order) {
                 extendContractIds.add(apiCurrentLI.contractId);
                 matchedLI.custom.extendContractId = extendContractIds;
             } else if (apiCurrentLI.leadToken && (apiCurrentLI.type === 'lead')) {
-                leadContractId.add(apiCurrentLI.id);
-                matchedLI.custom.leadContractId = leadContractId;
-                matchedLI.custom.leadToken = apiCurrentLI.leadToken;
+                matchedLI.custom.leadToken = leadToken;
             } else if (apiCurrentLI.quoteId && (apiCurrentLI.type === 'shipments')) {
                 matchedLI.custom.extendContractId = apiCurrentLI.contractId;
             }
