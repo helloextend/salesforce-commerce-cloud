@@ -16,8 +16,11 @@ var Site = require('dw/system/Site').getCurrent();
  */
 exports.execute = function () {
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
-    if (apiMethod !== 'ordersAPIonOrderCreate') {
-        logger.info('Current API version should be orders API on order create. Current version is {0}', apiMethod);
+
+    // Determine whether API method is Orders API
+    var orderApiMethod = (apiMethod === 'ordersAPIonOrderCreate') || (apiMethod === 'ordersAPIonSchedule');
+    if (!orderApiMethod) {
+        logger.info('Current API version should be orders API. Current version is {0}', apiMethod);
     }
 
     // Current time
@@ -30,7 +33,7 @@ exports.execute = function () {
     var orderExtendStatus = 'The current order has been sent to the Extend';
 
     var historicalOrder = OrderMgr.searchOrders(
-        'creationDate <= {0} AND creationDate >= {1} AND custom.doesSentToExtend !={2}',
+        'creationDate <= {0} AND creationDate >= {1} AND custom.wasSentToExtend !={2}',
         'creationDate desc',
         currentTime,
         startingDate,

@@ -34,7 +34,7 @@ exports.execute = function () {
 
             // Decrement queue and mark the order as a sent to Extend service
             Transaction.wrap(function () {
-                order.custom.doesSentToExtend = 'The current order has been sent to the Extend';
+                order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
                 CustomObjectMgr.remove(queueOrder);
             });
         } else {

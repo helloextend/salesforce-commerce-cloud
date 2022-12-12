@@ -249,7 +249,7 @@ function markOrderAsSent(order) {
     var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     try {
         Transaction.wrap(function () {
-            order.custom.doesSentToExtend = 'The current order has been sent to the Extend';
+            order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
         });
     } catch (error) {
         logger.error('The error occurred during the orders processing', error);
@@ -277,7 +277,7 @@ function processOrdersResponse(ordersResponse, order) {
         var matchedLI = null;
 
         if (apiCurrentLI.plan && !apiCurrentLI.quoteId) {
-            matchedLI = processContracts(apiPid, ordersLI, apiCurrentLI);
+            matchedLI = processContracts(apiPid, ordersLI, apiCurrentLI) || processPostPurchase(ordersLI, apiCurrentLI);
         } else if (apiCurrentLI.leadToken && (apiCurrentLI.type === 'lead')) {
             matchedLI = processLeadToken(apiPid, ordersLI);
         } else if (apiCurrentLI.quoteId && (apiCurrentLI.type === 'shipments')) {
