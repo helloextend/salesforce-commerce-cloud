@@ -157,7 +157,7 @@ function moneyToCents(value) {
  * @param {ProductLineItem} pLi : API ProductLineItem object
  * @return {Object} object that represents product
  */
-function getSFCCProduct(pLi, UUID) {
+function getSFCCProduct(pLi) {
     var dividedPurchasePrice = pLi.adjustedNetPrice.divide(pLi.quantityValue);
     var dividedListPrice = pLi.price.divide(pLi.quantityValue);
 
@@ -169,24 +169,6 @@ function getSFCCProduct(pLi, UUID) {
     };
 
     return obj;
-}
-
-/**
- * Get Extend plan object
- * @param {ProductLineItem} pLi : API ProductLineItem object
- * @return {string} stringified object
- */
-function getExtendPlan(pLi, order) {
-    var productLineItems = order.productLineItems;
-    var planObj = {};
-    for (var i = 0; i < productLineItems.length; i++) {
-        if (pLi.custom.persistentUUID === productLineItems[i].custom.parentLineItemUUID) {
-            var warrantyItem = productLineItems[i];
-            planObj.purchasePrice = Math.ceil(moneyToCents(warrantyItem.adjustedNetPrice.divide(warrantyItem.quantityValue)));
-            planObj.id = warrantyItem.getManufacturerSKU();
-        }
-    }
-    return planObj;
 }
 
 /**
@@ -281,35 +263,6 @@ function getLineItems(order) {
     }
     return lineItems;
 }
-/**
- * Get Order`s line items objects
- * @param {dw.order.Order} order : API order
- * @return {Array<Object>} array of line items objects
- */
-function getOrdersBatchLineItems(order) {
-    var lineItems = [];
-    for (var i = 0; i < order.productLineItems.length; i++) {
-        var pLi = order.productLineItems[i];
-        if (!pLi.custom.parentLineItemUUID) {
-            var pliObj = {};
-            pliObj.warrantable = false;
-            pliObj.quantity = pLi.quantityValue;
-            pliObj.product = getSFCCProduct(pLi);
-
-            if (pLi.custom.persistentUUID) {
-                pliObj.warrantable = true;
-                var plan = getExtendPlan(pLi, order);
-                if (Object.keys(plan).length) {
-                    pliObj.plan = plan;
-                }
-            } else if (pLi.custom.isWarrantable) {
-                pliObj.warrantable = true;
-            }
-            lineItems.push(pliObj);
-        }
-    }
-    return lineItems;
-}
 
 /**
  * Get customer object
@@ -336,7 +289,6 @@ function getCustomer(customer, address) {
     customerObj.shippingAddress = shippingAddress;
     return customerObj;
 }
-
 
 /**
  * Get Orders Create endpoint Payload
@@ -367,55 +319,6 @@ function getOrdersPayload(paramObj) {
         requestObject.lineItems.push(extendShippingProtectionLineItem);
     }
 
-    return requestObject;
-}
-
-/**
- * Get orders payload for specific API version
- * @param {ArrayList<Product>} orderBatch - array of orders
- * @returns {Array} requestObject - payload object for request
- */
-function sendOrdersBatch(orderBatch) {
-    var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var requestObject = [];
-
-    for (var i = 0; i < orderBatch.length; i++) {
-        var currentOrder = orderBatch[i];
-        try {
-            var orderObj = {};
-
-            orderObj.storeId = STORE_ID;
-            orderObj.storeName = 'SFCC';
-
-            var billingAddress = currentOrder.getBillingAddress();
-
-            var customer = {
-                billingAddress: {
-                    address1: billingAddress.getAddress1(),
-                    address2: billingAddress.getAddress2(),
-                    city: billingAddress.getCity(),
-                    countryCode: billingAddress.getCountryCode().toString(),
-                    postalCode: billingAddress.getPostalCode(),
-                    province: billingAddress.getStateCode()
-                },
-                email: currentOrder.customerEmail,
-                name: currentOrder.customerName
-            };
-
-            orderObj.currency = currentOrder.getCurrencyCode();
-            orderObj.customer = customer;
-
-            orderObj.isTest = true;
-
-            orderObj.total = Math.ceil(moneyToCents(currentOrder.getTotalGrossPrice()));
-            orderObj.transactionId = currentOrder.orderNo;
-            orderObj.lineItems = getOrdersBatchLineItems(currentOrder);
-
-            requestObject.push(orderObj);
-        } catch (error) {
-            logger.error('Request object could not be created. {0}', error);
-        }
-    }
     return requestObject;
 }
 
@@ -533,10 +436,14 @@ function exportProducts(productBatch) {
  * @param {Array<Product>} orderBatch - array of products
  * @returns {Object} - response object
  */
-function sendOrders(orderBatch) {
-    var requestObject = sendOrdersBatch(orderBatch);
-    var endpointName = 'ordersBatch';
+function sendHistoricalOrders(orderBatch) {
+    var historicalOrdersJobHelpers = require('~/cartridge/scripts/jobs/helpers/historicalOrdersJobHelpers');
+    var requestObject = historicalOrdersJobHelpers.sendHistoricalOrdersBatch(orderBatch);
+    var endpointName = 'historicalOrdersBatch';
     var response = webService.makeServiceCall(endpointName, requestObject);
+    if (response.length) {
+        historicalOrdersJobHelpers.markOrdersAsSent(orderBatch);
+    }
     return response;
 }
 
@@ -604,24 +511,33 @@ function createOrders(paramObj) {
  * @param {Object} paramObj - object with id of contract and commit type
  */
 function contractsAPIcreateLeadContractId(paramObj) {
+    var Transaction = require('dw/system/Transaction');
+    var processAPIhelpers = require('~/cartridge/scripts/helpers/processAPIhelpers');
     var order = paramObj.order;
     var endpointName = 'contracts';
 
     var requestObject = null;
     var leadsResponse = null;
 
-    var ordersLineItems = order.getProductLineItems();
-    for (var i = 0; i < ordersLineItems.length; i++) {
-        var lineItem = ordersLineItems[i];
-        if (lineItem.custom.postPurchaseLeadToken) {
-            for (var k = 0; k < lineItem.quantityValue; k++) {
-                requestObject = contractsAPIgetLeadsOfferPayload(paramObj, lineItem);
-                leadsResponse = webService.makeServiceCall(endpointName, requestObject);
-                if (leadsResponse) {
-                    contractsAPIprocessLeadsResponse(leadsResponse, order, lineItem);
+    try {
+        Transaction.wrap(function () {
+            var ordersLineItems = order.getProductLineItems();
+            for (var i = 0; i < ordersLineItems.length; i++) {
+                var lineItem = ordersLineItems[i];
+                if (lineItem.custom.postPurchaseLeadToken) {
+                    for (var k = 0; k < lineItem.quantityValue; k++) {
+                        requestObject = contractsAPIgetLeadsOfferPayload(paramObj, lineItem);
+                        leadsResponse = webService.makeServiceCall(endpointName, requestObject);
+                        if (leadsResponse) {
+                            contractsAPIprocessLeadsResponse(leadsResponse, order, lineItem);
+                            processAPIhelpers.markOrderAsSent(order);
+                        }
+                    }
                 }
             }
-        }
+        });
+    } catch (error) {
+        logger.error('The error occurred during the order processing', error);
     }
 }
 
@@ -708,10 +624,12 @@ function createsShippingOfferQutes(storeID, products) {
 }
 
 module.exports = {
+    moneyToCents: moneyToCents,
+    getSFCCProduct: getSFCCProduct,
     exportProducts: exportProducts,
     createContracts: createContracts,
     createRefund: createRefund,
-    sendOrders: sendOrders,
+    sendHistoricalOrders: sendHistoricalOrders,
     createOrderApiRefunds: createOrderApiRefunds,
     getOffer: getOffer,
     createOrders: createOrders,

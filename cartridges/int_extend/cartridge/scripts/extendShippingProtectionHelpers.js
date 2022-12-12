@@ -15,9 +15,6 @@ var Transaction = require('dw/system/Transaction');
 var collections = require('*/cartridge/scripts/util/collections');
 var ProductMgr = require('dw/catalog/ProductMgr');
 
-/* Script Modules */
-var app = require('*/cartridge/scripts/app');
-
 /**
  * Converted cents to dollars
  * @param {number} productValue - product price value via cents
@@ -208,6 +205,9 @@ function updateShippingProtectionPriceValue(cart, params, storeID, shippingProte
  * @param {Object} currentBasket - current Basket
  */
 function createOrUpdateExtendShippingProtectionQuote(cart, params, Product) {
+    /* Script Modules */
+    var app = require('*/cartridge/scripts/app');
+
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
     var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
 
