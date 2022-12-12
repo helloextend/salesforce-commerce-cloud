@@ -42,6 +42,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
         if (!empty(ordersResponse.lineItems)) {
             processAPIhelpers.processOrdersResponse(ordersResponse, order);
         }
+        processAPIhelpers.markOrderAsSent(order);
         extend.ordersAPIcreateLeadContractId({ order: order, customer: customer });
     } else if (apiMethod === 'ordersAPIonSchedule') {
         processAPIhelpers.createExtendOrderQueue(order, viewData.orderID);
