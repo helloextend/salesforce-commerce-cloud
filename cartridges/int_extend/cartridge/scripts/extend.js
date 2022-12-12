@@ -297,7 +297,7 @@ function getCustomer(customer, address) {
  */
 function getOrdersPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippingProtectionHelpers');
+    var extendShippingProtectionHelpers = require('~/cartridge/scripts/extendShippingProtectionHelpers');
     var order = paramObj.order;
     var customer = JSON.parse(paramObj.customer);
     var defaultShipment = order.getDefaultShipment();
