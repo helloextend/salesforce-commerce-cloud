@@ -48,9 +48,11 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
         );
     });
 
+    var warrantyName = parentLineItem.getProductName() || form.productName;
+
     // Configure the Extend ProductLineItem
     Transaction.wrap(function () {
-        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + form.productName);
+        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + warrantyName);
         warrantyLi.setManufacturerSKU(form.extendPlanId);
         warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
         warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
