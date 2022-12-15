@@ -551,6 +551,12 @@ server.post('ShippingProtectionCreateQuotes', function (req, res, next) {
         var attachBehavior = currentBasket.custom.extendShippingProtectionAttachBehaviour;
 
         var isExtendShippingProtectionAttend = extendShippingProtectionHelpers.isExtendShippingProtectionAttend(currentBasket);
+
+        // Determine whether the product is lead
+        var isLead = extendShippingProtectionHelpers.isProductLineItemLead(currentBasket);
+
+        isExtendShippingProtectionAttend = isExtendShippingProtectionAttend || isLead;
+
         var isExtendShippingProtectionAdded = currentBasket.custom.isExtendShippingProtectionAdded;
         var isExtendShippingProtectionRemoved = currentBasket.custom.isExtendShippingProtectionRemoved;
 
