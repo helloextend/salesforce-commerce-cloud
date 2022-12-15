@@ -141,6 +141,22 @@ function addExtendShippingProtectionToCart(cart, params, shippingProtectionProdu
 }
 
 /**
+ * Determine wtether the product line item is Lead
+ * @param {Object} currentBasket - current basket
+ */
+function isProductLineItemLead(currentBasket) {
+    var isLead = false;
+    var allLineItems = currentBasket.getAllProductLineItems();
+    collections.forEach(allLineItems, function (productLineItem) {
+        if (productLineItem.custom.leadExtendId) {
+            isLead = true;
+        }
+    });
+
+    return isLead;
+}
+
+/**
  * get ESP Price Value
  * @param {Object} currentBasket - current basket
  * @param {string} storeID - storeID
@@ -280,6 +296,7 @@ function createShippingProtectionContractLine(order) {
 
 module.exports = {
     isExtendShippingProtectionAttend: isExtendShippingProtectionAttend,
+    isProductLineItemLead: isProductLineItemLead,
     processExtendShippingProtectionConfig: processExtendShippingProtectionConfig,
     createOrUpdateExtendShippingProtectionQuote: createOrUpdateExtendShippingProtectionQuote,
     getProductToCreateQuotes: getProductToCreateQuotes,
