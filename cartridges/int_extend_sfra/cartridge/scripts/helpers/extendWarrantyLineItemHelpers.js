@@ -48,7 +48,7 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
         );
     });
 
-    var warrantyName = parentLineItem.getProductName() || form.productName;
+    var warrantyName = parentLineItem ? parentLineItem.getProductName() : form.productName;
 
     // Configure the Extend ProductLineItem
     Transaction.wrap(function () {
