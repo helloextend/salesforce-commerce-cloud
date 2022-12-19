@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-continue */
 'use strict';
@@ -17,9 +18,24 @@ var ShippingLocation = require('dw/order/ShippingLocation');
 var TaxMgr = require('dw/order/TaxMgr');
 var Logger = require('dw/system/Logger');
 var Status = require('dw/system/Status');
+var Site = require('dw/system/Site');
+var Transaction = require('dw/system/Transaction');
 
 
 var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
+var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippingProtectionHelpers');
+
+/* Check the current API version */
+var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+
+/* Check does Extend shipping protection switche status*/
+var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+/* Script Modules */
+var app = require('*/cartridge/scripts/app');
+var cart = app.getModel('Cart').goc();
+var collections = require('*/cartridge/scripts/util/collections');
+
 /**
  * @function calculate
  *
@@ -100,11 +116,53 @@ exports.calculate = function (basket) {
     basket.updateTotals();
 
     // ===================================================
+    // ===== UPDATES EXTEND SHIPPING PROTECTION VALUE ====
+    // ===================================================
+    updateExtendShippingProtectionValue(cart);
+
+    // ===================================================
+    // =====   CALCULATE PRODUCT LINE ITEM PRICES    =====
+    // ===================================================
+
+    calculateProductPrices(basket);
+
+    // ===================================================
+    // =====         RECALCULATE BASKET TOTALS       =====
+    // ===================================================
+    basket.updateTotals();
+
+    // ===================================================
     // =====            DONE                         =====
     // ===================================================
 
     return new Status(Status.OK);
 };
+
+/**
+ * Updates Extend Shipping Protection Price Value
+ * @param {Object} cart - cart object
+ */
+function updateExtendShippingProtectionValue(cart) {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        var isShippingProtectionFound = false;
+        var shippingProtectionLineItem = null;
+
+        var allLineItems = cart.object.getAllProductLineItems();
+        collections.forEach(allLineItems, function (productLineItem) {
+            if (productLineItem.custom.isExtendShippingProtection) {
+                isShippingProtectionFound = true;
+                shippingProtectionLineItem = productLineItem;
+            }
+        });
+
+        if (isShippingProtectionFound && shippingProtectionLineItem) {
+            extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(cart);
+            Transaction.wrap(function () {
+                shippingProtectionLineItem.custom.isESPupdated = true;
+            });
+        }
+    }
+}
 
 /**
  * @function calculateProductPrices

@@ -8,6 +8,12 @@
     var EXT_CART_UPSELL = "${URLUtils.https('Extend-IsEligibleForWarranty')}";
     var EXT_CART_ADDTOCART = "${URLUtils.https('Extend-AddExtendProduct')}";
     var EXT_ENVIRONMENT = ${dw.system.Site.current.preferences.custom.isExtendProductionMode} ? 'production' : 'demo';
+    var EXT_IS_CONTRACTS_API = ${dw.system.Site.current.preferences.custom.extendAPIMethod.value === 'contractsAPIonSchedule' ? true : false}
+    var EXT_ESP_GET_CONFIG = "${URLUtils.https('ExtendSP-GetConfig')}";
+    var EXT_CREATE_SP_QUOTES = "${URLUtils.https('ExtendSP-ShippingProtectionCreateQuotes')}";
+    var EXT_SP_REMOVEFROMCART = "${URLUtils.https('ExtendSP-RemoveShippingProtection')}";
+    var EXT_SP_ADDTOCART = "${URLUtils.https('ExtendSP-AddExtendShippingOffer')}";
+    var EXT_SP_UPDATE = "${URLUtils.https('ExtendSP-UpdateShippingProtection')}";
 </script>
 <isif condition="${dw.system.Site.current.preferences.custom.extendGlobalSwitch}">
     <script src="${dw.system.Site.current.preferences.custom.extendSDK}"></script>

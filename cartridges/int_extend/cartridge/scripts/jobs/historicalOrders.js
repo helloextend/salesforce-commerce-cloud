@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* global module */
 
 var Status = require('dw/system/Status');
@@ -5,6 +6,7 @@ var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
 var extend = require('~/cartridge/scripts/extend');
 var ArrayList = require('dw/util/ArrayList');
 var jobHelpers = require('~/cartridge/scripts/jobHelpers');
+var historicalOrdersJobHelpers = require('~/cartridge/scripts/jobs/helpers/historicalOrdersJobHelpers');
 var OrderMgr = require('dw/order/OrderMgr');
 var Site = require('dw/system/Site').getCurrent();
 
@@ -14,7 +16,10 @@ var Site = require('dw/system/Site').getCurrent();
  */
 exports.execute = function () {
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
-    if (apiMethod !== 'ordersAPI') {
+
+    // Determine whether API method is Orders API
+    var orderApiMethod = (apiMethod === 'ordersAPIonOrderCreate') || (apiMethod === 'ordersAPIonSchedule');
+    if (!orderApiMethod) {
         logger.info('Current API version should be orders API. Current version is {0}', apiMethod);
     }
 
@@ -25,12 +30,19 @@ exports.execute = function () {
     var startingDate = new Date();
     startingDate.setFullYear(startingDate.getFullYear() - 2);
 
+    var orderExtendStatus = 'The current order has been sent to the Extend';
+
     var historicalOrder = OrderMgr.searchOrders(
-        'creationDate <= {0} AND creationDate >= {1}',
+        'creationDate <= {0} AND creationDate >= {1} AND custom.wasSentToExtend !={2}',
         'creationDate desc',
         currentTime,
-        startingDate
+        startingDate,
+        orderExtendStatus.trim()
     );
+
+    if (historicalOrder.getCount() === 0) {
+        return new Status(Status.OK, 'OK', 'Production orders have already been integrated to Extend. The historical import has been canceled');
+    }
 
     var ordersBatch = new ArrayList();
 
@@ -39,19 +51,30 @@ exports.execute = function () {
     while (historicalOrder.hasNext()) {
         var currentOrder = historicalOrder.next();
 
+        var doesOrderHaveExtensions = historicalOrdersJobHelpers.doesOrderHaveExtensions(currentOrder);
+
+        // In case of the order has any extensions the job should skip that order
+        if (doesOrderHaveExtensions) {
+            continue;
+        }
+
         ordersBatch.push(currentOrder);
+
+        if (!ordersBatch.length) {
+            return new Status(Status.OK, 'OK', 'Production orders have already been integrated to Extend. The historical import has been canceled');
+        }
 
         var orderLogObject = jobHelpers.getOrdersLoggerModel(currentOrder);
         logger.info(JSON.stringify(orderLogObject));
 
         if (ordersBatch.length === 10) {
-            extend.sendOrders(ordersBatch);
+            extend.sendHistoricalOrders(ordersBatch);
             ordersBatch.clear();
         }
     }
 
     if (ordersBatch.length) {
-        extend.sendOrders(ordersBatch);
+        extend.sendHistoricalOrders(ordersBatch);
     }
 
     historicalOrder.close();

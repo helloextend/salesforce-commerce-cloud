@@ -14,60 +14,6 @@ var page = module.superModule;
 server.extend(page);
 
 /**
- *
- * @param {string} currentWarrantyLi - current warranty list
- * @param {Object} form - form
- */
-function updateExtendWarranty(currentWarrantyLi, form) {
-    var Transaction = require('dw/system/Transaction');
-    var quantityInCart = currentWarrantyLi.getQuantity();
-
-    Transaction.wrap(function () {
-        currentWarrantyLi.setQuantityValue(quantityInCart + parseInt(form.quantity, 10));
-    });
-}
-
-/**
- * Handle Extend add to cart
- * @param {dw.order.Basket} currentBasket
- * @param {dw.catalog.Product} product
- * @param {dw.order.ProductLineItem} parentLineItem
- * @param {Object} form
- */
-function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
-    var Transaction = require('dw/system/Transaction');
-    var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
-    var warrantyLi;
-
-    if (!currentBasket) {
-        return;
-    }
-
-    // Add new line item for the Extend warranty
-    Transaction.wrap(function () {
-        warrantyLi = cartHelper.addLineItem(
-            currentBasket,
-            product,
-            parseInt(form.quantity, 10),
-            [],
-            product.getOptionModel(),
-            currentBasket.getDefaultShipment()
-        );
-    });
-
-    // Configure the Extend ProductLineItem
-    Transaction.wrap(function () {
-        warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + parentLineItem.productName);
-        warrantyLi.setManufacturerSKU(form.extendPlanId);
-        warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
-        warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
-        warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
-        warrantyLi.custom.persistentUUID = warrantyLi.UUID;
-        parentLineItem.custom.persistentUUID = parentLineItem.UUID;
-    });
-}
-
-/**
  * Handle Extend products when adding regular product to cart
  */
 server.append('AddProduct', function (req, res, next) {
@@ -75,8 +21,11 @@ server.append('AddProduct', function (req, res, next) {
     var ProductMgr = require('dw/catalog/ProductMgr');
     var CartModel = require('*/cartridge/models/cart');
     var Transaction = require('dw/system/Transaction');
+
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
+    var extendWarrantyLineItemHelpers = require('*/cartridge/scripts/helpers/extendWarrantyLineItemHelpers');
+
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
 
     var form = req.form;
@@ -119,9 +68,9 @@ server.append('AddProduct', function (req, res, next) {
         var quantityTotal = null;
 
         if (currentWarrantyLi) {
-            updateExtendWarranty(currentWarrantyLi, form);
+            extendWarrantyLineItemHelpers.updateExtendWarranty(currentWarrantyLi, form);
         } else {
-            addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
+            extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
         }
 
         quantityTotal = !isWarrantyInCart ? viewData.quantityTotal + parseInt(form.quantity, 10) : viewData.quantityTotal;
@@ -217,8 +166,10 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
     var URLUtils = require('dw/web/URLUtils');
     var Transaction = require('dw/system/Transaction');
     var CartModel = require('*/cartridge/models/cart');
+
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
+    var extendWarrantyLineItemHelpers = require('*/cartridge/scripts/helpers/extendWarrantyLineItemHelpers');
 
     var form = req.form;
     var currentBasket = BasketMgr.getCurrentBasket();
@@ -254,7 +205,7 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
         }
     }
 
-    addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
+    extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
 
     Transaction.wrap(function () {
         basketCalculationHelpers.calculateTotals(currentBasket);
@@ -471,6 +422,262 @@ server.append('UpdateQuantity', function (req, res, next) {
         }
         res.setViewData(viewData);
     }
+    return next();
+});
+
+/**
+ * Update Extend Shipping Protection Value
+ */
+server.append('UpdateQuantity', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Site = require('dw/system/Site');
+    var Transaction = require('dw/system/Transaction');
+    var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+    var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
+
+    var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        var currentBasket = BasketMgr.getCurrentBasket();
+
+        if (!currentBasket) {
+            return next();
+        }
+        extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(currentBasket);
+    
+        Transaction.wrap(function () {
+            basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+    }
+
+    return next();
+});
+
+/**
+ * Get Extend Shipping Protection Config
+ */
+server.get('GetConfig', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Transaction = require('dw/system/Transaction');
+    var Site = require('dw/system/Site');
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var extend = require('~/cartridge/scripts/extend');
+    var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
+
+    var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        var currentBasket = BasketMgr.getCurrentBasket();
+
+        if (!currentBasket) {
+            return next();
+        }
+
+        try {
+            var extendShippingProtectionConfig = extend.getExtendShippingProtectionConfig();
+            var attachBehavior = extendShippingProtectionConfig.config.attachBehavior;
+
+            Transaction.wrap(function () {
+                currentBasket.custom.extendShippingProtectionAttachBehaviour = attachBehavior;
+            });
+
+            extendShippingProtectionHelpers.processExtendShippingProtectionConfig(currentBasket, attachBehavior);
+
+            res.json({
+                attachBehavior: attachBehavior
+            });
+        } catch (error) {
+            logger.error('Failed to receive Extend Shipping Protection config. {0}', error);
+        }
+    }
+
+    return next();
+});
+
+/**
+ * Create Extend Shipping Quotes. Make a call to Shipping API.
+ */
+server.post('ShippingProtectionCreateQuotes', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Transaction = require('dw/system/Transaction');
+    var Site = require('dw/system/Site');
+    var CartModel = require('*/cartridge/models/cart');
+    var collections = require('*/cartridge/scripts/util/collections');
+    var extend = require('~/cartridge/scripts/extend');
+    var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
+
+    var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        var currentBasket = BasketMgr.getCurrentBasket();
+
+        var storeID = Site.getCurrent().getCustomPreferenceValue('extendStoreID');
+    
+        var viewData = res.getViewData();
+    
+        if (viewData.error) {
+            return next();
+        }
+    
+        var products = [];
+    
+        if (currentBasket) {
+            products = extendShippingProtectionHelpers.getProductToCreateQuotes(currentBasket);
+        }
+    
+        var createsShippingOfferQuotes = extend.createsShippingOfferQutes(storeID, products);
+    
+        var cartItems = createsShippingOfferQuotes.items;
+        var shippingOfferQuotes = createsShippingOfferQuotes.response;
+    
+        var basketModel = new CartModel(currentBasket);
+    
+        viewData.cartItems = cartItems;
+        viewData.shippingOfferQuotes = shippingOfferQuotes;
+        viewData.cart = basketModel;
+
+        var shippingProtectionLineItem = null;
+
+        var allLineItems = currentBasket.getAllProductLineItems();
+        collections.forEach(allLineItems, function (productLineItem) {
+            if (productLineItem.custom.isExtendShippingProtection) {
+                shippingProtectionLineItem = productLineItem;
+            }
+        });
+
+        var attachBehavior = currentBasket.custom.extendShippingProtectionAttachBehaviour;
+
+        var isExtendShippingProtectionAttend = extendShippingProtectionHelpers.isExtendShippingProtectionAttend(currentBasket);
+
+        // Determine whether the product is lead
+        var isLead = extendShippingProtectionHelpers.isProductLineItemLead(currentBasket);
+
+        isExtendShippingProtectionAttend = isExtendShippingProtectionAttend || isLead;
+
+        var isExtendShippingProtectionAdded = currentBasket.custom.isExtendShippingProtectionAdded;
+        var isExtendShippingProtectionRemoved = currentBasket.custom.isExtendShippingProtectionRemoved;
+
+        if (shippingProtectionLineItem) {
+            // Add quotes info to order info to create a shipping protection plan line item
+            Transaction.wrap(function () {
+                shippingProtectionLineItem.custom.extendShippingQuoteId = shippingOfferQuotes.id;
+            });
+        }
+
+        res.setViewData(viewData);
+    
+        res.json({
+            cartItems: cartItems,
+            cart: basketModel,
+            attachBehavior: attachBehavior,
+            isExtendShippingProtectionAttend: isExtendShippingProtectionAttend,
+            isExtendShippingProtectionAdded: isExtendShippingProtectionAdded,
+            isExtendShippingProtectionRemoved: isExtendShippingProtectionRemoved
+        });
+    }
+    return next();
+});
+
+/**
+ * Add Extend Shipping Offer via cart
+ */
+server.post('AddExtendShippingOffer', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Transaction = require('dw/system/Transaction');
+    var Site = require('dw/system/Site');
+    var CartModel = require('*/cartridge/models/cart');
+    var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
+
+    var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        var currentBasket = BasketMgr.getCurrentBasket();
+
+        if (!currentBasket) {
+            return next();
+        }
+    
+        extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(currentBasket);
+
+        Transaction.wrap(function () {
+            currentBasket.custom.isExtendShippingProtectionAdded = true;
+            currentBasket.custom.isExtendShippingProtectionRemoved = false;
+        });
+    
+        var basketModel = new CartModel(currentBasket);
+    
+        res.json({
+            cart: basketModel
+        });
+    }
+
+    return next();
+});
+
+/**
+ * Remove Shipping Protection from the cart
+ */
+server.post('RemoveShippingProtection', function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Resource = require('dw/web/Resource');
+    var Site = require('dw/system/Site');
+    var Transaction = require('dw/system/Transaction');
+    var URLUtils = require('dw/web/URLUtils');
+    var CartModel = require('*/cartridge/models/cart');
+    var collections = require('*/cartridge/scripts/util/collections');
+    var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+
+    var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+        var currentBasket = BasketMgr.getCurrentBasket();
+
+        if (!currentBasket) {
+            res.setStatusCode(500);
+            res.json({
+                error: true,
+                redirectUrl: URLUtils.url('Cart-Show').toString()
+            });
+    
+            return next();
+        }
+    
+        var isShippingProtectionFound = false;
+        var shippingProtectionLineItem = null;
+
+        var allLineItems = currentBasket.getAllProductLineItems();
+        collections.forEach(allLineItems, function (productLineItem) {
+            if (productLineItem.custom.isExtendShippingProtection) {
+                isShippingProtectionFound = true;
+                shippingProtectionLineItem = productLineItem;
+            }
+        });
+
+        Transaction.wrap(function () {
+            if (!shippingProtectionLineItem) {
+                return;
+            } else if (isShippingProtectionFound && shippingProtectionLineItem) {
+                currentBasket.removeProductLineItem(shippingProtectionLineItem);
+            }
+
+            currentBasket.custom.isExtendShippingProtectionAdded = false;
+            currentBasket.custom.isExtendShippingProtectionRemoved = true;
+
+            basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+
+        var basketModel = new CartModel(currentBasket);
+
+        res.json({
+            cart: basketModel
+        });
+    }
+
     return next();
 });
 

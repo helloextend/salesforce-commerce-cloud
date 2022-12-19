@@ -131,17 +131,29 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.endpoint = 'orders';
             configObj.method = 'POST';
             configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
+            configObj.API_VERSION = '2022-02-01';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             configObj.mock = mocks.ordersResponseMock;
             break;
 
-        case 'ordersBatch':
-            configObj.endpoint = 'orders/batch';
+        case 'historicalOrdersBatch':
+            configObj.endpoint = 'orders/batch?historical=true';
             configObj.method = 'POST';
             configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
+            configObj.API_VERSION = '2022-02-01';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
+            break;
+
+        case 'shippingOffersConfig':
+            configObj.endpoint = 'shipping-offers/config?storeId=' + STORE_ID;
+            configObj.method = 'GET';
+            configObj.API_VERSION = '2022-02-01';
+            break;
+
+        case 'shippingOffersQuotes':
+            configObj.endpoint = 'shipping-offers/quotes';
+            configObj.method = 'POST';
+            configObj.API_VERSION = '2022-02-01';
             break;
 
         default:

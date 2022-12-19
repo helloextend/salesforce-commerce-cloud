@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
@@ -299,57 +300,148 @@ function createContractsCO(order) {
 }
 
 /**
+ * Process response to get matched line item to fill extendContractIds field
+ * @param {string} apiPid - current id of product
+ * @param {Object} ordersLI - current order
+ * @param {Object} apiCurrentLI - response line item's info
+ * @returns {Object} matched line item
+ */
+function processContracts(apiPid, ordersLI, apiCurrentLI) {
+    var matchedLI = null;
+    var pLi = null;
+    var productLi = null;
+
+    for (var i = 0; i < ordersLI.length; i++) {
+        pLi = ordersLI[i];
+        if (pLi.productID !== apiPid) {
+            continue;
+        }
+        for (var j = 0; j < ordersLI.length; j++) {
+            productLi = ordersLI[j];
+            if ((pLi.custom.persistentUUID === productLi.custom.parentLineItemUUID) && (apiCurrentLI.plan.id === productLi.getManufacturerSKU())) {
+                matchedLI = productLi;
+                break;
+            }
+        }
+        break;
+    }
+
+    return matchedLI;
+}
+
+/**
+ * Process response to get matched line item to fill extendContractIds field for Extend Shipping Protection Line item
+ * @param {string} apiPid - current id of product
+ * @param {Object} ordersLI - current order
+ * @returns {Object} matched line item
+ */
+function processLeadToken(apiPid, ordersLI) {
+    var matchedLI = null;
+    var pLi = null;
+    var pid = null;
+
+    for (var i = 0; i < ordersLI.length; i++) {
+        pLi = ordersLI[i];
+        pid = pLi.productID;
+
+        if (pid === apiPid) {
+            matchedLI = pLi;
+            break;
+        }
+    }
+
+    return matchedLI;
+}
+
+/**
+ * Process response to get matched line item to fill extendContractIds field for Extend Shipping Protection Line item
+ * @param {string} apiPid - current id of product
+ * @param {Object} ordersLI - current order
+ * @returns {Object} matched line item
+ */
+function processExtendShippingProtection(apiPid, ordersLI) {
+    var matchedLI = null;
+    var pLi = null;
+    var pid = null;
+
+    for (var i = 0; i < ordersLI.length; i++) {
+        pLi = ordersLI[i];
+        pid = pLi.productID;
+        if (pid === 'EXTEND-SHIPPING-PROTECTION') {
+            matchedLI = pLi;
+            break;
+        }
+    }
+
+    return matchedLI;
+}
+
+/**
+ * Process response to get matched line item to fill extendContractIds field for Line Item which were used by LeadToken
+ * @param {Object} ordersLI - current order
+ * @param {Object} apiCurrentLI - response line item's info
+ * @returns {Object} matched line item
+ */
+function processPostPurchase(ordersLI, apiCurrentLI) {
+    var matchedLI = null;
+    var pLi = null;
+
+    for (var i = 0; i < ordersLI.length; i++) {
+        pLi = ordersLI[i];
+        if (pLi.custom.postPurchaseLeadToken === apiCurrentLI.leadToken) {
+            matchedLI = pLi;
+        }
+    }
+
+    return matchedLI;
+}
+
+/**
+ * Get orders payload for specific API version
+ * @param {ArrayList<Product>} order - array of orders
+ */
+function markOrderAsSent(order) {
+    var Transaction = require('dw/system/Transaction');
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    try {
+        Transaction.wrap(function () {
+            order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
+        });
+    } catch (error) {
+        logger.error('The error occurred during the orders processing', error);
+    }
+}
+
+/**
  * Process Orders Response
  * @param {Object} ordersResponse : API response from orders endpoint
  * @param {dw.order.Order} order : API order
  */
 function processOrdersResponse(ordersResponse, order) {
     var Transaction = require('dw/system/Transaction');
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     var ArrayList = require('dw/util/ArrayList');
     var responseLI = ordersResponse.lineItems;
     var ordersLI = order.productLineItems;
+    var apiPid = null;
 
     for (var i = 0; i < responseLI.length; i++) {
         var apiCurrentLI = responseLI[i];
-        var apiPid = apiCurrentLI.product.id;
-        var matchedLI = null;
-        var pLi = null;
-        var productLi = null;
-        var pid = null;
-
-        if (apiCurrentLI.plan) {
-            for (var j = 0; j < ordersLI.length; j++) {
-                pLi = ordersLI[j];
-                if (pLi.productID !== apiPid) {
-                    continue;
-                }
-                for (var k = 0; k < ordersLI.length; k++) {
-                    productLi = ordersLI[k];
-                    if ((pLi.custom.persistentUUID === productLi.custom.parentLineItemUUID) && (apiCurrentLI.plan.id === productLi.getManufacturerSKU())) {
-                        matchedLI = productLi;
-                        break;
-                    }
-                }
-                break;
-            }
-        } else {
-            for (var l = 0; l < ordersLI.length; l++) {
-                pLi = ordersLI[l];
-                pid = pLi.productID;
-                if (pid === apiPid) {
-                    matchedLI = pLi;
-                    break;
-                }
-            }
+        if (apiCurrentLI.product) {
+            apiPid = apiCurrentLI.product.id;
         }
+        var matchedLI = null;
 
-        if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
-            for (var n = 0; n < ordersLI.length; n++) {
-                pLi = ordersLI[n];
-                if (pLi.custom.postPurchaseLeadToken === apiCurrentLI.leadToken) {
-                    matchedLI = pLi;
-                }
-            }
+        if (apiCurrentLI.plan && !apiCurrentLI.quoteId) {
+            matchedLI = processContracts(apiPid, ordersLI, apiCurrentLI) || processPostPurchase(ordersLI, apiCurrentLI);
+        } else if (apiCurrentLI.leadToken && (apiCurrentLI.type === 'lead')) {
+            matchedLI = processLeadToken(apiPid, ordersLI);
+        } else if (apiCurrentLI.quoteId && (apiCurrentLI.type === 'shipments')) {
+            matchedLI = processExtendShippingProtection(apiPid, ordersLI);
+        } else if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
+            matchedLI = processPostPurchase(ordersLI, apiCurrentLI);
+        } else {
+            logger.info('Current Resonses has an invalid body: {0}', apiCurrentLI);
         }
 
         Transaction.wrap(function () {
@@ -360,8 +452,10 @@ function processOrdersResponse(ordersResponse, order) {
             } else if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
                 extendContractIds.add(apiCurrentLI.contractId);
                 matchedLI.custom.extendContractId = extendContractIds;
-            } else if (apiCurrentLI.leadToken) {
+            } else if (apiCurrentLI.leadToken && (apiCurrentLI.type === 'lead')) {
                 matchedLI.custom.leadToken = apiCurrentLI.leadToken;
+            } else if (apiCurrentLI.quoteId && (apiCurrentLI.type === 'shipments')) {
+                matchedLI.custom.extendContractId = apiCurrentLI.contractId;
             }
         });
     }
@@ -407,6 +501,7 @@ function addContractToQueue(order) {
             processOrdersResponse(ordersResponse, order);
         }
         extend.ordersAPIcreateLeadContractId({ order: order, customer: customer });
+        markOrderAsSent(order);
     } else if (apiMethod === 'ordersAPIonSchedule') {
         createExtendOrderQueue(order);
     }
@@ -420,5 +515,6 @@ module.exports = {
     addContractToQueue: addContractToQueue,
     validateOffer: validateOffer,
     getCustomer: getCustomer,
+    markOrderAsSent: markOrderAsSent,
     processOrdersResponse: processOrdersResponse
 };
