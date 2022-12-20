@@ -378,6 +378,9 @@ module.exports = function () {
                         $('.bonus-product').remove();
                     }
                     $('.coupons-and-promos').empty().append(data.basket.totals.discountsHtml);
+
+                    extendShippingProtection.initCartOffers();
+                    
                     updateCartTotals(data.basket);
                     updateApproachingDiscounts(data.basket.approachingDiscounts);
                     $('body').trigger('setShippingMethodSelection', data.basket);
