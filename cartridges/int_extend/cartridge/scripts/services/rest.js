@@ -24,14 +24,13 @@ function createServiceCall(configObj) {
             var API_VERSION = null;
             var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-            if (extendAPIMethod === 'contractsAPI') {
-                API_VERSION = '2021-04-01';
-            } else {
-                API_VERSION = '2021-07-01';
-            }
+            var orderApiMethod = (extendAPIMethod === 'ordersAPIonOrderCreate') || (extendAPIMethod === 'ordersAPIonSchedule');
 
-            if (configObj.API_VERSION) {
-                API_VERSION = configObj.API_VERSION;
+            if (orderApiMethod) {
+                API_VERSION = '2022-02-01';
+            } else {
+                // used '2021-04-01' API version in case of contracts API
+                API_VERSION = '2021-04-01';
             }
 
             var credential = service.configuration.credential;
@@ -106,7 +105,6 @@ function createRequestConfiguration(endpoint, requestObject) {
         case 'contracts':
             configObj.endpoint = 'stores/' + STORE_ID + '/contracts';
             configObj.method = 'POST';
-            configObj.API_VERSION = '2021-04-01';
             configObj.mock = mocks.contractsResponseMock;
             break;
 
@@ -120,13 +118,11 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.method = 'POST';
             configObj.params.put('commit', requestObject.commit);
             configObj.endpoint = 'refunds';
-            configObj.API_VERSION = '2021-07-01';
             break;
 
         case 'offer':
             configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
             configObj.method = 'GET';
-            configObj.API_VERSION = '2021-04-01';
             configObj.mock = mocks.offersResponseMock;
             break;
 
@@ -134,7 +130,6 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.endpoint = 'orders';
             configObj.method = 'POST';
             configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2021-07-01';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             configObj.mock = mocks.ordersResponseMock;
             break;
@@ -143,20 +138,17 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.endpoint = 'orders/batch?historical=true';
             configObj.method = 'POST';
             configObj.extendMethod = 'orders';
-            configObj.API_VERSION = '2022-02-01';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             break;
 
         case 'shippingOffersConfig':
             configObj.endpoint = 'shipping-offers/config?storeId=' + STORE_ID;
             configObj.method = 'GET';
-            configObj.API_VERSION = '2022-02-01';
             break;
 
         case 'shippingOffersQuotes':
             configObj.endpoint = 'shipping-offers/quotes';
             configObj.method = 'POST';
-            configObj.API_VERSION = '2022-02-01';
             break;
 
         default:
