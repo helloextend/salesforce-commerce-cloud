@@ -69,7 +69,8 @@ function getProductToCreateQuotes(currentBasket) {
         if (((productLineItem.custom.persistentUUID && !productLineItem.custom.parentLineItemUUID)
             || (!productLineItem.custom.persistentUUID && !productLineItem.custom.parentLineItemUUID))
             && !productLineItem.custom.isExtendShippingProtection
-            && productLineItem.optionID !== 'extendTerm') {
+            && productLineItem.optionID !== 'extendTerm'
+            && productLineItem.getPrice() > 0) {
             products.push(productLineItem);
         }
     });
