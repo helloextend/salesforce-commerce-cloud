@@ -5,7 +5,7 @@
 
 	<isscript>
 		var EXT_GLOBAL_SWITCH = dw.system.Site.current.preferences.custom.extendGlobalSwitch;
-        var EXT_SHIPPING_SWITCH = dw.system.Site.current.preferences.custom.extendShippingProtectionSwitch;
+        var EXT_SHIPPING_SWITCH_CART = dw.system.Site.current.preferences.custom.extendShippingProtectionSwitchCartPage;
 		var EXT_IS_CONTRACTS_API = dw.system.Site.current.preferences.custom.extendAPIMethod.value === 'contractsAPIonSchedule' ? true : false
 	</isscript>
 	
@@ -834,7 +834,7 @@
 					<input type="hidden" name="${pdict.CurrentForms.cart.updateCart.htmlName}" value="${pdict.CurrentForms.cart.updateCart.htmlName}"/>
 					<div class="cart-order-totals">
 							<iscomment> EXTEND SHIPPING PROTECTION </iscomment>
-							<isif condition="${EXT_GLOBAL_SWITCH && EXT_SHIPPING_SWITCH && !EXT_IS_CONTRACTS_API}">
+							<isif condition="${EXT_GLOBAL_SWITCH && EXT_SHIPPING_SWITCH_CART && !EXT_IS_CONTRACTS_API}">
 								<script src="${URLUtils.staticURL('/js/components/extendShippingProtection.js')}"></script>
 								<link rel="stylesheet" href="${URLUtils.staticURL('/css/extendSP.css')}" />
 								<div id="extend-shipping-offer"></div>

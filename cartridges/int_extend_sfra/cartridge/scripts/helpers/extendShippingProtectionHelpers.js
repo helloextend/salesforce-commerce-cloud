@@ -255,7 +255,7 @@ function createShippingProtectionContractLine(order) {
         }
     });
 
-    var isExtendShippingProtection = Site.getCustomPreferenceValue('extendShippingProtectionSwitch');
+    var isExtendShippingProtection = Site.getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
     if (!extendShippingProtectionLineItem || !isExtendShippingProtection) {
         return;

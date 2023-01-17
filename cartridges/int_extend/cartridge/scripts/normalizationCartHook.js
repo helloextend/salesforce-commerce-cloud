@@ -67,7 +67,7 @@ function normalizeCartQuantities(basket) {
     }
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
-    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
         Transaction.wrap(function () {

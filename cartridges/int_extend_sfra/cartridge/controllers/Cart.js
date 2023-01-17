@@ -436,7 +436,7 @@ server.append('UpdateQuantity', function (req, res, next) {
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
-    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
         var currentBasket = BasketMgr.getCurrentBasket();
@@ -466,7 +466,7 @@ server.get('GetConfig', function (req, res, next) {
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
-    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
         var currentBasket = BasketMgr.getCurrentBasket();
@@ -509,7 +509,7 @@ server.post('ShippingProtectionCreateQuotes', function (req, res, next) {
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
-    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
         var currentBasket = BasketMgr.getCurrentBasket();
@@ -592,7 +592,7 @@ server.post('AddExtendShippingOffer', function (req, res, next) {
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
-    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
         var currentBasket = BasketMgr.getCurrentBasket();
@@ -632,7 +632,7 @@ server.post('RemoveShippingProtection', function (req, res, next) {
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
-    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
         var currentBasket = BasketMgr.getCurrentBasket();

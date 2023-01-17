@@ -2,7 +2,7 @@
 
 var base = require('../product/base');
 var focusHelper = require('base/components/focus');
-var extendShippingProtection = require('../extend/components/extendShippingProtection');
+var extendShippingProtection = require('../extend/components/cart/extendShippingProtection');
 
 /**
  * appends params to a url
