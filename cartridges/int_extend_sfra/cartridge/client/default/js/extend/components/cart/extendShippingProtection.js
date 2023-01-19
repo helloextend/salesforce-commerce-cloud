@@ -21,6 +21,23 @@ function initExtend() {
 }
 
 /**
+ * Show the page action
+ * @returns {string} page action
+ */
+function getPageAction() {
+    var $div = $('body').find('.js-page');
+    var classes = $div.attr('class');
+    var arrayOfClasses = classes.split(' ');
+    var actionClass = arrayOfClasses[arrayOfClasses.length - 1];
+
+    if (actionClass.includes('cart-show')) {
+        return 'cart';
+    } else {
+        return 'checkout';
+    }
+}
+
+/**
  * Get and process extend shipping protection config
  */
 function getAndProcessExtendShippingProtectionConfig() {
@@ -135,10 +152,21 @@ function renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart) {
 }
 
 /**
- * Init cart shipping protection
+ * Init Extend Shipping Protection offers
  */
-function initCartOffers() {
+function initExtendShippingProtectionOffers() {
     if (window.EXT_IS_CONTRACTS_API) {
+        return;
+    }
+
+    var EXT_SHIPPING_SWITCH = window.EXT_SHIPPING_SWITCH
+
+    var pageAction = getPageAction();
+
+    // Determine whether ESP widget should display
+    var isESPwidget = pageAction === EXT_SHIPPING_SWITCH;
+
+    if (!isESPwidget) {
         return;
     }
 
@@ -181,5 +209,5 @@ function initCartOffers() {
 }
 
 module.exports = {
-    initCartOffers: initCartOffers
+    initExtendShippingProtectionOffers: initExtendShippingProtectionOffers
 };
