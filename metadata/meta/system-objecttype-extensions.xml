@@ -158,9 +158,27 @@
             <attribute-definition attribute-id="lastModified"/>
         </system-attribute-definitions>
         <custom-attribute-definitions>
+            <attribute-definition attribute-id="extendShippingProtectionAttachBehaviour">
+                <display-name xml:lang="x-default">Shipping Protection Attach Behaviour</display-name>
+                <description xml:lang="x-default">Display the extend shipping protection attach behaviour:&#13;
+ * OPT_IN: means that the offer is NOT selected by default, and the customer must choose to add it.&#13;
+ * OPT_OUT: means that the offer is selected by default and will be included in the order unless the customer deselects it.&#13;
+ * OPT_MERCHANT: means that shipping protection is included in every eligible order automatically, at the merchant’s choice</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="isExtendShippingProtectionAdded">
                 <display-name xml:lang="x-default">isExtendShippingProtectionAdded</display-name>
                 <description xml:lang="x-default">Display is Extend Shipping Protection has been added to the cart.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="isExtendShippingProtectionRemoved">
+                <display-name xml:lang="x-default">is Extend Shipping Protection Removed</display-name>
+                <description xml:lang="x-default">Display if Extend Shipping Protection Removed</description>
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -1616,10 +1634,19 @@
                     </value-definition>
                 </value-definitions>
             </attribute-definition>
+            <attribute-definition attribute-id="wasSentToExtend">
+                <display-name xml:lang="x-default">Was the order sent to Extend?</display-name>
+                <description xml:lang="x-default">Display was the order sent to the Extend Service.</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="extend">
                 <display-name xml:lang="x-default">Extend</display-name>
+                <attribute attribute-id="wasSentToExtend"/>
                 <attribute attribute-id="extendRefundStatus"/>
             </attribute-group>
         </group-definitions>
@@ -3919,6 +3946,7 @@
             </attribute-definition>
             <attribute-definition attribute-id="extendContractId">
                 <display-name xml:lang="x-default">Extend Contract ID</display-name>
+                <description xml:lang="x-default">Used to fill the warranties contract id</description>
                 <type>set-of-string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>true</externally-managed-flag>
@@ -3944,9 +3972,23 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="isESPupdated">
+                <display-name xml:lang="x-default">is Extend Shipping Protection Value Updated</display-name>
+                <description xml:lang="x-default">Display is Extend Shipping Protection Value has been updated.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
             <attribute-definition attribute-id="isExtendShippingProtection">
                 <display-name xml:lang="x-default">is Extend Shipping Protection</display-name>
                 <description xml:lang="x-default">Display whether line item is Extend Shipping Protection</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="isLead">
+                <display-name xml:lang="x-default">isLead</display-name>
+                <description xml:lang="x-default">Display whether the warranty is lead</description>
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -3986,9 +4028,10 @@
             </attribute-definition>
             <attribute-definition attribute-id="leadToken">
                 <display-name xml:lang="x-default">Lead Token</display-name>
+                <description xml:lang="x-default">Used to fill the leadToken to make post-purchase</description>
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
+                <externally-managed-flag>true</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="parentLineItemUUID">
@@ -4025,8 +4068,8 @@
             <attribute-group group-id="Extend">
                 <display-name xml:lang="x-default">Extend</display-name>
                 <attribute attribute-id="extendContractId"/>
-                <attribute attribute-id="extendRefundStatuses"/>
                 <attribute attribute-id="leadToken"/>
+                <attribute attribute-id="extendRefundStatuses"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
@@ -4866,6 +4909,23 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
+            <attribute-definition attribute-id="enableExtendShippingProtection">
+                <display-name xml:lang="x-default">Enable Extend Shipping Protection</display-name>
+                <description xml:lang="x-default">Enables Extend Shipping Protection offer widget in the Checkout page (recommended) or the Cart page.  Requires Orders API for Extend integration method.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Checkout Offer</display>
+                        <value>checkout</value>
+                    </value-definition>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Cart Offer</display>
+                        <value>cart</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
             <attribute-definition attribute-id="enableInfiniteScroll">
                 <display-name xml:lang="x-default">Enable Infinite Scroll</display-name>
                 <description xml:lang="x-default">This Boolean toggles the option for infinite scrolling or pagination from within the search grid.</description>
@@ -5020,15 +5080,6 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="extendShippingProtectionSwitch">
-                <display-name xml:lang="x-default">Enable Extend Shipping Protection</display-name>
-                <description xml:lang="x-default">Global switch for Extend Shipping Protection related within the environment.&#13;
-*Note: Orders API is required*</description>
-                <type>boolean</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <default-value>true</default-value>
             </attribute-definition>
             <attribute-definition attribute-id="extendStoreID">
                 <display-name xml:lang="x-default">Extend Store ID</display-name>
@@ -5282,7 +5333,7 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
                 <attribute attribute-id="extendPDPUpsellSwitch"/>
                 <attribute attribute-id="extendCartUpsellSwitch"/>
                 <attribute attribute-id="extendAnalyticsSwitch"/>
-                <attribute attribute-id="extendShippingProtectionSwitch"/>
+                <attribute attribute-id="enableExtendShippingProtection"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
