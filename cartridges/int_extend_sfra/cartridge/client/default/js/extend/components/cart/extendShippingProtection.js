@@ -32,9 +32,8 @@ function getPageAction() {
 
     if (actionClass.includes('cart-show')) {
         return 'cart';
-    } else {
-        return 'checkout';
     }
+    return 'checkout';
 }
 
 /**
@@ -111,9 +110,6 @@ function addShippingProtection() {
  * Render the Shipping Protection iframe
  */
 function renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart) {
-    var shippingProtectionOfferId = 'extend-shipping-offer';
-    var $shippingProtectionContainer = '.totals';
-
     if (!Extend.shippingProtection) {
         return;
     }
@@ -123,12 +119,11 @@ function renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart) {
             items: shippingOffersItem
         });
     } else {
-        var shippingProtectionOffer = document.createElement('div');
-        shippingProtectionOffer.id = shippingProtectionOfferId;
-        shippingProtectionOffer.style.textAlign = 'end';
+        var $shippingProtectionContainer = $('body').find('.totals');
+        var $extendShippingProtectionContainer = $('body').find('#extend-shipping-offer');
 
-        if (document.querySelector($shippingProtectionContainer)) {
-            document.querySelector($shippingProtectionContainer).prepend(shippingProtectionOffer);
+        if ($shippingProtectionContainer) {
+            $shippingProtectionContainer.prepend($extendShippingProtectionContainer);
         }
 
         Extend.shippingProtection.render({
@@ -159,7 +154,7 @@ function initExtendShippingProtectionOffers() {
         return;
     }
 
-    var EXT_SHIPPING_SWITCH = window.EXT_SHIPPING_SWITCH
+    var EXT_SHIPPING_SWITCH = window.EXT_SHIPPING_SWITCH;
 
     var pageAction = getPageAction();
 
