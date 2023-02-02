@@ -29,7 +29,7 @@ var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippin
 var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
 /* Check does Extend shipping protection switche status*/
-var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
+var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitchCartPage');
 
 /* Script Modules */
 var app = require('*/cartridge/scripts/app');

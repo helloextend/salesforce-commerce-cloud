@@ -2,5 +2,9 @@
     max-width: 140px;
 }
 
+#mini-cart .extend-shipping-protection {
+    display: none;
+}
+
 .extend-upsell{padding-top:.6em}
 .extend-upsell .extend-upsell-btn{font-size:12px;border:1px solid #c00;color:#c00!important;padding:.2em .4em;border-radius:3px} 

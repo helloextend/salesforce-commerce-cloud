@@ -3,5 +3,5 @@
 var processInclude = require('base/util');
 
 $(document).ready(function () {
-    processInclude(require('./extend/components/extendShippingProtection'));
+    processInclude(require('./extend/components/cart/extendShippingProtection'));
 });

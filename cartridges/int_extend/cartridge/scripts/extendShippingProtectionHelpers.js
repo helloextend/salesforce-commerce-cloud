@@ -226,9 +226,8 @@ function createOrUpdateExtendShippingProtectionQuote(cart, params, Product) {
     var app = require('*/cartridge/scripts/app');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
-    var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
 
-    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+    if (currentAPIversion !== 'contractsAPIonSchedule') {
         var currentBasket = cart.object;
         var storeID = Site.getCurrent().getCustomPreferenceValue('extendStoreID');
     
@@ -276,9 +275,7 @@ function createShippingProtectionContractLine(order) {
         }
     });
 
-    var isExtendShippingProtection = Site.getCustomPreferenceValue('extendShippingProtectionSwitch');
-
-    if (!extendShippingProtectionLineItem || !isExtendShippingProtection) {
+    if (!extendShippingProtectionLineItem) {
         return;
     }
 
