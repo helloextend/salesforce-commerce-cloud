@@ -212,7 +212,7 @@ function getLineItems(order) {
 
         if (pLi.custom.parentLineItemUUID) {
             warrantiesArray.push(pLi);
-        } else {
+        } else if (!pLi.custom.isExtendShippingProtection) {
             productsArray.push(pLi);
         }
     }
@@ -225,7 +225,7 @@ function getLineItems(order) {
             pliObj.product = product;
             pliObj.lineItemTransactionID = productLi.getUUID();
 
-            if (productLi.custom.isWarrantable) {
+            if (productLi.custom.isWarrantable && !productLi.custom.persistentUUID) {
                 pliObj.quantity = productLi.quantity.value;
                 pliObj.warrantable = true;
                 lineItems.push(pliObj);
