@@ -2,7 +2,7 @@
 
 var base = require('../product/base');
 var focusHelper = require('base/components/focus');
-var extendShippingProtection = require('../extend/components/extendShippingProtection');
+var extendShippingProtection = require('../extend/components/cart/extendShippingProtection');
 
 /**
  * appends params to a url
@@ -379,7 +379,7 @@ module.exports = function () {
                     }
                     $('.coupons-and-promos').empty().append(data.basket.totals.discountsHtml);
 
-                    extendShippingProtection.initCartOffers();
+                    extendShippingProtection.initExtendShippingProtectionOffers();
                     
                     updateCartTotals(data.basket);
                     updateApproachingDiscounts(data.basket.approachingDiscounts);
@@ -429,7 +429,7 @@ module.exports = function () {
                 $('.quantity[data-uuid="' + uuid + '"]').val(quantity);
                 $('.coupons-and-promos').empty().append(data.totals.discountsHtml);
 
-                extendShippingProtection.initCartOffers();
+                extendShippingProtection.initExtendShippingProtectionOffers();
 
                 updateCartTotals(data);
                 // re-render cart with normalization quantities and products wrapper

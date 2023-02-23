@@ -83,7 +83,11 @@
                 </parameters>
             </step>
         </flow>
-        <rules/>
+        <rules>
+            <on-running runtime-threshold="60m" enabled="false">
+                <mark-job-as-hanging/>
+            </on-running>
+        </rules>
         <triggers>
             <run-once enabled="false">
                 <date>2019-12-04Z</date>
@@ -139,7 +143,11 @@
                 </step>
             </flow-template>
         </split>
-        <rules/>
+        <rules>
+            <on-running runtime-threshold="60m" enabled="false">
+                <mark-job-as-hanging/>
+            </on-running>
+        </rules>
         <triggers>
             <run-once enabled="false">
                 <date>2019-11-29Z</date>
@@ -151,23 +159,22 @@
     <job job-id="Send Historical Orders" priority="0">
         <description/>
         <parameters/>
-        <split sequential="false">
-            <contexts template-ref="template_54">
-                <context site-id="RefArch"/>
-                <context site-id="SiteGenesis"/>
-            </contexts>
-            <flow-template template-id="template_54">
-                <step step-id="sendHistoricalOrders" type="ExecuteScriptModule" enforce-restart="false">
-                    <description/>
-                    <parameters>
-                        <parameter name="ExecuteScriptModule.Module">int_extend_sfra/cartridge/scripts/jobs/historicalOrders.js</parameter>
-                        <parameter name="ExecuteScriptModule.FunctionName">execute</parameter>
-                        <parameter name="ExecuteScriptModule.Transactional">false</parameter>
-                    </parameters>
-                </step>
-            </flow-template>
-        </split>
-        <rules/>
+        <flow>
+            <context site-id="RefArch"/>
+            <step step-id="sendHistoricalOrders" type="ExecuteScriptModule" enforce-restart="false">
+                <description/>
+                <parameters>
+                    <parameter name="ExecuteScriptModule.Module">int_extend_sfra/cartridge/scripts/jobs/historicalOrders.js</parameter>
+                    <parameter name="ExecuteScriptModule.FunctionName">execute</parameter>
+                    <parameter name="ExecuteScriptModule.Transactional">false</parameter>
+                </parameters>
+            </step>
+        </flow>
+        <rules>
+            <on-running runtime-threshold="60m" enabled="false">
+                <mark-job-as-hanging/>
+            </on-running>
+        </rules>
         <triggers>
             <run-once enabled="false">
                 <date>2021-12-21Z</date>
@@ -206,7 +213,11 @@
                 </parameters>
             </step>
         </flow>
-        <rules/>
+        <rules>
+            <on-running runtime-threshold="60m" enabled="false">
+                <mark-job-as-hanging/>
+            </on-running>
+        </rules>
         <triggers>
             <run-once enabled="false">
                 <date>2022-05-10Z</date>

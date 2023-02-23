@@ -28,9 +28,6 @@ var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippin
 /* Check the current API version */
 var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-/* Check does Extend shipping protection switche status*/
-var isExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('extendShippingProtectionSwitch');
-
 /* Script Modules */
 var app = require('*/cartridge/scripts/app');
 var cart = app.getModel('Cart').goc();
@@ -143,7 +140,7 @@ exports.calculate = function (basket) {
  * @param {Object} cart - cart object
  */
 function updateExtendShippingProtectionValue(cart) {
-    if (currentAPIversion !== 'contractsAPIonSchedule' && isExtendShippingProtection) {
+    if (currentAPIversion !== 'contractsAPIonSchedule') {
         var isShippingProtectionFound = false;
         var shippingProtectionLineItem = null;
 

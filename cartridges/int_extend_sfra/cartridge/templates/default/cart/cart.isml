@@ -5,13 +5,16 @@
         assets.addJs('/js/extendShippingProtection.js');
 
         var EXT_GLOBAL_SWITCH = dw.system.Site.current.preferences.custom.extendGlobalSwitch;
-        var EXT_SHIPPING_SWITCH = dw.system.Site.current.preferences.custom.extendShippingProtectionSwitch;
-
+        var EXT_SHIPPING_SWITCH = dw.system.Site.current.preferences.custom.enableExtendShippingProtection.value;
+        var EXT_IS_CONTRACTS_API = dw.system.Site.current.preferences.custom.extendAPIMethod.value === 'contractsAPIonSchedule' ? true : false
     </isscript>
 
     <isif condition="${pdict.reportingURLs && pdict.reportingURLs.length}">
         <isinclude template="reporting/reportingUrls" />
     </isif>
+
+    <!-- Shows which page the customer is on -->
+    <div class="js-page ${pdict.action ? 'page-'+pdict.action.toLowerCase() : ''}"></div>
 
     <div class="cart-error-messaging cart-error">
         <isif condition="${pdict.valid.error && pdict.items.length !== 0}">
@@ -79,7 +82,7 @@
                     </div>
 
                    <iscomment> In case of Extend Shipping Switcher if turned on default shipping method doesnt work </iscomment>
-                    <isif condition="${!EXT_SHIPPING_SWITCH}">
+                    <isif condition="${EXT_SHIPPING_SWITCH !== 'cart'}">
                     <link rel="stylesheet" href="${URLUtils.staticURL('/css/extendSP.css')}" />
                         <div class="row">
                             <isinclude template="cart/cartShippingMethodSelection" />
@@ -96,7 +99,7 @@
                 </div>
 
                 <!-- Extend Shipping Protection -->
-                <isif condition="${EXT_GLOBAL_SWITCH && EXT_SHIPPING_SWITCH}">
+                <isif condition="${EXT_GLOBAL_SWITCH && !EXT_IS_CONTRACTS_API && EXT_SHIPPING_SWITCH === 'cart'}">
                     <div class="row">
                         <div class="col-12">
                             <div id="extend-shipping-offer"></div>
