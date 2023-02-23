@@ -230,9 +230,9 @@ function updateShippingProtection() {
 
             if (isShippingProtectionFound && shippingProtectionLineItem) {
                 extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(cart, params, Product);
+                shippingProtectionLineItem.custom.isESPupdated = false;
             }
 
-            shippingProtectionLineItem.custom.isESPupdated = false;
             cart.calculate();
         });
     }

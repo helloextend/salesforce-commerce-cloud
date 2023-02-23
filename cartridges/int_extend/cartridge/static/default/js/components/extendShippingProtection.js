@@ -176,6 +176,11 @@ function initCartOffers() {
             method: 'POST',
             success: function (data) {
                 var shippingOffersItem = data.cartItems;
+
+                if (!shippingOffersItem.length) {
+                    return;
+                }
+
                 var attachBehavior = data.attachBehavior;
 
                 var isShippingProtectionInCart;

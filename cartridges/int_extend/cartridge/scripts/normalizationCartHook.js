@@ -23,6 +23,7 @@ function normalizeCartQuantities(basket) {
     var warrantyItems = [];
     var leadsLineItems = [];
     var productsToShippingProtection = []
+    var shippingProtectionLineItem = false;
 
     if (basket) {
         productsToShippingProtection = extendShippingProtectionHelpers.getProductToCreateQuotes(basket)
@@ -43,6 +44,10 @@ function normalizeCartQuantities(basket) {
                 warrantyItems.push(lineItem);
           }
 
+          if (lineItem.custom.isExtendShippingProtection) {
+                shippingProtectionLineItem = true;
+          }
+
         // Is LineItem leadOffer
         var leadExtendId = lineItem.custom.leadExtendId;
         var postPurchaseLeadToken = lineItem.custom.postPurchaseLeadToken;
@@ -61,6 +66,9 @@ function normalizeCartQuantities(basket) {
     if (warrantyItems.length > 0) {
         var mappedLineItemProducts = mapProductWithWarranties(productsWithWarranty, warrantyItems);
 
+        // Determine whether the quantity of product line item has updated to 0. Removes warranty line items in this case.
+        removeWarranty(mappedLineItemProducts, warrantyItems, productsWithWarranty, basket);
+
         Transaction.wrap(function () {
             applyQuantityLogic(mappedLineItemProducts);
         });
@@ -68,9 +76,35 @@ function normalizeCartQuantities(basket) {
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && shippingProtectionLineItem) {
         Transaction.wrap(function () {
             extendShippingProtectionNormalizeCart(basket, productsToShippingProtection);
+        });
+    }
+}
+
+/**
+ * Remove warranty from the cart in case of quantity of product has UPDATED (not removed) to 0.
+ * @param {Array.<Object>} mappedLineItemProducts - mapped array with objects of ProductLineItem
+ * and all Warranty products linked with that product
+ * @param {Array.<{ProductLineItem}>} warrantyItems - Collection of all EXTEND products that has added to cart
+ * @param {Array.<{ProductLineItem}>} productsWithWarranty - Collection of all products that has warranty products
+ * @param {Object} basket - current basket
+ */
+function removeWarranty(mappedLineItemProducts, warrantyItems, productsWithWarranty, basket) {
+    if (warrantyItems.length > productsWithWarranty.length ) {
+        productsWithWarranty.forEach( function (productLineItem) {
+            warrantyItems.forEach( function (warrantyLineItem) {
+                if (warrantyLineItem.custom.parentLineItemUUID !== productLineItem.custom.persistentUUID) {
+                    basket.removeProductLineItem(warrantyLineItem);
+                }
+            });
+        });
+    }
+
+    if (empty(mappedLineItemProducts)) {
+            warrantyItems.forEach( function (warrItem) {
+            basket.removeProductLineItem(warrItem);
         });
     }
 }
