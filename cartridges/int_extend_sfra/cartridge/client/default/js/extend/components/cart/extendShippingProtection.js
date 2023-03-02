@@ -21,6 +21,43 @@ function initExtend() {
 }
 
 /**
+ * Store the shipping information to the sessionStorage
+ */
+function saveShippingInfo() {
+    var shippingInfo = {
+        firstName: $('input[name$="dwfrm_shipping_shippingAddress_addressFields_firstName"]').val(),
+        lastName: $('input[name$="dwfrm_shipping_shippingAddress_addressFields_lastName"]').val(),
+        address1: $('input[name$="dwfrm_shipping_shippingAddress_addressFields_address1"]').val(),
+        address2: $('input[name$="dwfrm_shipping_shippingAddress_addressFields_address2"]').val(),
+        country: $('select[name$="dwfrm_shipping_shippingAddress_addressFields_country"]').val(),
+        stateCode: $('select[name$="shippingAddress_addressFields_states_stateCode"]').val(),
+        city: $('input[name$="dwfrm_shipping_shippingAddress_addressFields_city"]').val(),
+        zipCode: $('input[name$="dwfrm_shipping_shippingAddress_addressFields_postalCode"]').val(),
+        phoneNumber: $('input[name$="dwfrm_shipping_shippingAddress_addressFields_phone"]').val()
+    }
+    sessionStorage.setItem('shippingInfo', JSON.stringify(shippingInfo));
+}
+
+/**
+ * Load the shipping information from the sessionStorage
+ */
+function loadShippingInfo() {
+    var shippingInfo = sessionStorage.getItem('shippingInfo');
+    if (shippingInfo) {
+        shippingInfo = JSON.parse(shippingInfo);
+        $('input[name$="dwfrm_shipping_shippingAddress_addressFields_firstName"]').val(shippingInfo.firstName);
+        $('input[name$="dwfrm_shipping_shippingAddress_addressFields_lastName"]').val(shippingInfo.lastName);
+        $('input[name$="dwfrm_shipping_shippingAddress_addressFields_address1"]').val(shippingInfo.address1);
+        $('input[name$="dwfrm_shipping_shippingAddress_addressFields_address2"]').val(shippingInfo.address2);
+        $('select[name$="dwfrm_shipping_shippingAddress_addressFields_country"]').val(shippingInfo.country);
+        $('select[name$="shippingAddress_addressFields_states_stateCode"]').val(shippingInfo.stateCode);
+        $('input[name$="dwfrm_shipping_shippingAddress_addressFields_city"]').val(shippingInfo.city);
+        $('input[name$="dwfrm_shipping_shippingAddress_addressFields_postalCode"]').val(shippingInfo.zipCode);
+        $('input[name$="dwfrm_shipping_shippingAddress_addressFields_phone"]').val(shippingInfo.phoneNumber);
+    }
+}
+
+/**
  * Show the page action
  * @returns {string} page action
  */
@@ -126,16 +163,24 @@ function renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart) {
             $shippingProtectionContainer.prepend($extendShippingProtectionContainer);
         }
 
+        var pageAction = getPageAction();
+
         Extend.shippingProtection.render({
             selector: '#extend-shipping-offer',
             items: shippingOffersItem,
             isShippingProtectionInCart: isShippingProtectionInCart,
             onEnable: function (quote) {
                 console.log('call back to add SP plan to cart', quote);
+                if (pageAction === 'checkout') {
+                    saveShippingInfo();
+                }
                 addShippingProtection();
             },
             onDisable: function (quote) {
                 console.log('call back to remove sp plan from cart', quote);
+                if (pageAction === 'checkout') {
+                    saveShippingInfo();
+                }
                 removeShippingProtection()
             },
             onUpdate: function (quote) {
@@ -166,6 +211,10 @@ function initExtendShippingProtectionOffers() {
     }
 
     initExtend();
+
+    if (pageAction === 'checkout') {
+        loadShippingInfo();
+    }
 
     getAndProcessExtendShippingProtectionConfig();
 
