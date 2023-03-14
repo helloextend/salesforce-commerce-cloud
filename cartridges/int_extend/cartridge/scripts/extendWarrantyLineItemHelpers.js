@@ -50,6 +50,7 @@ function createExtendLineItem(cart, form, Product) {
         warrantyLi.setPriceValue(parseInt(form.extendPrice, 10) / 100);
         warrantyLi.setQuantityValue(parseInt(quantity, 10));
         warrantyLi.custom.isWarranty = true;
+        warrantyLi.custom.planId = form.extendPlanId;
         if (form.leadToken) {
             warrantyLi.custom.leadExtendId = form.extendPlanId;
             warrantyLi.custom.leadQuantuty = +form.quantity;
