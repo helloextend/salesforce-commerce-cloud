@@ -25,6 +25,7 @@ server.append('AddProduct', function (req, res, next) {
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
     var extendWarrantyLineItemHelpers = require('*/cartridge/scripts/helpers/extendWarrantyLineItemHelpers');
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
 
@@ -56,12 +57,14 @@ server.append('AddProduct', function (req, res, next) {
         }
 
         // Determine whether the product already has any warranty in cart
-        var isWarrantyInCart = false;
+        var isWarrantyInCart = null;
         var productLineItems = currentBasket.getAllProductLineItems();
         for (var i = 0; i < productLineItems.length; i++) {
             var pLi = productLineItems[i];
             if (pLi.custom.persistentUUID && (pLi.productID === form.pid)) {
                 isWarrantyInCart = true;
+            } else {
+                isWarrantyInCart = false;
             }
         }
 
@@ -76,6 +79,9 @@ server.append('AddProduct', function (req, res, next) {
         quantityTotal = !isWarrantyInCart ? viewData.quantityTotal + parseInt(form.quantity, 10) : viewData.quantityTotal;
 
         Transaction.wrap(function () {
+            // Normalize cart quatities for extend warranty items
+            normalizeCartQuantities(currentBasket);
+
             basketCalculationHelpers.calculateTotals(currentBasket);
         });
         var cartModel = new CartModel(currentBasket);
@@ -170,6 +176,7 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendHelpers = require('~/cartridge/scripts/helpers/extendHelpers');
     var extendWarrantyLineItemHelpers = require('*/cartridge/scripts/helpers/extendWarrantyLineItemHelpers');
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
     var form = req.form;
     var currentBasket = BasketMgr.getCurrentBasket();
@@ -208,6 +215,8 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
     extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
 
     Transaction.wrap(function () {
+        // Normalize cart quatities for extend warranty items
+        normalizeCartQuantities(currentBasket);
         basketCalculationHelpers.calculateTotals(currentBasket);
     });
 
@@ -226,6 +235,7 @@ server.append('RemoveProductLineItem', function (req, res, next) {
     var CartModel = require('*/cartridge/models/cart');
     var Transaction = require('dw/system/Transaction');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
     var currentBasket = BasketMgr.getCurrentBasket();
 
@@ -257,6 +267,9 @@ server.append('RemoveProductLineItem', function (req, res, next) {
                 }
             }
         }
+
+        // Normalize cart quatities for extend warranty items
+        normalizeCartQuantities(currentBasket);
         basketCalculationHelpers.calculateTotals(currentBasket);
     });
 
@@ -434,6 +447,7 @@ server.append('UpdateQuantity', function (req, res, next) {
     var Transaction = require('dw/system/Transaction');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
@@ -444,8 +458,11 @@ server.append('UpdateQuantity', function (req, res, next) {
             return next();
         }
         extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(currentBasket);
-    
+
         Transaction.wrap(function () {
+            // Normalize cart quatities for extend warranty items
+            normalizeCartQuantities(currentBasket);
+
             basketCalculationHelpers.calculateTotals(currentBasket);
         });
     }
@@ -626,6 +643,7 @@ server.post('RemoveShippingProtection', function (req, res, next) {
     var CartModel = require('*/cartridge/models/cart');
     var collections = require('*/cartridge/scripts/util/collections');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
@@ -662,6 +680,9 @@ server.post('RemoveShippingProtection', function (req, res, next) {
 
             currentBasket.custom.isExtendShippingProtectionAdded = false;
             currentBasket.custom.isExtendShippingProtectionRemoved = true;
+
+            // Normalize cart quatities for extend warranty items
+            normalizeCartQuantities(currentBasket);
 
             basketCalculationHelpers.calculateTotals(currentBasket);
         });

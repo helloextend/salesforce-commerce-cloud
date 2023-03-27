@@ -7,6 +7,7 @@
 'use strict';
 
 var Transaction = require('dw/system/Transaction');
+var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
 /**
  *
@@ -56,6 +57,9 @@ function createExtendLineItem(cart, form, Product) {
             warrantyLi.custom.leadQuantuty = +form.quantity;
             warrantyLi.custom.postPurchaseLeadToken = form.leadToken;
         }
+
+        // Normalize cart quatities for extend warranty items
+        normalizeCartQuantities(currentBasket);
 
         cart.calculate();
     });
