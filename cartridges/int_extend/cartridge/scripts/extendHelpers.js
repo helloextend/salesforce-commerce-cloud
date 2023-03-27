@@ -99,6 +99,8 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
     var isValid = validateOffer(params);
 
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
+
     if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.extendTerm.isEmpty() || !isValid) {
         return;
     }
@@ -154,6 +156,9 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
         warrantyLi.setQuantityValue(parseInt(quantity, 10));
         warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
         parentLineItem.custom.persistentUUID = parentLineItem.UUID;
+
+        // Normalize cart quatities for extend warranty items
+        normalizeCartQuantities(currentBasket);
 
         cart.calculate();
     });

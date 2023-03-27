@@ -36,6 +36,9 @@ var extendProcessAPIHelpers = require('*/cartridge/scripts/extend');
 /* EXTEND SHIPPING PROTECTION HELPERS */
 var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippingProtectionHelpers');
 
+/* EXTEND WARRANTY CART NORMALIZATION HOOK */
+var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
+
 /* Check the current API version */
 var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
@@ -198,6 +201,9 @@ function removeShippingProtection() {
             currentBasket.custom.isExtendShippingProtectionAdded = false;
             currentBasket.custom.isExtendShippingProtectionRemoved = true;
 
+            // Normalize cart quatities for extend warranty items
+            normalizeCartQuantities(currentBasket);
+
             cart.calculate();
         });
     }
@@ -232,6 +238,9 @@ function updateShippingProtection() {
                 extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(cart, params, Product);
                 shippingProtectionLineItem.custom.isESPupdated = false;
             }
+
+            // Normalize cart quatities for extend warranty items
+            normalizeCartQuantities(currentBasket);
 
             cart.calculate();
         });

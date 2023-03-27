@@ -28,14 +28,9 @@ function calculate (basket) {
     // ===================================================
     // =====   CALCULATE PRODUCT LINE ITEM PRICES    =====
     // ===================================================
-    
+
     calculateProductPrices(basket);
-    
-    // =======================================================
-    // =====   NORMALIZE CART QUANTITIES FOR EXTEND ITEMS ====
-    // =======================================================
-    normalizeCartQuantities(basket);
-    
+
     // ===================================================
     // =====    CALCULATE GIFT CERTIFICATE PRICES    =====
     // ===================================================
