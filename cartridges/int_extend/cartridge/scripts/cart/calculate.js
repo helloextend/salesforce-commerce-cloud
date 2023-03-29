@@ -22,7 +22,6 @@ var Site = require('dw/system/Site');
 var Transaction = require('dw/system/Transaction');
 
 
-var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 var extendShippingProtectionHelpers = require('*/cartridge/scripts/extendShippingProtectionHelpers');
 
 /* Check the current API version */
@@ -89,12 +88,6 @@ exports.calculate = function (basket) {
     // since we might have bonus product line items, we need to
     // reset product prices
     calculateProductPrices(basket);
-
-    // =======================================================
-    // =====   NORMALIZE CART QUANTITIES FOR EXTEND ITEMS ====
-    // =======================================================
-    normalizeCartQuantities(basket);
-
 
     // recalculate products prices after normalization
     // quantities

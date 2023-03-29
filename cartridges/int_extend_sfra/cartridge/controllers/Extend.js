@@ -183,6 +183,7 @@ server.post('PostPurchase', function (req, res, next) {
     var ProductLineItemsModel = require('*/cartridge/models/productLineItems');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendWarrantyLineItemHelpers = require('*/cartridge/scripts/helpers/extendWarrantyLineItemHelpers');
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     if (!currentBasket) {
@@ -222,6 +223,9 @@ server.post('PostPurchase', function (req, res, next) {
         };
 
         Transaction.wrap(function () {
+            // Normalize cart quatities for extend warranty items
+            normalizeCartQuantities(currentBasket);
+            
             basketCalculationHelpers.calculateTotals(currentBasket);
         });
 

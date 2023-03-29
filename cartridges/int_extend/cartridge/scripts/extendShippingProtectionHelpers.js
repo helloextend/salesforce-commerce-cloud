@@ -15,6 +15,8 @@ var Transaction = require('dw/system/Transaction');
 var collections = require('*/cartridge/scripts/util/collections');
 var ProductMgr = require('dw/catalog/ProductMgr');
 
+var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
+
 /**
  * Converted cents to dollars
  * @param {number} productValue - product price value via cents
@@ -136,6 +138,9 @@ function addExtendShippingProtectionToCart(cart, params, shippingProtectionProdu
 
         currentBasket.custom.isExtendShippingProtectionAdded = true;
         currentBasket.custom.isExtendShippingProtectionRemoved = false;
+
+        // Normalize cart quatities for extend warranty items
+        normalizeCartQuantities(currentBasket);
 
         cart.calculate();
     });

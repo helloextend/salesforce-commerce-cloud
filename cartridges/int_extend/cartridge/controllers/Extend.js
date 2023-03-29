@@ -94,6 +94,8 @@ function addExtendProduct() {
     var currentBasket = cart.object;
     var params = request.httpParameterMap;
 
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
+
     if (!currentBasket) {
         response.setStatusCode(500);
         response.renderJSON({
@@ -106,6 +108,9 @@ function addExtendProduct() {
     extendHelpers.createOrUpdateExtendLineItem(cart, params, ProductModel);
 
     Transaction.wrap(function () {
+        // Normalize cart quatities for extend warranty items
+        normalizeCartQuantities(currentBasket);
+
         cart.calculate();
     });
 
@@ -289,6 +294,8 @@ function postPurchase() {
     /* EXTEND HELPERS*/
     var extendWarrantyLineItemHelpers = require('*/cartridge/scripts/extendWarrantyLineItemHelpers');
 
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
+
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     if (!currentBasket) {
         return;
@@ -311,6 +318,13 @@ function postPurchase() {
         } else {
             extendWarrantyLineItemHelpers.createExtendLineItem(cart, form, ProductModel);
         }
+
+        Transaction.wrap(function () {
+            // Normalize cart quatities for extend warranty items
+            normalizeCartQuantities(currentBasket);
+    
+            cart.calculate();
+        });
 
         var updatedBasket = app.getModel('Cart').get();
 
