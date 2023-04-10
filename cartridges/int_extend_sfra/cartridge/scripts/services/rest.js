@@ -131,6 +131,16 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.mock = mocks.ordersResponseMock;
             break;
 
+        case 'leads':
+            configObj.endpoint = 'leads';
+            configObj.method = 'POST';
+            break;
+
+        case 'getLeadsInfo':
+            configObj.endpoint = 'leads/' + requestObject.leadToken;
+            configObj.method = 'GET';
+            break;
+
         case 'historicalOrdersBatch':
             configObj.endpoint = 'orders/batch?historical=true';
             configObj.method = 'POST';
