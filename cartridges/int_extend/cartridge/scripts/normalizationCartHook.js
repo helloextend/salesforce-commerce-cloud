@@ -76,7 +76,7 @@ function normalizeCartQuantities(basket) {
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule' && shippingProtectionLineItem) {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && shippingProtectionLineItem && currentAPIversion) {
         Transaction.wrap(function () {
             extendShippingProtectionNormalizeCart(basket, productsToShippingProtection);
         });

@@ -15,7 +15,7 @@ var Site = require('dw/system/Site').getCurrent();
  */
 function getUsedPlan(plans, extendPlanId) {
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
-    if (extendAPIMethod === 'contractsAPIonSchedule') {
+    if (extendAPIMethod === 'contractsAPIonSchedule' && extendAPIMethod) {
         for (var j = 0; j < plans.base.length; j++) {
             var currentPlan = plans.base[j];
             if (currentPlan.id === extendPlanId) {

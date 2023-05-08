@@ -22,7 +22,7 @@ var Site = require('dw/system/Site').getCurrent();
 function getUsedPlan(plans, extendPlanId) {
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (extendAPIMethod === 'contractsAPIonSchedule') {
+    if (extendAPIMethod === 'contractsAPIonSchedule' && extendAPIMethod) {
         for (var j = 0; j < plans.base.length; j++) {
             var currentPlan = plans.base[j];
             if (currentPlan.id === extendPlanId) {
@@ -410,7 +410,7 @@ function markOrderAsSent(order) {
     var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     try {
         Transaction.wrap(function () {
-            order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
+            order.custom.extendOrderStatus = 'The current order has been sent to the Extend';
         });
     } catch (error) {
         logger.error('The error occurred during the orders processing', error);
@@ -492,10 +492,24 @@ function createExtendOrderQueue(order) {
  */
 function addContractToQueue(order) {
     var OrderMgr = require('dw/order/OrderMgr');
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var Transaction = require('dw/system/Transaction');
     var extend = require('~/cartridge/scripts/extend');
 
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
     var customer = getCustomer(order);
+
+    if (!apiMethod) {
+        // Warns that the order has not sent to Extend via logger
+        logger.warn('You should send orderNo {0} info to Extend manually', order.getOrderNo());
+
+        // Warns that the order has not sent to Extend via order custom attribute (see BM order's attribute)
+        Transaction.wrap(function () {
+            order.custom.extendOrderStatus = 'The current order has not been sent to the Extend. You should send the order info to Extend manually';
+        });
+
+        return;
+    }
 
     if (apiMethod === 'contractsAPIonSchedule') {
         createContractsCO(order);

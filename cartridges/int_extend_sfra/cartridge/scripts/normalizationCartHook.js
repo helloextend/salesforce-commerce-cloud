@@ -22,6 +22,7 @@ function normalizeCartQuantities(basket) {
     var warrantyItems = [];
     var leadsLineItems = [];
     var productsToShippingProtection = []
+    var shippingProtectionLineItem = null;
 
     if (basket) {
         productsToShippingProtection = extendShippingProtectionHelpers.getProductToCreateQuotes(basket)
@@ -41,6 +42,11 @@ function normalizeCartQuantities(basket) {
         if (persistentUUID && parentLineItemUUID) {
             warrantyItems.push(lineItem);
         }
+
+        if (lineItem.custom.isExtendShippingProtection) {
+            shippingProtectionLineItem = true;
+        }
+
 
         // Is LineItem leadOffer
         var leadExtendId = lineItem.custom.leadExtendId;
@@ -67,7 +73,7 @@ function normalizeCartQuantities(basket) {
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && shippingProtectionLineItem && currentAPIversion) {
         Transaction.wrap(function () {
             extendShippingProtectionNormalizeCart(basket, productsToShippingProtection);
         });

@@ -14,6 +14,8 @@ server.extend(page);
  */
 server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     var Site = require('dw/system/Site').getCurrent();
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var Transaction = require('dw/system/Transaction');
     var OrderMgr = require('dw/order/OrderMgr');
     var extend = require('~/cartridge/scripts/extend');
     var processAPIhelpers = require('~/cartridge/scripts/helpers/processAPIhelpers');
@@ -28,6 +30,18 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
 
     var order = OrderMgr.getOrder(viewData.orderID);
     var orderToken = order.getOrderToken();
+
+    if (!apiMethod) {
+        // Warns that the order has not sent to Extend via logger
+        logger.warn('You should send orderNo {0} info to Extend manually', viewData.orderID);
+
+        // Warns that the order has not sent to Extend via order custom attribute (see BM order's attribute)
+        Transaction.wrap(function () {
+            order.custom.extendOrderStatus = 'The current order has not been sent to the Extend. You should send the order info to Extend manually';
+        });
+
+        return next();
+    }
 
     // Resolves an order using the orderNumber and orderToken.
     order = OrderMgr.getOrder(viewData.orderID, orderToken);

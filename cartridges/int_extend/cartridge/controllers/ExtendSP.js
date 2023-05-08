@@ -42,6 +42,9 @@ var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook
 /* Check the current API version */
 var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
+/* Check the ESP value */
+var enableExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('enableExtendShippingProtection').value;
+
 /* The variables used in each function */
 var response = require('*/cartridge/scripts/util/Response');
 var cart = app.getModel('Cart').goc();
@@ -57,7 +60,7 @@ function getConfig() {
         return;
     }
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion && enableExtendShippingProtection) {
         try {
             var extendShippingProtectionConfig = extendProcessAPIHelpers.getExtendShippingProtectionConfig();
             var attachBehavior = extendShippingProtectionConfig.config.attachBehavior;
@@ -89,7 +92,7 @@ function shippingProtectionCreateQuotes() {
         return;
     }
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion && enableExtendShippingProtection) {
         var storeID = Site.getCurrent().getCustomPreferenceValue('extendStoreID');
 
         var products = [];
@@ -154,7 +157,7 @@ function addExtendShippingOffer() {
         return;
     }
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion && enableExtendShippingProtection) {
         var params = request.httpParameterMap;
 
         extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(cart, params, Product);
@@ -179,7 +182,7 @@ function removeShippingProtection() {
         return;
     }
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion && enableExtendShippingProtection) {
         var isShippingProtectionFound = false;
         var shippingProtectionLineItem = null;
 
@@ -219,7 +222,7 @@ function updateShippingProtection() {
         return;
     }
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion && enableExtendShippingProtection) {
         var params = request.httpParameterMap;
 
         var isShippingProtectionFound = false;

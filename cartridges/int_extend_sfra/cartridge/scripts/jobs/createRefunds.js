@@ -101,7 +101,7 @@ exports.create = function () {
                     continue;
                 }
 
-                if (!orderApiMethod) {
+                if (apiMethod === 'contractsAPIonSchedule') {
                     if (response.refundAmount.amount === 0) {
                         logger.info('An Extend contract №{0} has not been refunded due to the refund amount', extendContractId);
                         extendRefundStatuses[extendContractId] = refundStatus.REJECT;

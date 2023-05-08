@@ -249,7 +249,7 @@ function markOrderAsSent(order) {
     var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     try {
         Transaction.wrap(function () {
-            order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
+            order.custom.extendOrderStatus = 'The current order has been sent to the Extend';
         });
     } catch (error) {
         logger.error('The error occurred during the orders processing', error);
