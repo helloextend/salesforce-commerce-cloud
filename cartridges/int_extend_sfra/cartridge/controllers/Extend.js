@@ -223,9 +223,6 @@ server.post('PostPurchase', function (req, res, next) {
         };
 
         Transaction.wrap(function () {
-            // Normalize cart quatities for extend warranty items
-            normalizeCartQuantities(currentBasket);
-            
             basketCalculationHelpers.calculateTotals(currentBasket);
         });
 

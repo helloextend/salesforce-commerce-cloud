@@ -133,7 +133,7 @@ exports.calculate = function (basket) {
  * @param {Object} cart - cart object
  */
 function updateExtendShippingProtectionValue(cart) {
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion) {
         var isShippingProtectionFound = false;
         var shippingProtectionLineItem = null;
 

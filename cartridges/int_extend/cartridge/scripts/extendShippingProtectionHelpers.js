@@ -232,7 +232,7 @@ function createOrUpdateExtendShippingProtectionQuote(cart, params, Product) {
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion) {
         var currentBasket = cart.object;
         var storeID = Site.getCurrent().getCustomPreferenceValue('extendStoreID');
     

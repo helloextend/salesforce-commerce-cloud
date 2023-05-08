@@ -33,7 +33,7 @@ exports.execute = function () {
     var orderExtendStatus = 'The current order has been sent to the Extend';
 
     var historicalOrder = OrderMgr.searchOrders(
-        'creationDate <= {0} AND creationDate >= {1} AND custom.wasSentToExtend !={2}',
+        'creationDate <= {0} AND creationDate >= {1} AND custom.extendOrderStatus !={2}',
         'creationDate desc',
         currentTime,
         startingDate,

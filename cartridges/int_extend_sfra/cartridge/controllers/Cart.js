@@ -450,13 +450,14 @@ server.append('UpdateQuantity', function (req, res, next) {
     var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var enableExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('enableExtendShippingProtection').value;
+    var currentBasket = BasketMgr.getCurrentBasket();
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
-        var currentBasket = BasketMgr.getCurrentBasket();
+    if (!enableExtendShippingProtection || !currentBasket) {
+        return next();
+    }
 
-        if (!currentBasket) {
-            return next();
-        }
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion && enableExtendShippingProtection) {
         extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(currentBasket);
 
         Transaction.wrap(function () {
@@ -482,8 +483,13 @@ server.get('GetConfig', function (req, res, next) {
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
 
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
+    var enableExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('enableExtendShippingProtection').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (!enableExtendShippingProtection) {
+        return next();
+    }
+
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion) {
         var currentBasket = BasketMgr.getCurrentBasket();
 
         if (!currentBasket) {
@@ -523,9 +529,15 @@ server.post('ShippingProtectionCreateQuotes', function (req, res, next) {
     var extend = require('~/cartridge/scripts/extend');
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
 
+    var enableExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('enableExtendShippingProtection').value;
+
+    if (!enableExtendShippingProtection) {
+        return next();
+    }
+
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion) {
         var currentBasket = BasketMgr.getCurrentBasket();
 
         var storeID = Site.getCurrent().getCustomPreferenceValue('extendStoreID');
@@ -605,9 +617,15 @@ server.post('AddExtendShippingOffer', function (req, res, next) {
     var CartModel = require('*/cartridge/models/cart');
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
 
+    var enableExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('enableExtendShippingProtection').value;
+
+    if (!enableExtendShippingProtection) {
+        return next();
+    }
+
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion) {
         var currentBasket = BasketMgr.getCurrentBasket();
 
         if (!currentBasket) {
@@ -645,9 +663,15 @@ server.post('RemoveShippingProtection', function (req, res, next) {
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
+    var enableExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('enableExtendShippingProtection').value;
+
+    if (!enableExtendShippingProtection) {
+        return next();
+    }
+
     var currentAPIversion = Site.getCurrent().getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (currentAPIversion !== 'contractsAPIonSchedule') {
+    if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion) {
         var currentBasket = BasketMgr.getCurrentBasket();
 
         if (!currentBasket) {
