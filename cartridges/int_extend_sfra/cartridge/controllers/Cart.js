@@ -445,6 +445,7 @@ server.append('UpdateQuantity', function (req, res, next) {
     var BasketMgr = require('dw/order/BasketMgr');
     var Site = require('dw/system/Site');
     var Transaction = require('dw/system/Transaction');
+    var collections = require('*/cartridge/scripts/util/collections');
     var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
     var extendShippingProtectionHelpers = require('*/cartridge/scripts/helpers/extendShippingProtectionHelpers');
     var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
@@ -453,14 +454,30 @@ server.append('UpdateQuantity', function (req, res, next) {
     var enableExtendShippingProtection = Site.getCurrent().getCustomPreferenceValue('enableExtendShippingProtection').value;
     var currentBasket = BasketMgr.getCurrentBasket();
 
-    if (!enableExtendShippingProtection || !currentBasket) {
+    // Determine whether the basket is/ whether the correct API version selected
+    var IsInvalidCondition = !enableExtendShippingProtection || !currentBasket;
+
+    if (IsInvalidCondition) {
         return next();
     }
 
     if (currentAPIversion !== 'contractsAPIonSchedule' && currentAPIversion && enableExtendShippingProtection) {
-        extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(currentBasket);
+        var isShippingProtectionFound = false;
+        var shippingProtectionLineItem = null;
 
         Transaction.wrap(function () {
+            var allLineItems = currentBasket.getAllProductLineItems();
+            collections.forEach(allLineItems, function (productLineItem) {
+                if (productLineItem.custom.isExtendShippingProtection) {
+                    isShippingProtectionFound = true;
+                    shippingProtectionLineItem = productLineItem;
+                }
+            });
+
+            if (isShippingProtectionFound && shippingProtectionLineItem) {
+                extendShippingProtectionHelpers.createOrUpdateExtendShippingProtectionQuote(currentBasket);
+            }
+
             // Normalize cart quatities for extend warranty items
             normalizeCartQuantities(currentBasket);
 
