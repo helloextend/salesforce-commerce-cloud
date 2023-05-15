@@ -27,7 +27,7 @@ function updateExtendWarranty(currentWarrantyLi, form) {
  * @param {Object} parentLineItem - parrent line item
  * @param {Object} form - info about the extension (id etc.)
  */
-function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
+function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form, offerInfo) {
     var Transaction = require('dw/system/Transaction');
     var cartHelper = require('*/cartridge/scripts/cart/cartHelpers');
     var warrantyLi;
@@ -59,6 +59,9 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form) {
         warrantyLi.custom.persistentUUID = warrantyLi.UUID;
         warrantyLi.custom.isWarranty = true;
         warrantyLi.custom.planId = form.extendPlanId;
+        if (offerInfo.coverageType) {
+            warrantyLi.custom.coverageType = offerInfo.coverageType;
+        }
         if (parentLineItem) {
             warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
             parentLineItem.custom.persistentUUID = parentLineItem.UUID;

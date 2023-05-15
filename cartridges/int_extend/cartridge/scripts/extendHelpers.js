@@ -53,6 +53,7 @@ function getUsedPlan(plans, extendPlanId) {
 function validateOffer(params) {
     var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     var extend = require('~/cartridge/scripts/extend');
+    var offerInfo = {};
     var isValid = false;
 
     if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.pid.isEmpty()) {
@@ -84,7 +85,12 @@ function validateOffer(params) {
         return isValid;
     }
 
-    return true;
+    var coverageType = usedPlan.contract.coverageIncludes;
+
+    offerInfo.isValid = true;
+    offerInfo.coverageType = coverageType;
+
+    return offerInfo;
 }
 
 /**
@@ -97,7 +103,10 @@ function validateOffer(params) {
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
-    var isValid = validateOffer(params);
+    var offerInfo = validateOffer(params);
+
+    var isValid = offerInfo.isValid || false;
+    var coverageType = offerInfo.coverageType;
 
     var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
@@ -155,6 +164,7 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
         warrantyLi.setPriceValue(parseInt(params.extendPrice, 10) / 100);
         warrantyLi.setQuantityValue(parseInt(quantity, 10));
         warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
+        warrantyLi.custom.coverageType = coverageType;
         parentLineItem.custom.persistentUUID = parentLineItem.UUID;
 
         // Normalize cart quatities for extend warranty items
@@ -302,6 +312,44 @@ function createContractsCO(order) {
             }
         }
     }
+}
+
+/**
+ * Add additional attributes to Order/ProductLineItem object to extend XML order info
+ * @param {dw.order.Order} order : API order
+ * @param {string} storeID : extend store ID
+ */
+function addXMLAdditionsOrdersAPIonSchedule(order, storeID) {
+    var Transaction = require('dw/system/Transaction');
+    var collections = require('*/cartridge/scripts/util/collections');
+
+    var productsArray = [];
+    var warrantiesArray = [];
+    var warrantyLi = null;
+    var productLi = null;
+
+    var allLineItems = order.getAllProductLineItems();
+    collections.forEach(allLineItems, function (productLineItem) {
+        if (productLineItem.custom.parentLineItemUUID) {
+            warrantiesArray.push(productLineItem);
+        } else if (productLineItem.custom.persistentUUID && !productLineItem.custom.parentLineItemUUID) {
+            productsArray.push(productLineItem);
+        }
+    });
+
+    Transaction.wrap(function () {
+        order.custom.extendStoreId = storeID;
+
+        for (var i = 0; i < warrantiesArray.length; i++) {
+            warrantyLi = warrantiesArray[i];
+            for (var j = 0; j < productsArray.length; j++) {
+                productLi = productsArray[j];
+                if (warrantyLi.custom.parentLineItemUUID === productLi.custom.persistentUUID) {
+                    warrantyLi.custom.parentLineItemProductId = productLi.getProductID();
+                }
+            }
+        }
+    });
 }
 
 /**
@@ -497,6 +545,8 @@ function addContractToQueue(order) {
     var extend = require('~/cartridge/scripts/extend');
 
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+    var extendStoreID = Site.getCustomPreferenceValue('extendStoreID');
+
     var customer = getCustomer(order);
 
     if (!apiMethod) {
@@ -523,6 +573,7 @@ function addContractToQueue(order) {
         markOrderAsSent(order);
     } else if (apiMethod === 'ordersAPIonSchedule') {
         createExtendOrderQueue(order);
+        addXMLAdditionsOrdersAPIonSchedule(order, extendStoreID);
     }
 
     return;

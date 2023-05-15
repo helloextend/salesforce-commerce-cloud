@@ -144,6 +144,44 @@ function createExtendOrderQueue(order, orderID) {
 }
 
 /**
+ * Add additional attributes to Order/ProductLineItem object to extend XML order info
+ * @param {dw.order.Order} order : API order
+ * @param {string} storeID : extend store ID
+ */
+function addXMLAdditionsOrdersAPIonSchedule(order, storeID) {
+    var Transaction = require('dw/system/Transaction');
+    var collections = require('*/cartridge/scripts/util/collections');
+
+    var productsArray = [];
+    var warrantiesArray = [];
+    var warrantyLi = null;
+    var productLi = null;
+
+    var allLineItems = order.getAllProductLineItems();
+    collections.forEach(allLineItems, function (productLineItem) {
+        if (productLineItem.custom.isWarranty) {
+            warrantiesArray.push(productLineItem);
+        } else if (productLineItem.custom.persistentUUID && !productLineItem.custom.parentLineItemUUID) {
+            productsArray.push(productLineItem);
+        }
+    });
+
+    Transaction.wrap(function () {
+        order.custom.extendStoreId = storeID;
+
+        for (var i = 0; i < warrantiesArray.length; i++) {
+            warrantyLi = warrantiesArray[i];
+            for (var j = 0; j < productsArray.length; j++) {
+                productLi = productsArray[j];
+                if (warrantyLi.custom.parentLineItemUUID === productLi.custom.persistentUUID) {
+                    warrantyLi.custom.parentLineItemProductId = productLi.getProductID();
+                }
+            }
+        }
+    });
+}
+
+/**
  * Process response to get matched line item to fill extendContractIds field
  * @param {string} apiPid - current id of product
  * @param {Object} ordersLI - current order
@@ -310,6 +348,7 @@ module.exports = {
     getCustomer: getCustomer,
     createContractsCO: createContractsCO,
     createExtendOrderQueue: createExtendOrderQueue,
+    addXMLAdditionsOrdersAPIonSchedule: addXMLAdditionsOrdersAPIonSchedule,
     markOrderAsSent: markOrderAsSent,
     processOrdersResponse: processOrdersResponse
 };
