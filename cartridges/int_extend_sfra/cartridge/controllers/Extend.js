@@ -192,12 +192,14 @@ server.post('PostPurchase', function (req, res, next) {
 
     var form = req.form;
 
+    var offerInfo = extendHelpers.validateOffer(form);
+
     var result = {
         error: false,
         message: Resource.msg('text.alert.addedtobasket', 'product', null)
     };
 
-    if (form.extendPlanId && form.extendPrice && form.extendTerm) {
+    if (offerInfo.isValid && form.extendPlanId && form.extendPrice && form.extendTerm) {
         var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
 
         // Determine whether warranty line item already exists for this product line item
@@ -213,7 +215,7 @@ server.post('PostPurchase', function (req, res, next) {
         if (currentWarrantyLi) {
             extendWarrantyLineItemHelpers.updateExtendWarranty(currentWarrantyLi, form);
         } else {
-            extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, null, form);
+            extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, null, form, offerInfo);
         }
 
         var quantityTotal = ProductLineItemsModel.getTotalQuantity(currentBasket.productLineItems);

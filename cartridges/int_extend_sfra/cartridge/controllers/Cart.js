@@ -32,9 +32,10 @@ server.append('AddProduct', function (req, res, next) {
     var form = req.form;
     var viewData = res.getViewData(); // pliUUID
 
-    var isOfferValide = extendHelpers.validateOffer(form);
+    var offerInfo = extendHelpers.validateOffer(form);
+    var isValid = offerInfo.isValid || false;
 
-    if (isOfferValide && form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
+    if (isValid && form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
         var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
         var parentLineItem;
 
@@ -73,7 +74,7 @@ server.append('AddProduct', function (req, res, next) {
         if (currentWarrantyLi) {
             extendWarrantyLineItemHelpers.updateExtendWarranty(currentWarrantyLi, form);
         } else {
-            extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
+            extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form, offerInfo);
         }
 
         quantityTotal = !isWarrantyInCart ? viewData.quantityTotal + parseInt(form.quantity, 10) : viewData.quantityTotal;
@@ -191,9 +192,10 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
         return next();
     }
 
-    var isOfferValide = extendHelpers.validateOffer(form);
+    var offerInfo = extendHelpers.validateOffer(form);
+    var isValid = offerInfo.isValid || false;
 
-    if (!isOfferValide) {
+    if (!isValid) {
         res.json({
             error: true
         });
@@ -212,7 +214,7 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
         }
     }
 
-    extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form);
+    extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form, offerInfo);
 
     Transaction.wrap(function () {
         // Normalize cart quatities for extend warranty items

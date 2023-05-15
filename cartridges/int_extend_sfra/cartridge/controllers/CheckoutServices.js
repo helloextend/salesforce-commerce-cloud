@@ -21,6 +21,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
     var processAPIhelpers = require('~/cartridge/scripts/helpers/processAPIhelpers');
 
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+    var extendStoreID = Site.getCustomPreferenceValue('extendStoreID');
 
     var viewData = res.getViewData();
 
@@ -60,6 +61,7 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
         extend.ordersAPIcreateLeadContractId({ order: order, customer: customer });
     } else if (apiMethod === 'ordersAPIonSchedule') {
         processAPIhelpers.createExtendOrderQueue(order, viewData.orderID);
+        processAPIhelpers.addXMLAdditionsOrdersAPIonSchedule(order, extendStoreID);
     }
     return next();
 });
