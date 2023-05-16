@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 /* eslint-disable no-undef */
@@ -450,8 +451,16 @@ function processPostPurchase(ordersLI, apiCurrentLI) {
 }
 
 /**
+ * Process non-warrantable orders
+ * @param {dw.order.Order} order - current order
+ */
+function processNonWarrantableProduct(order) {
+    markOrderAsSent(order);
+}
+
+/**
  * Get orders payload for specific API version
- * @param {ArrayList<Product>} order - array of orders
+ * @param {dw.order.Orde} order - current order
  */
 function markOrderAsSent(order) {
     var Transaction = require('dw/system/Transaction');
@@ -493,6 +502,10 @@ function processOrdersResponse(ordersResponse, order) {
             matchedLI = processExtendShippingProtection(apiPid, ordersLI);
         } else if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
             matchedLI = processPostPurchase(ordersLI, apiCurrentLI);
+        } else if (apiCurrentLI.type === 'non_warrantable') {
+            logger.info('Current product is non-warrantable: {0}', apiCurrentLI.product.id);
+            processNonWarrantableProduct(order);
+            continue;
         } else {
             logger.info('Current Resonses has an invalid body: {0}', apiCurrentLI);
         }
