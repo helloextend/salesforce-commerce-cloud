@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 /* eslint-disable new-cap */
@@ -129,6 +130,16 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.extendMethod = 'orders';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             configObj.mock = mocks.ordersResponseMock;
+            break;
+
+        case 'leads':
+            configObj.endpoint = 'leads';
+            configObj.method = 'POST';
+            break;
+
+        case 'getLeadsInfo':
+            configObj.endpoint = 'leads/' + requestObject.leadToken;
+            configObj.method = 'GET';
             break;
 
         case 'historicalOrdersBatch':

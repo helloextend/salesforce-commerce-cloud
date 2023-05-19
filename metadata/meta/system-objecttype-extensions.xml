@@ -140,6 +140,26 @@
                         <display xml:lang="x-default">Instagram Commerce</display>
                         <value>12</value>
                     </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Google</display>
+                        <value>13</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">TikTok</display>
+                        <value>14</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Snapchat</display>
+                        <value>15</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">WhatsApp</display>
+                        <value>16</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">YouTube</display>
+                        <value>17</value>
+                    </value-definition>
                 </value-definitions>
             </attribute-definition>
             <attribute-definition attribute-id="creationDate"/>
@@ -1434,6 +1454,26 @@
                         <display xml:lang="x-default">Instagram Commerce</display>
                         <value>12</value>
                     </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Google</display>
+                        <value>13</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">TikTok</display>
+                        <value>14</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Snapchat</display>
+                        <value>15</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">WhatsApp</display>
+                        <value>16</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">YouTube</display>
+                        <value>17</value>
+                    </value-definition>
                 </value-definitions>
             </attribute-definition>
             <attribute-definition attribute-id="confirmationStatus">
@@ -1598,6 +1638,14 @@
             </attribute-definition>
         </system-attribute-definitions>
         <custom-attribute-definitions>
+            <attribute-definition attribute-id="extendOrderStatus">
+                <display-name xml:lang="x-default">Extend Order Status</display-name>
+                <description xml:lang="x-default">Display was the order sent to the Extend Service</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="extendRefundStatus">
                 <display-name xml:lang="x-default">Extend Refund Status</display-name>
                 <type>enum-of-string</type>
@@ -1634,19 +1682,11 @@
                     </value-definition>
                 </value-definitions>
             </attribute-definition>
-            <attribute-definition attribute-id="wasSentToExtend">
-                <display-name xml:lang="x-default">Was the order sent to Extend?</display-name>
-                <description xml:lang="x-default">Display was the order sent to the Extend Service.</description>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>true</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="extend">
                 <display-name xml:lang="x-default">Extend</display-name>
-                <attribute attribute-id="wasSentToExtend"/>
+                <attribute attribute-id="extendOrderStatus"/>
                 <attribute attribute-id="extendRefundStatus"/>
             </attribute-group>
         </group-definitions>
@@ -4048,6 +4088,14 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="planId">
+                <display-name xml:lang="x-default">Extend Plan Id</display-name>
+                <description xml:lang="x-default">Display the plan id of the extension</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="postPurchaseLeadToken">
                 <display-name xml:lang="x-default">postPurchaseLeadToken</display-name>
                 <type>string</type>
@@ -4910,7 +4958,7 @@
                 <default-value>false</default-value>
             </attribute-definition>
             <attribute-definition attribute-id="enableExtendShippingProtection">
-                <display-name xml:lang="x-default">Enable Extend Shipping Protection</display-name>
+                <display-name xml:lang="x-default">Shipping Protection</display-name>
                 <description xml:lang="x-default">Enables Extend Shipping Protection offer widget in the Checkout page (recommended) or the Cart page.  Requires Orders API for Extend integration method.</description>
                 <type>enum-of-string</type>
                 <mandatory-flag>false</mandatory-flag>
@@ -4920,7 +4968,7 @@
                         <display xml:lang="x-default">Checkout Offer</display>
                         <value>checkout</value>
                     </value-definition>
-                    <value-definition default="true">
+                    <value-definition>
                         <display xml:lang="x-default">Cart Offer</display>
                         <value>cart</value>
                     </value-definition>
@@ -4965,7 +5013,7 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
                 <value-definitions>
-                    <value-definition default="true">
+                    <value-definition>
                         <display xml:lang="x-default">Orders API on Order Create</display>
                         <value>ordersAPIonOrderCreate</value>
                     </value-definition>
@@ -4974,7 +5022,7 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
                         <value>ordersAPIonSchedule</value>
                     </value-definition>
                     <value-definition>
-                        <display xml:lang="x-default">Contracts API on Schedule</display>
+                        <display xml:lang="x-default">DEPRECATED - Contract API on Schedule</display>
                         <value>contractsAPIonSchedule</value>
                     </value-definition>
                 </value-definitions>
@@ -5010,13 +5058,12 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
             <attribute-definition attribute-id="extendAccessToken">
                 <display-name xml:lang="x-default">Extend Access Token</display-name>
                 <description xml:lang="x-default">Merchant specific API key available from their Extend account. This key is environment specific (Extend production or Extend sandbox) if the merchant has multiple environments, and is required to make the API connections with Extend.</description>
-                <type>string</type>
+                <type>password</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="extendAnalyticsSwitch">
-                <display-name xml:lang="x-default">Enable Analytics</display-name>
+                <display-name xml:lang="x-default">Analytics</display-name>
                 <description xml:lang="x-default">Invokes our Analytics methods within the Extend SDK to track consumer behavior related to warranty purchases.</description>
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
@@ -5024,7 +5071,7 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
                 <default-value>true</default-value>
             </attribute-definition>
             <attribute-definition attribute-id="extendCartUpsellSwitch">
-                <display-name xml:lang="x-default">Enable Cart Offers</display-name>
+                <display-name xml:lang="x-default">Cart Offers</display-name>
                 <description xml:lang="x-default">Allows merchants to enable or disable the Extend Cart offer.</description>
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
@@ -5042,14 +5089,30 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
             <attribute-definition attribute-id="extendImageViewType">
                 <display-name xml:lang="x-default">Product Image Size</display-name>
                 <description xml:lang="x-default">Determines the size of the product image stored on the Extend catalog.  Accepted values are “small”, “medium”, “large”, and “hi-res”.  This is the image that Extend uses when sending warranty contract emails to customers.</description>
-                <type>string</type>
+                <type>enum-of-string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-                <default-value>large</default-value>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Small</display>
+                        <value>small</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Medium</display>
+                        <value>medium</value>
+                    </value-definition>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Large</display>
+                        <value>large</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Hi-res</display>
+                        <value>hi-res</value>
+                    </value-definition>
+                </value-definitions>
             </attribute-definition>
             <attribute-definition attribute-id="extendPDPSwitch">
-                <display-name xml:lang="x-default">Enable in PDP Offers</display-name>
+                <display-name xml:lang="x-default">PDP Offers</display-name>
                 <description xml:lang="x-default">Allows merchants to enable or disable the Extend Product Detail Page (PDP) offer.</description>
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
@@ -5057,7 +5120,7 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
                 <default-value>true</default-value>
             </attribute-definition>
             <attribute-definition attribute-id="extendPDPUpsellSwitch">
-                <display-name xml:lang="x-default">Enable Modal Offers</display-name>
+                <display-name xml:lang="x-default">Modal Offers</display-name>
                 <description xml:lang="x-default">Allows merchants to enable or disable the Extend Interstitial Modal offer.</description>
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
@@ -5098,12 +5161,21 @@ Contracts API is a legacy feature whereby only Contract creation occurs (require
                 <default-value>Online Store</default-value>
             </attribute-definition>
             <attribute-definition attribute-id="isExtendProductionMode">
-                <display-name xml:lang="x-default">Extend Environment in Production</display-name>
+                <display-name xml:lang="x-default">Extend Environment</display-name>
                 <description xml:lang="x-default">Defines if the Extend API calls the URL for the Extend Production environment (Yes = https://api.helloextend.com/) or Extend Demo environment (No = https://api-demo.helloextend.com/).  Access Token must be adjusted in the setting below to correspond to the appropriate environment.</description>
-                <type>boolean</type>
+                <type>enum-of-string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
-                <default-value>false</default-value>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Production</display>
+                        <value>production</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Demo</display>
+                        <value>demo</value>
+                    </value-definition>
+                </value-definitions>
             </attribute-definition>
             <attribute-definition attribute-id="listPriceDefault">
                 <display-name xml:lang="x-default">Default List Price Book ID</display-name>

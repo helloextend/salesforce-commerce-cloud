@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-use-before-define */
 /* eslint-disable new-cap */
 /* eslint-disable no-loop-func */
@@ -42,7 +43,6 @@ function getContractsDefaultPayload(paramObj) {
  */
 function getContractsPayload(paramObj) {
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
-    var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
     var defaultPayload = getContractsDefaultPayload(paramObj);
 
@@ -82,6 +82,12 @@ function getContractsPayload(paramObj) {
  */
 function getProductsPayload(productBatch) {
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+
+    if (!extendAPIMethod) {
+        logger.warn('Choose the extend API method. For now the extend method is ={0}', extendAPIMethod);
+        return;
+    }
+
     var requestObject = [];
 
     for (var i = 0; i < productBatch.length; i++) {
@@ -501,6 +507,10 @@ function getOffer(paramObj) {
  * @returns {Object} - response object
  */
 function createOrders(paramObj) {
+    // process the lead order. Make a call to Leads API.
+    var extendLeadHelpers = require('~/cartridge/scripts/extendLeadHelpers');
+    extendLeadHelpers.processLeadOrders(paramObj);
+
     var requestObject = getOrdersPayload(paramObj);
     var endpointName = 'orders';
     var apiMethod = 'orders';

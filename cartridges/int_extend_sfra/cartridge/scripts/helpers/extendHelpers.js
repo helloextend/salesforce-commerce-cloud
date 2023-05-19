@@ -15,7 +15,7 @@ var Site = require('dw/system/Site').getCurrent();
  */
 function getUsedPlan(plans, extendPlanId) {
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
-    if (extendAPIMethod === 'contractsAPIonSchedule') {
+    if (extendAPIMethod === 'contractsAPIonSchedule' && extendAPIMethod) {
         for (var j = 0; j < plans.base.length; j++) {
             var currentPlan = plans.base[j];
             if (currentPlan.id === extendPlanId) {
@@ -45,6 +45,7 @@ function getUsedPlan(plans, extendPlanId) {
  */
 function validateOffer(formObject) {
     var extend = require('~/cartridge/scripts/extend');
+    var offerInfo = {};
     var isValid = false;
 
     if (!formObject.extendPlanId || !formObject.pid || !formObject.extendPrice) {
@@ -68,7 +69,12 @@ function validateOffer(formObject) {
         return isValid;
     }
 
-    return true;
+    var coverageType = usedPlan.contract.coverageIncludes;
+
+    offerInfo.isValid = true;
+    offerInfo.coverageType = coverageType;
+
+    return offerInfo;
 }
 
 module.exports = {

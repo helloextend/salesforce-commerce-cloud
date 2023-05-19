@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable no-param-reassign */
 /* eslint-disable new-cap */
 /* eslint-disable no-loop-func */
@@ -144,6 +145,44 @@ function createExtendOrderQueue(order, orderID) {
 }
 
 /**
+ * Add additional attributes to Order/ProductLineItem object to extend XML order info
+ * @param {dw.order.Order} order : API order
+ * @param {string} storeID : extend store ID
+ */
+function addXMLAdditionsOrdersAPIonSchedule(order, storeID) {
+    var Transaction = require('dw/system/Transaction');
+    var collections = require('*/cartridge/scripts/util/collections');
+
+    var productsArray = [];
+    var warrantiesArray = [];
+    var warrantyLi = null;
+    var productLi = null;
+
+    var allLineItems = order.getAllProductLineItems();
+    collections.forEach(allLineItems, function (productLineItem) {
+        if (productLineItem.custom.isWarranty) {
+            warrantiesArray.push(productLineItem);
+        } else if (productLineItem.custom.persistentUUID && !productLineItem.custom.parentLineItemUUID) {
+            productsArray.push(productLineItem);
+        }
+    });
+
+    Transaction.wrap(function () {
+        order.custom.extendStoreId = storeID;
+
+        for (var i = 0; i < warrantiesArray.length; i++) {
+            warrantyLi = warrantiesArray[i];
+            for (var j = 0; j < productsArray.length; j++) {
+                productLi = productsArray[j];
+                if (warrantyLi.custom.parentLineItemUUID === productLi.custom.persistentUUID) {
+                    warrantyLi.custom.parentLineItemProductId = productLi.getProductID();
+                }
+            }
+        }
+    });
+}
+
+/**
  * Process response to get matched line item to fill extendContractIds field
  * @param {string} apiPid - current id of product
  * @param {Object} ordersLI - current order
@@ -241,15 +280,23 @@ function processPostPurchase(ordersLI, apiCurrentLI) {
 }
 
 /**
+ * Process non-warrantable orders
+ * @param {dw.order.Order} order - current order
+ */
+function processNonWarrantableProduct(order) {
+    markOrderAsSent(order);
+}
+
+/**
  * Get orders payload for specific API version
- * @param {ArrayList<Product>} order - array of orders
+ * @param {dw.order.Order} order - current order
  */
 function markOrderAsSent(order) {
     var Transaction = require('dw/system/Transaction');
     var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     try {
         Transaction.wrap(function () {
-            order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
+            order.custom.extendOrderStatus = 'The current order has been sent to the Extend';
         });
     } catch (error) {
         logger.error('The error occurred during the orders processing', error);
@@ -284,8 +331,12 @@ function processOrdersResponse(ordersResponse, order) {
             matchedLI = processExtendShippingProtection(apiPid, ordersLI);
         } else if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
             matchedLI = processPostPurchase(ordersLI, apiCurrentLI);
+        } else if (apiCurrentLI.type === 'non_warrantable') {
+            logger.info('Current product is non-warrantable: {0}', apiCurrentLI.product.id);
+            processNonWarrantableProduct(order);
+            continue;
         } else {
-            logger.info('Current Resonses has an invalid body: {0}', apiCurrentLI);
+            logger.info('Current Responses has an invalid body: {0}', apiCurrentLI);
         }
 
         Transaction.wrap(function () {
@@ -310,6 +361,7 @@ module.exports = {
     getCustomer: getCustomer,
     createContractsCO: createContractsCO,
     createExtendOrderQueue: createExtendOrderQueue,
+    addXMLAdditionsOrdersAPIonSchedule: addXMLAdditionsOrdersAPIonSchedule,
     markOrderAsSent: markOrderAsSent,
     processOrdersResponse: processOrdersResponse
 };

@@ -24,6 +24,11 @@ function createServiceCall(configObj) {
             var API_VERSION = null;
             var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
+            if (!extendAPIMethod) {
+                logger.warn('Choose API method to make a call. Current API version is {0}', extendAPIMethod);
+                return;
+            }
+
             var orderApiMethod = (extendAPIMethod === 'ordersAPIonOrderCreate') || (extendAPIMethod === 'ordersAPIonSchedule');
 
             if (orderApiMethod) {
@@ -132,6 +137,16 @@ function createRequestConfiguration(endpoint, requestObject) {
             configObj.extendMethod = 'orders';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             configObj.mock = mocks.ordersResponseMock;
+            break;
+
+        case 'leads':
+            configObj.endpoint = 'leads';
+            configObj.method = 'POST';
+            break;
+
+        case 'getLeadsInfo':
+            configObj.endpoint = 'leads/' + requestObject.leadToken;
+            configObj.method = 'GET';
             break;
 
         case 'historicalOrdersBatch':

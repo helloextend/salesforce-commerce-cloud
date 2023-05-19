@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 /* eslint-disable no-undef */
@@ -22,7 +23,7 @@ var Site = require('dw/system/Site').getCurrent();
 function getUsedPlan(plans, extendPlanId) {
     var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
 
-    if (extendAPIMethod === 'contractsAPIonSchedule') {
+    if (extendAPIMethod === 'contractsAPIonSchedule' && extendAPIMethod) {
         for (var j = 0; j < plans.base.length; j++) {
             var currentPlan = plans.base[j];
             if (currentPlan.id === extendPlanId) {
@@ -53,6 +54,7 @@ function getUsedPlan(plans, extendPlanId) {
 function validateOffer(params) {
     var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     var extend = require('~/cartridge/scripts/extend');
+    var offerInfo = {};
     var isValid = false;
 
     if (params.extendPlanId.isEmpty() || params.extendPrice.isEmpty() || params.pid.isEmpty()) {
@@ -84,7 +86,12 @@ function validateOffer(params) {
         return isValid;
     }
 
-    return true;
+    var coverageType = usedPlan.contract.coverageIncludes;
+
+    offerInfo.isValid = true;
+    offerInfo.coverageType = coverageType;
+
+    return offerInfo;
 }
 
 /**
@@ -97,7 +104,10 @@ function validateOffer(params) {
 */
 function createOrUpdateExtendLineItem(cart, params, Product) {
     var Transaction = require('dw/system/Transaction');
-    var isValid = validateOffer(params);
+    var offerInfo = validateOffer(params);
+
+    var isValid = offerInfo.isValid || false;
+    var coverageType = offerInfo.coverageType;
 
     var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
 
@@ -155,6 +165,7 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
         warrantyLi.setPriceValue(parseInt(params.extendPrice, 10) / 100);
         warrantyLi.setQuantityValue(parseInt(quantity, 10));
         warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
+        warrantyLi.custom.coverageType = coverageType;
         parentLineItem.custom.persistentUUID = parentLineItem.UUID;
 
         // Normalize cart quatities for extend warranty items
@@ -305,6 +316,44 @@ function createContractsCO(order) {
 }
 
 /**
+ * Add additional attributes to Order/ProductLineItem object to extend XML order info
+ * @param {dw.order.Order} order : API order
+ * @param {string} storeID : extend store ID
+ */
+function addXMLAdditionsOrdersAPIonSchedule(order, storeID) {
+    var Transaction = require('dw/system/Transaction');
+    var collections = require('*/cartridge/scripts/util/collections');
+
+    var productsArray = [];
+    var warrantiesArray = [];
+    var warrantyLi = null;
+    var productLi = null;
+
+    var allLineItems = order.getAllProductLineItems();
+    collections.forEach(allLineItems, function (productLineItem) {
+        if (productLineItem.custom.parentLineItemUUID) {
+            warrantiesArray.push(productLineItem);
+        } else if (productLineItem.custom.persistentUUID && !productLineItem.custom.parentLineItemUUID) {
+            productsArray.push(productLineItem);
+        }
+    });
+
+    Transaction.wrap(function () {
+        order.custom.extendStoreId = storeID;
+
+        for (var i = 0; i < warrantiesArray.length; i++) {
+            warrantyLi = warrantiesArray[i];
+            for (var j = 0; j < productsArray.length; j++) {
+                productLi = productsArray[j];
+                if (warrantyLi.custom.parentLineItemUUID === productLi.custom.persistentUUID) {
+                    warrantyLi.custom.parentLineItemProductId = productLi.getProductID();
+                }
+            }
+        }
+    });
+}
+
+/**
  * Process response to get matched line item to fill extendContractIds field
  * @param {string} apiPid - current id of product
  * @param {Object} ordersLI - current order
@@ -402,15 +451,23 @@ function processPostPurchase(ordersLI, apiCurrentLI) {
 }
 
 /**
+ * Process non-warrantable orders
+ * @param {dw.order.Order} order - current order
+ */
+function processNonWarrantableProduct(order) {
+    markOrderAsSent(order);
+}
+
+/**
  * Get orders payload for specific API version
- * @param {ArrayList<Product>} order - array of orders
+ * @param {dw.order.Orde} order - current order
  */
 function markOrderAsSent(order) {
     var Transaction = require('dw/system/Transaction');
     var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
     try {
         Transaction.wrap(function () {
-            order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
+            order.custom.extendOrderStatus = 'The current order has been sent to the Extend';
         });
     } catch (error) {
         logger.error('The error occurred during the orders processing', error);
@@ -445,8 +502,12 @@ function processOrdersResponse(ordersResponse, order) {
             matchedLI = processExtendShippingProtection(apiPid, ordersLI);
         } else if (apiCurrentLI.plan && apiCurrentLI.leadToken) {
             matchedLI = processPostPurchase(ordersLI, apiCurrentLI);
+        } else if (apiCurrentLI.type === 'non_warrantable') {
+            logger.info('Current product is non-warrantable: {0}', apiCurrentLI.product.id);
+            processNonWarrantableProduct(order);
+            continue;
         } else {
-            logger.info('Current Resonses has an invalid body: {0}', apiCurrentLI);
+            logger.info('Current Responses has an invalid body: {0}', apiCurrentLI);
         }
 
         Transaction.wrap(function () {
@@ -492,10 +553,26 @@ function createExtendOrderQueue(order) {
  */
 function addContractToQueue(order) {
     var OrderMgr = require('dw/order/OrderMgr');
+    var logger = require('dw/system/Logger').getLogger('Extend', 'Extend');
+    var Transaction = require('dw/system/Transaction');
     var extend = require('~/cartridge/scripts/extend');
 
     var apiMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
+    var extendStoreID = Site.getCustomPreferenceValue('extendStoreID');
+
     var customer = getCustomer(order);
+
+    if (!apiMethod) {
+        // Warns that the order has not sent to Extend via logger
+        logger.warn('You should send orderNo {0} info to Extend manually', order.getOrderNo());
+
+        // Warns that the order has not sent to Extend via order custom attribute (see BM order's attribute)
+        Transaction.wrap(function () {
+            order.custom.extendOrderStatus = 'The current order has not been sent to the Extend. You should send the order info to Extend manually';
+        });
+
+        return;
+    }
 
     if (apiMethod === 'contractsAPIonSchedule') {
         createContractsCO(order);
@@ -509,6 +586,7 @@ function addContractToQueue(order) {
         markOrderAsSent(order);
     } else if (apiMethod === 'ordersAPIonSchedule') {
         createExtendOrderQueue(order);
+        addXMLAdditionsOrdersAPIonSchedule(order, extendStoreID);
     }
 
     return;

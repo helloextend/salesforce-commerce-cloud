@@ -31,6 +31,11 @@ function calculate (basket) {
 
     calculateProductPrices(basket);
 
+    // =======================================================
+    // =====   NORMALIZE CART QUANTITIES FOR EXTEND ITEMS ====
+    // =======================================================
+    normalizeCartQuantities(basket);
+
     // ===================================================
     // =====    CALCULATE GIFT CERTIFICATE PRICES    =====
     // ===================================================

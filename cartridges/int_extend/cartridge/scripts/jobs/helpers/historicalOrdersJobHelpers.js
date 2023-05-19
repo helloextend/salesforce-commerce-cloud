@@ -100,7 +100,7 @@ function doesOrderHaveExtensions(order) {
                 var productName = pLi.getProductName().toLowerCase();
                 var isProductWarranty = productName.includes('extend protection plan');
                 if (pLi.custom.parentLineItemUUID || productID === 'EXTEND-SHIPPING-PROTECTION' || isProductWarranty) {
-                    order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
+                    order.custom.extendOrderStatus = 'The current order has been sent to the Extend';
                     isExtendedPLI = true;
                 }
             }
@@ -121,7 +121,7 @@ function markOrdersAsSent(orderBatch) {
     try {
         Transaction.wrap(function () {
             collections.forEach(orderBatch, function (order) {
-                order.custom.wasSentToExtend = 'The current order has been sent to the Extend';
+                order.custom.extendOrderStatus = 'The current order has been sent to the Extend';
             });
         });
     } catch (error) {

@@ -10,7 +10,7 @@
 <iscomment> Extend SDK</iscomment>
 <script>
     var EXT_STORE_ID = "${dw.system.Site.current.preferences.custom.extendStoreID}";
-    var EXT_ENVIRONMENT = ${dw.system.Site.current.preferences.custom.isExtendProductionMode} ? 'production' : 'demo';
+    var EXT_ENVIRONMENT = "${dw.system.Site.current.preferences.custom.isExtendProductionMode}".toLowerCase();
     var EXT_PDP_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendPDPUpsellSwitch};
     var EXT_CART_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendCartUpsellSwitch};
     var EXT_CART_ADDTOCART = "${URLUtils.https('Cart-AddExtendProduct')}";
