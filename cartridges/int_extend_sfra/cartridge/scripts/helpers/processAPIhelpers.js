@@ -336,7 +336,7 @@ function processOrdersResponse(ordersResponse, order) {
             processNonWarrantableProduct(order);
             continue;
         } else {
-            logger.info('Current Resonses has an invalid body: {0}', apiCurrentLI);
+            logger.info('Current Responses has an invalid body: {0}', apiCurrentLI);
         }
 
         Transaction.wrap(function () {

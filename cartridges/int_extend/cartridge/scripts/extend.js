@@ -508,7 +508,7 @@ function getOffer(paramObj) {
  */
 function createOrders(paramObj) {
     // process the lead order. Make a call to Leads API.
-    var extendLeadHelpers = require('*/cartridge/scripts/extendLeadHelpers');
+    var extendLeadHelpers = require('~/cartridge/scripts/extendLeadHelpers');
     extendLeadHelpers.processLeadOrders(paramObj);
 
     var requestObject = getOrdersPayload(paramObj);
