@@ -122,10 +122,15 @@ function getProductsPayload(productBatch) {
 
             productObj.description = description;
             productObj.imageUrl = product.getImage(EXTEND_IMAGE_VIEW_TYPE, 0) ? product.getImage(EXTEND_IMAGE_VIEW_TYPE, 0).getAbsURL().toString() : '';
-            productObj.mfrWarranty = {
-                parts: product.custom.mfrWarrantyParts,
-                labor: product.custom.mfrWarrantyLabor
-            };
+            
+            if (product.custom.mfrWarrantyParts && product.custom.mfrWarrantyLabor &&
+                (product.custom.mfrWarrantyParts > 0 || product.custom.mfrWarrantyLabor > 0)) {
+                productObj.mfrWarranty = {
+                    parts: product.custom.mfrWarrantyParts,
+                    labor: product.custom.mfrWarrantyLabor
+                };
+            }
+            
             productObj.price = price;
             productObj.title = product.getName();
             productObj.referenceId = product.getID();
