@@ -48,11 +48,23 @@ function validateOffer(formObject) {
     var offerInfo = {};
     var isValid = false;
 
-    if (!formObject.extendPlanId || !formObject.pid || !formObject.extendPrice) {
+    var purchaseCondition = formObject.pid || formObject.leadToken;
+
+    if (!formObject.extendPlanId || !purchaseCondition || !formObject.extendPrice) {
         return isValid;
     }
 
     var offer = extend.getOffer(formObject);
+
+    if (formObject.leadToken) {
+        coverageType = offer.plans.adh.recomended || offer.plans.adh.recomended;
+
+        offerInfo.isValid = true;
+        offerInfo.coverageType = coverageType;
+
+        return offerInfo;
+    }
+    
     var usedPlan = getUsedPlan(offer.plans, formObject.extendPlanId);
 
     if (!usedPlan) {

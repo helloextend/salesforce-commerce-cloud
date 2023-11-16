@@ -38,8 +38,14 @@ module.exports = {
             }
 
             if ($('#extend-offer').length) {
-                var extendComponent = Extend.buttons.instance('#extend-offer');
-                extendComponent.setActiveProduct(data.id);
+                $('#extend-offer').data('price', data.price.sales.value);
+                const price = data.price.sales.value * 100;
+                const category = $('#extend-offer').data('category');
+                const region = $('#extend-offer').data('region');
+                Extend.setActiveProduct('#extend-offer', { 
+                    referenceId: data.id, 
+                    price: price, 
+                    category: category });
             }
         });
     },
@@ -148,8 +154,14 @@ module.exports = {
         var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
         if ($('#extend-offer').length) {
             Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+            const pid = $('.product-detail').data('pid');
+            const price = $('#extend-offer').data('price') * 100;
+            const category = $('#extend-offer').data('category');
+            const region = $('#extend-offer').data('region');
             Extend.buttons.render('#extend-offer', {
-                referenceId: $('.product-detail').data('pid')
+                referenceId: pid,
+                price: price,
+                category: category
             });
         }
     }

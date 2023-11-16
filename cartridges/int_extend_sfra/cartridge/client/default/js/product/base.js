@@ -659,7 +659,9 @@ module.exports = {
             var isPlanSelected = false;
             form.area = 'product_page';
             form.component = 'buttons';
-
+            const price = $('#extend-offer').data('price') * 100;
+            const category = $('#extend-offer').data('category');
+            
             if ($('#extend-offer').length) {
                 var extendComponent = Extend.buttons.instance('#extend-offer');
                 var extendPlan = extendComponent.getPlanSelection();
@@ -668,6 +670,8 @@ module.exports = {
                     form.extendPlanId = extendPlan.planId;
                     form.extendPrice = extendPlan.price;
                     form.extendTerm = extendPlan.term;
+                    form.price = price;
+                    form.category = category;
                     isPlanSelected = true;
                     $(this).trigger('updateAddToCartFormData', form);
                 }
@@ -677,12 +681,16 @@ module.exports = {
 
                 Extend.modal.open({
                     referenceId: $('.product-detail').data('pid'),
+                    price: price,
+                    category: category,
                     onClose: function (plan) {
                         if (plan) {
                             form.extendPlanId = plan.planId;
                             form.extendPrice = plan.price;
                             form.extendTerm = plan.term;
                             form.area = 'product_modal';
+                            form.price = price;
+                            form.category = category;
                             form.component = 'modal';
                             $(this).trigger('updateAddToCartFormData', form);
                         }

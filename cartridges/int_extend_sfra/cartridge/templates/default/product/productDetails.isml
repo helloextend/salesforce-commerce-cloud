@@ -4,12 +4,13 @@
         var assets = require('*/cartridge/scripts/assets');
         assets.addJs('/js/productDetail.js');
         assets.addCss('/css/product/detail.css');
+        var ProductMgr = require('dw/catalog/ProductMgr');
     </isscript>
 
     <isset name="product" value="${pdict.product}" scope="page" />
     <isset name="isQuickView" value="${false}" scope="page" />
     <isset name="isProductSet" value="${pdict.product.productType === 'set'}" scope="page" />
-    <isobject object="${product.raw}" view="detail" />
+    <isobject object="${product.raw}" view="detail">
         <div class="container product-detail product-wrapper"
             data-pid="${product.id}">
             <div class="row">
@@ -118,7 +119,17 @@
                         <isif condition="${EXT_GLOBAL_SWITCH && EXT_PDP_SWITCH}">
                             <div class="row">
                                 <div class="col-12">
-                                    <div id="extend-offer"></div>
+                                <isscript>
+                                    const productData = ProductMgr.getProduct(product.id);
+                                    const category = productData.variant
+                                        ? productData.masterProduct.primaryCategory.getID()
+                                        : productData.primaryCategory.getID();
+                                    const region = request.locale.split('_')[1];
+                                </isscript>
+                                    <div id="extend-offer" 
+                                    data-price="${product.price.sales.value}"
+                                    data-category="${category}"
+                                    data-region="${region}"></div>
                                 </div>
                             </div>
                         </isif>
