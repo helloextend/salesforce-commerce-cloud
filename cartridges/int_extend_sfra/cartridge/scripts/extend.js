@@ -160,12 +160,16 @@ function moneyToCents(value) {
 function getSFCCProduct(pLi) {
     var dividedPurchasePrice = pLi.adjustedNetPrice.divide(pLi.quantityValue);
     var dividedListPrice = pLi.price.divide(pLi.quantityValue);
-
+    var productData = pLi.getProduct();
+    var category = productData.variant
+        ? productData.masterProduct.primaryCategory.getID()
+        : productData.primaryCategory.getID();
     var obj = {
         id: pLi.productID,
         purchasePrice: Math.ceil(moneyToCents(dividedPurchasePrice)),
         listPrice: Math.ceil(moneyToCents(dividedListPrice)),
-        name: pLi.productName
+        name: pLi.productName,
+        category: category
     };
 
     return obj;
@@ -453,6 +457,10 @@ function sendHistoricalOrders(orderBatch) {
  * @returns {Object} - response object
  */
 function createContracts(paramObj) {
+    // process the lead order. Make a call to Leads API.
+    var extendLeadHelpers = require('*/cartridge/scripts/helpers/extendLeadHelpers');
+    extendLeadHelpers.processLeadOrders(paramObj);
+
     var requestObject = getContractsPayload(paramObj);
     var endpointName = 'contracts';
     var response = webService.makeServiceCall(endpointName, requestObject);
@@ -499,10 +507,6 @@ function getOffer(paramObj) {
  * @returns {Object} - response object
  */
 function createOrders(paramObj) {
-    // process the lead order. Make a call to Leads API.
-    var extendLeadHelpers = require('*/cartridge/scripts/helpers/extendLeadHelpers');
-    extendLeadHelpers.processLeadOrders(paramObj);
-
     var requestObject = getOrdersPayload(paramObj);
     var endpointName = 'orders';
     var apiMethod = 'orders';

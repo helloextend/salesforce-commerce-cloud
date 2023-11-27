@@ -30,7 +30,11 @@ function trackOfferAddedToCart(data) {
  * @param {string} qty- corresponding quantity
  * @returns
  */
-function addExtendUpsellBtnCart(uuid, pid, qty) {
+function addExtendUpsellBtnCart(uuid, product) {
+    var pid = product.pid;
+    var qty = product.qty;
+    var price = product.price * 100;
+    var category = product.category; 
     var hasExtendUpsell = $('.item-' + uuid).parents('.product-card-footer').find('#extend-offer-' + uuid).length > 0;
     var isRenderButton = $('#footercontent').find('input[name=noRenderExtendButton]').length;
     if (!hasExtendUpsell && !isRenderButton) {
@@ -40,6 +44,8 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
                 /** initialize offer */
                 Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
                     referenceId: pid,
+                    price: price,
+                    category: category,
                     onAddToCart:
                         function (plan) {
                             if (plan) {
@@ -48,6 +54,8 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
                                 form.extendPrice = plan.plan.price;
                                 form.extendTerm = plan.plan.term;
                                 form.pid = pid;
+                                form.price = price;
+                                form.category = category;
                                 form.pliUUID = uuid;
                                 form.quantity = qty;
                                 trackOfferAddedToCart(form);
@@ -78,10 +86,15 @@ function addExtendUpsellBtnCart(uuid, pid, qty) {
  * @param {string} btnLabel - upsell button label
  * @param {string} pid - corresponding product id
  */
-function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
+function addExtendUpsellBtnInMiniCart(uuid, product) {
+    var pid = product.pid;
+    var qty = product.qty;
+    var price = product.price * 100;
+    var category = product.category; 
     var hasExtendUpsell = $('.minicart').find('.card.uuid-' + uuid).find('#extend-offer-' + uuid).length > 0;
     var isRenderButton = $('#footercontent').find('input[name=noRenderButton]').length;
     var isShippingProtecting = pid === 'EXTEND-SHIPPING-PROTECTION' ? true : false;
+
     if (!hasExtendUpsell && !isRenderButton && !isShippingProtecting) {
         $('<div class="extend-upsell-style" id="extend-offer-' + uuid + '" data-pid=' + pid + '></div>')
             .insertAfter('.minicart .product-summary ' + '.item-' + uuid)
@@ -89,6 +102,8 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
                 /** initialize offer */
                 Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
                     referenceId: pid,
+                    price: price,
+                    category: category,
                     onAddToCart:
                         function (plan) {
                             if (plan) {
@@ -97,6 +112,8 @@ function addExtendUpsellBtnInMiniCart(uuid, pid, qty) {
                                 form.extendPrice = plan.plan.price;
                                 form.extendTerm = plan.plan.term;
                                 form.pid = pid;
+                                form.price = price;
+                                form.category = category;
                                 form.pliUUID = uuid;
                                 form.quantity = qty;
                                 trackOfferAddedToCart(form);
@@ -132,7 +149,7 @@ function makeRequestForRender(uuid, renderUpsellBtnCallback) {
         dataType: 'json',
         success: function (data) {
             if (data.isEligible) {
-                renderUpsellBtnCallback(uuid, data.pid, data.qty);
+                renderUpsellBtnCallback(uuid, data);
             }
         },
         error: function () { }

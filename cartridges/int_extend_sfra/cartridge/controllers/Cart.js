@@ -106,9 +106,7 @@ server.get('DoesWarrantyExists', function (req, res, next) {
     var Transaction = require('dw/system/Transaction');
     var qs = req.querystring;
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
-    var pid,
-        qty,
-        lead;
+    var pid, qty, lead, price, category;
 
     // Query string parameter wasn't provided
     if (!qs.uuid) {
@@ -137,6 +135,11 @@ server.get('DoesWarrantyExists', function (req, res, next) {
             pid = currentBasket.productLineItems[i].productID;
             qty = currentBasket.productLineItems[i].quantityValue;
             lead = currentBasket.productLineItems[i];
+            price = currentBasket.productLineItems[i].price.value / qty;
+            const productData = currentBasket.productLineItems[i].getProduct();
+            category = productData.variant
+                ? productData.masterProduct.primaryCategory.getID()
+                : productData.primaryCategory.getID();
             break;
         }
     }
@@ -158,7 +161,9 @@ server.get('DoesWarrantyExists', function (req, res, next) {
     res.json({
         isEligible: true,
         pid: pid,
-        qty: qty
+        qty: qty,
+        price: price,
+        category: category
     });
 
     next();

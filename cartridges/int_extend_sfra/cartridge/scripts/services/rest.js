@@ -119,7 +119,14 @@ function createRequestConfiguration(endpoint, requestObject) {
             break;
 
         case 'offer':
-            configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
+            const product = requestObject.pid;
+            const price = requestObject.price;
+            const category = requestObject.category;
+            const region = request.locale.split('_')[1];
+            configObj.endpoint = 'offers?storeId=' + STORE_ID +
+                '&productId=' + product + '&category=' + category +
+                '&price=' + price +
+                '&region=' + region;
             configObj.method = 'GET';
             configObj.mock = mocks.offersResponseMock;
             break;
