@@ -64,7 +64,7 @@ function validateOffer(formObject) {
 
         return offerInfo;
     }
-    
+
     var usedPlan = getUsedPlan(offer.plans, formObject.extendPlanId);
 
     if (!usedPlan) {
