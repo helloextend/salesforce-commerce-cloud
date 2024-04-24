@@ -4,7 +4,7 @@
 </p>
 
 ## The latest version
-The latest version of this cartridge is v2022_08
+The latest version of this cartridge is v2024_04
 
 
 ## Company Overview

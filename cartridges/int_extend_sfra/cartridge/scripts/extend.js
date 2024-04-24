@@ -227,7 +227,7 @@ function getLineItems(order) {
         for (var k = 0; k < productLi.quantity.value; k++) {
             pliObj = {};
             pliObj.product = product;
-            pliObj.lineItemTransactionID = productLi.getUUID();
+            pliObj.lineItemTransactionId = productLi.getUUID();
 
             if (productLi.custom.isWarrantable && !productLi.custom.persistentUUID) {
                 pliObj.quantity = productLi.quantity.value;
