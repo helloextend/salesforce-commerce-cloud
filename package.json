@@ -1,6 +1,6 @@
 {
   "name": "int_extend_sfra",
-  "version": "22.1.0",
+  "version": "23.0.0",
   "description": "Extend SFRA cartridge",
   "devDependencies": {
     "@babel/core": "^7.6.3",
@@ -39,6 +39,6 @@
     "compile:scss": "sgmf-scripts --compile css"
   },
   "paths": {
-    "base": "../helloextend/cartridges/app_storefront_base/"
+    "base": "./cartridges/app_storefront_base/"
   }
 }

@@ -26,7 +26,7 @@ function createServiceCall(configObj) {
             var orderApiMethod = (extendAPIMethod === 'ordersAPIonOrderCreate') || (extendAPIMethod === 'ordersAPIonSchedule');
 
             if (orderApiMethod) {
-                API_VERSION = '2022-02-01';
+                API_VERSION = 'latest';
             } else {
                 // used '2021-04-01' API version in case of contracts API
                 API_VERSION = '2021-04-01';
@@ -133,7 +133,7 @@ function createRequestConfiguration(endpoint, requestObject) {
 
         case 'orders':
             configObj.endpoint = 'orders';
-            configObj.method = 'POST';
+            configObj.method = 'PUT';
             configObj.extendMethod = 'orders';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             configObj.mock = mocks.ordersResponseMock;
