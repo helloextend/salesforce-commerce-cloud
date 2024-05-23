@@ -337,6 +337,7 @@ function processOrdersResponse(ordersResponse, order) {
             continue;
         } else {
             logger.info('Current Responses has an invalid body: {0}', apiCurrentLI);
+            continue;
         }
 
         Transaction.wrap(function () {
