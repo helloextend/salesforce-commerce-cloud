@@ -16,7 +16,7 @@ function initExtend() {
     $(document).ready(function () {
         var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
         var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
-        Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+        window.Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
     });
 }
 
@@ -63,10 +63,11 @@ function loadShippingInfo() {
  */
 function getPageAction() {
     var $div = $('body').find('.js-page');
+    if($div.length == 0) return 'minicart';
     var classes = $div.attr('class');
     var arrayOfClasses = classes.split(' ');
     var actionClass = arrayOfClasses[arrayOfClasses.length - 1];
-
+    
     if (actionClass.includes('cart-show')) {
         return 'cart';
     }
@@ -164,6 +165,7 @@ function renderOrUpdateSP(shippingOffersItem, isShippingProtectionInCart) {
         }
 
         var pageAction = getPageAction();
+        if (pageAction == 'minicart') return;
 
         Extend.shippingProtection.render({
             selector: '#extend-shipping-offer',
@@ -202,7 +204,8 @@ function initExtendShippingProtectionOffers() {
     var EXT_SHIPPING_SWITCH = window.EXT_SHIPPING_SWITCH;
 
     var pageAction = getPageAction();
-
+    if (pageAction == 'minicart') return;
+    
     // Determine whether ESP widget should display
     var isESPwidget = pageAction === EXT_SHIPPING_SWITCH;
 

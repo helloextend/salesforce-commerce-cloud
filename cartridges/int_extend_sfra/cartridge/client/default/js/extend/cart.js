@@ -11,7 +11,7 @@ var Extend = window.Extend || undefined;
  * Tracking adding offers to cart via cart/minicart
  */
 function trackOfferAddedToCart(data) {
-    Extend.trackOfferAddedToCart({
+    window.Extend.trackOfferAddedToCart({
         productId: data.pid,
         productQuantity: data.quantity,
         warrantyQuantity: data.quantity,
@@ -42,7 +42,7 @@ function addExtendUpsellBtnCart(uuid, product) {
             .insertAfter('.item-' + uuid)
             .ready(function () {
                 /** initialize offer */
-                Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
+                window.Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
                     referenceId: pid,
                     price: price,
                     category: category,
@@ -100,7 +100,7 @@ function addExtendUpsellBtnInMiniCart(uuid, product) {
             .insertAfter('.minicart .product-summary ' + '.item-' + uuid)
             .ready(function () {
                 /** initialize offer */
-                Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
+                window.Extend.buttons.renderSimpleOffer('#extend-offer-' + uuid, {
                     referenceId: pid,
                     price: price,
                     category: category,
@@ -160,10 +160,10 @@ function makeRequestForRender(uuid, renderUpsellBtnCallback) {
  * Extend config is initialized
  */
 function initExtend() {
-    $(document).ready(function () {
+    $(window).on('extendSDKLoaded', function () {
         var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
         var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
-        Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+        window.Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
     });
 }
 
