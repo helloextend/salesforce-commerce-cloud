@@ -240,17 +240,11 @@ function getLineItems(order) {
 
         warrantiesArray.forEach((warrantyLi) => {
             if (productLi.custom.persistentUUID === warrantyLi.custom.parentLineItemUUID) {
-                //for (var l = 0; l < warrantyLi.quantity.value; l++) {
                     var plan = {};
                     plan.purchasePrice = Math.ceil(moneyToCents(warrantyLi.adjustedNetPrice.divide(warrantyLi.quantityValue)));
                     plan.id = warrantyLi.getManufacturerSKU();
                     pliObj.plan = plan;
                     lineItems.push(pliObj);
-                    /*if (l === (warrantyLi.quantity.value - 1)) {
-                        warrantiesArray.splice(0, 1);
-                        break;
-                    }
-                }*/
             }
         });
     });
