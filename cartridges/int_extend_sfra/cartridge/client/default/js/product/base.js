@@ -663,7 +663,7 @@ module.exports = {
             const category = $('#extend-offer').data('category');
             
             if ($('#extend-offer').length) {
-                var extendComponent = Extend.buttons.instance('#extend-offer');
+                var extendComponent = window.Extend.buttons.instance('#extend-offer');
                 var extendPlan = extendComponent.getPlanSelection();
 
                 if (extendPlan) {
@@ -679,7 +679,7 @@ module.exports = {
                 $('body').trigger('extend:modal:viewed',
                     { productId: form.pid, area: 'product_modal' });
 
-                Extend.modal.open({
+                window.Extend.modal.open({
                     referenceId: $('.product-detail').data('pid'),
                     price: price,
                     category: category,

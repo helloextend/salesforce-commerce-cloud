@@ -6,7 +6,7 @@
 var Extend = window.Extend || undefined;
 
 function trackOfferAddedToCart(data) {
-    Extend.trackOfferAddedToCart({
+    window.Extend.trackOfferAddedToCart({
         productId: data.productId,
         productQuantity: data.productQuantity,
         warrantyQuantity: data.productQuantity,

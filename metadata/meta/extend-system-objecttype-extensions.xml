@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="Basket">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="extendShippingProtectionAttachBehaviour">
+                <display-name xml:lang="x-default">Shipping Protection Offer Type</display-name>
+                <description xml:lang="x-default">Display the extend shipping protection offer type.</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="isExtendShippingProtectionAdded">
+                <display-name xml:lang="x-default">is Extend Shipping Protection Added</display-name>
+                <description xml:lang="x-default">Display if Extend Shipping Protection has been added to the cart.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="isExtendShippingProtectionRemoved">
+                <display-name xml:lang="x-default">is Extend Shipping Protection Removed</display-name>
+                <description xml:lang="x-default">Display if Extend Shipping Protection Removed</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+        </custom-attribute-definitions>
+    </type-extension>
+
+    <type-extension type-id="Order">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="extendOrderStatus">
+                <display-name xml:lang="x-default">Extend Order Status</display-name>
+                <description xml:lang="x-default">Display if the order was sent to Extend</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendRefundStatus">
+                <display-name xml:lang="x-default">Extend Refund Status</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Refund Success</display>
+                        <value>SUCCESS</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Refund Rejected</display>
+                        <value>REJECT</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Refund Service Error</display>
+                        <value>ERROR</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Refund Rejected and Refund Service Error</display>
+                        <value>REJECT_AND_ERROR</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Refund Quated</display>
+                        <value>refund_quated</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Refund Paid</display>
+                        <value>refund_paid</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Refund Denied</display>
+                        <value>refund_denied</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="extend">
+                <display-name xml:lang="x-default">Extend</display-name>
+                <attribute attribute-id="extendOrderStatus"/>
+                <attribute attribute-id="extendRefundStatus"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="Product">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="extendShippingProtectionTerm">
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <site-specific-flag>false</site-specific-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <visible-flag>false</visible-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <order-required-flag>false</order-required-flag>
+                <externally-defined-flag>false</externally-defined-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendTerm">
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <site-specific-flag>false</site-specific-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <visible-flag>false</visible-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <order-required-flag>false</order-required-flag>
+                <externally-defined-flag>false</externally-defined-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="extendMfrWarranty">
+                <display-name xml:lang="x-default">Extend Manufacturer Warranty</display-name>
+                <attribute attribute-id="mfrWarrantyParts"/>
+                <attribute attribute-id="mfrWarrantyLabor"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="ProductLineItem">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="extendContractId">
+                <display-name xml:lang="x-default">Extend Contract ID</display-name>
+                <description xml:lang="x-default">Displays the Extend contract ID</description>
+                <type>set-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendRefundStatuses">
+                <display-name xml:lang="x-default">Extend Refund Statuses</display-name>
+                <type>text</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendShippingQuoteId">
+                <display-name xml:lang="x-default">Extend Shipping Protection Quote ID</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="isESPupdated">
+                <display-name xml:lang="x-default">is Extend Shipping Protection Value Updated</display-name>
+                <description xml:lang="x-default">Display if Extend Shipping Protection value has been updated.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="isExtendShippingProtection">
+                <display-name xml:lang="x-default">is Extend Shipping Protection</display-name>
+                <description xml:lang="x-default">Display whether line item is Extend Shipping Protection</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="isLead">
+                <display-name xml:lang="x-default">isLead</display-name>
+                <description xml:lang="x-default">Display whether the protection plan is a lead</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="isWarrantable">
+                <display-name xml:lang="x-default">Is Product Warrantable</display-name>
+                <description xml:lang="x-default">Determine whether the product line item is warrantable</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="isWarranty">
+                <display-name xml:lang="x-default">isWarranty</display-name>
+                <description xml:lang="x-default">Determine whether the product line item is a protection plan</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="leadExtendId">
+                <display-name xml:lang="x-default">Extend Lead Token Plan ID</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="leadQuantuty">
+                <display-name xml:lang="x-default">Lead Quantity</display-name>
+                <type>double</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="leadToken">
+                <display-name xml:lang="x-default">Lead Token</display-name>
+                <description xml:lang="x-default">Used to fetch post-purchase offers</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="parentLineItemUUID">
+                <display-name xml:lang="x-default">Extend Parent Line Item UUID</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="persistentUUID">
+                <display-name xml:lang="x-default">Extend Persistent UUID</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="planId">
+                <display-name xml:lang="x-default">Extend Plan Id</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="postPurchaseLeadToken">
+                <display-name xml:lang="x-default">postPurchaseLeadToken</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Extend">
+                <display-name xml:lang="x-default">Extend</display-name>
+                <attribute attribute-id="extendContractId"/>
+                <attribute attribute-id="leadToken"/>
+                <attribute attribute-id="extendRefundStatuses"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="enableExtendShippingProtection">
+                <display-name xml:lang="x-default">Shipping Protection</display-name>
+                <description xml:lang="x-default">Enables Extend Shipping Protection offer in the Checkout page or the Cart page.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true"> 
+                        <display xml:lang="x-default">Disable</display>
+                        <value>false</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Checkout Offer</display>
+                        <value>checkout</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Cart Offer</display>
+                        <value>cart</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendAPIMethod">
+                <display-name xml:lang="x-default">Extend Contract Creation Event</display-name>
+                <description xml:lang="x-default">Sets the contract creation event to on order creation or schedule</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">On Order Create</display>
+                        <value>ordersAPIonOrderCreate</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">On Schedule</display>
+                        <value>ordersAPIonSchedule</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendAPIVersion">
+                <display-name xml:lang="x-default">Extend API Version</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Default</display>
+                        <value>default</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2019-08-01</display>
+                        <value>2019-08-01</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2020-08-01</display>
+                        <value>2020-08-01</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2021-01-01</display>
+                        <value>2021-01-01</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">2021-04-01</display>
+                        <value>2021-04-01</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendAccessToken">
+                <display-name xml:lang="x-default">Extend Access Token</display-name>
+                <description xml:lang="x-default">Merchant specific API key available from their Extend account. This key is environment specific (Extend production or Extend sandbox) if the merchant has multiple environments, and is required to make the API connections with Extend.</description>
+                <type>password</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendClientID">
+                <display-name xml:lang="x-default">Extend Client ID</display-name>
+                <description xml:lang="x-default">Extend oauth credentials obtained from the <a href='merchants.extend.com'>Merchant Portal</a></description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendClientSecret">
+                <display-name xml:lang="x-default">Extend Client Secret</display-name>
+                <description xml:lang="x-default">Extend oauth credentials obtained from the <a href='merchants.extend.com'>Merchant Portal</a></description>
+                <type>password</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendAnalyticsSwitch">
+                <display-name xml:lang="x-default">Analytics</display-name>
+                <description xml:lang="x-default">Allows Extend to track and report protection plan related behavior.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendCartUpsellSwitch">
+                <display-name xml:lang="x-default">Cart Offers</display-name>
+                <description xml:lang="x-default">Display product protection offers in the cart.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendGlobalSwitch">
+                <display-name xml:lang="x-default">Enable Extend</display-name>
+                <description xml:lang="x-default">Toggles all Extend functionality.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition> 
+                        <display xml:lang="x-default">Enable</display>
+                        <value>true</value>
+                    </value-definition>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Disable</display>
+                        <value>false</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendImageViewType">
+                <display-name xml:lang="x-default">Product Protection Image Size</display-name>
+                <description xml:lang="x-default">Image size for product stored on the Extend catalog.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Small</display>
+                        <value>small</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Medium</display>
+                        <value>medium</value>
+                    </value-definition>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Large</display>
+                        <value>large</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Hi-res</display>
+                        <value>hi-res</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendPDPSwitch">
+                <display-name xml:lang="x-default">PDP Offers</display-name>
+                <description xml:lang="x-default">Displays PDP offer buttons.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendPDPUpsellSwitch">
+                <display-name xml:lang="x-default">PDP Modal Offer</display-name>
+                <description xml:lang="x-default">Toggles PDP offer when adding to cart.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendSDK">
+                <display-name xml:lang="x-default">Extend SDK URL</display-name>
+                <description xml:lang="x-default">For Extend use only. Sets the SDK version.</description>
+                <type>string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+                <default-value>https://sdk.helloextend.com/extend-sdk-client/v1/extend-sdk-client.min.js</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendSecretKey">
+                <display-name xml:lang="x-default">Extend Refund Key</display-name>
+                <description xml:lang="x-default">Unique ID for use in refund verification.</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendStoreID">
+                <display-name xml:lang="x-default">Extend Store ID</display-name>
+                <description xml:lang="x-default">Store ID available from the <a href='merchants.extend.com'>Merchant Portal</a></description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="extendStoreName">
+                <display-name xml:lang="x-default">Store Name</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+                <default-value>Online Store</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="isExtendProductionMode">
+                <display-name xml:lang="x-default">Extend Environment</display-name>
+                <description xml:lang="x-default">Use production or demo Extend environment.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Production</display>
+                        <value>production</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Demo</display>
+                        <value>demo</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Extend: Integration Preferences">
+                <display-name xml:lang="x-default">Extend: Integration Preferences</display-name>
+                <attribute attribute-id="extendGlobalSwitch"/>
+                <attribute attribute-id="extendStoreID"/>
+                <attribute attribute-id="isExtendProductionMode"/>
+                <attribute attribute-id="extendClientID"/>
+                <attribute attribute-id="extendClientSecret"/>
+                <attribute attribute-id="extendStoreName"/>
+                <attribute attribute-id="extendAPIMethod"/>
+                <attribute attribute-id="extendImageViewType"/>
+                <attribute attribute-id="extendSecretKey"/>
+            </attribute-group>
+            <attribute-group group-id="Extend: Storefront Preferences">
+                <display-name xml:lang="x-default">Extend: Storefront Preferences</display-name>
+                <attribute attribute-id="extendSDK"/>
+                <attribute attribute-id="extendPDPSwitch"/>
+                <attribute attribute-id="extendPDPUpsellSwitch"/>
+                <attribute attribute-id="extendCartUpsellSwitch"/>
+                <attribute attribute-id="extendAnalyticsSwitch"/>
+                <attribute attribute-id="enableExtendShippingProtection"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+</metadata>

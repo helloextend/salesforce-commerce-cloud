@@ -1,6 +1,14 @@
 'use strict';
 
 /**
+ * Mock response object for oauth service call
+ */
+var oauthResponseMock = JSON.stringify({
+    token_type: 'string',
+    access_token: 'string'
+});
+
+/**
  * Mock response object for products service call
  */
 var productsResponseMock = JSON.stringify({
@@ -280,6 +288,7 @@ var ordersResponseMock = JSON.stringify({
 
 /** Exports mocks objects */
 module.exports = {
+    oauthResponseMock: oauthResponseMock,
     productsResponseMock: productsResponseMock,
     contractsResponseMock: contractsResponseMock,
     offersResponseMock: offersResponseMock,
