@@ -289,7 +289,7 @@ function getCustomer(customer, address) {
         city: address.getCity(),
         countryCode: address.getCountryCode().toString(),
         postalCode: address.getPostalCode(),
-        provinceCode: address.getStateCode()
+        province: address.getStateCode()
     };
 
     customerObj.shippingAddress = shippingAddress;

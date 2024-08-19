@@ -68,7 +68,7 @@ function getCustomer(order) {
             city: address.getCity(),
             countryCode: address.getCountryCode().toString(),
             postalCode: address.getPostalCode(),
-            provinceCode: address.getStateCode()
+            province: address.getStateCode()
         }
     };
 
@@ -88,7 +88,7 @@ function getShippingAddress(pLi) {
         city: address.getCity(),
         countryCode: address.getCountryCode().toString(),
         postalCode: address.getPostalCode(),
-        provinceCode: address.getStateCode()
+        province: address.getStateCode()
     };
 
     return JSON.stringify(shippingAddress);
