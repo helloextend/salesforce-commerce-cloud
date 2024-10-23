@@ -229,7 +229,7 @@ function getLineItems(order) {
         for (var k = 0; k < productLi.quantity.value; k++) {
             pliObj = {};
             pliObj.product = product;
-            pliObj.lineItemTransactionID = productLi.getUUID();
+            pliObj.lineItemTransactionId = productLi.getUUID();
 
             if (productLi.custom.isWarrantable && !productLi.custom.persistentUUID) {
                 pliObj.quantity = productLi.quantity.value;
@@ -289,7 +289,7 @@ function getCustomer(customer, address) {
         city: address.getCity(),
         countryCode: address.getCountryCode().toString(),
         postalCode: address.getPostalCode(),
-        province: address.getStateCode()
+        provinceCode: address.getStateCode()
     };
 
     customerObj.shippingAddress = shippingAddress;

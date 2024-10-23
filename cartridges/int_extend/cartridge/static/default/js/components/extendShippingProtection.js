@@ -15,7 +15,7 @@ function initExtend() {
     $(document).ready(function () {
         var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
         var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
-        Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+        window.Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
     });
 }
 

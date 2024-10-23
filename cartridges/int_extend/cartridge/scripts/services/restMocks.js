@@ -102,7 +102,7 @@ var contractsResponseMock = JSON.stringify({
             city: 'San Francisco',
             countryCode: 'USA',
             postalCode: '94526',
-            province: 'CA'
+            provinceCode: 'CA'
         }
     },
     product: {
@@ -163,7 +163,7 @@ var refundsResponseMock = JSON.stringify({
             city: 'San Francisco',
             countryCode: 'US',
             postalCode: '94526',
-            province: 'CA'
+            provinceCode: 'CA'
         },
         shippingAddress: {
             address1: '535 Mission Street',
@@ -171,7 +171,7 @@ var refundsResponseMock = JSON.stringify({
             city: 'San Francisco',
             countryCode: 'US',
             postalCode: '94526',
-            province: 'CA'
+            provinceCode: 'CA'
         }
     },
     product: {

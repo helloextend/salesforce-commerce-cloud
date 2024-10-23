@@ -66,7 +66,9 @@ function validateOffer(params) {
     var pid = params.pid.value;
 
     var paramOjb = {
-        pid: pid
+        pid: pid,
+        price: params.price,
+        category: params.category
     };
 
     var offer = extend.getOffer(paramOjb);
@@ -261,7 +263,7 @@ function getCustomer(order) {
             city: address.getCity(),
             countryCode: address.getCountryCode().toString(),
             postalCode: address.getPostalCode(),
-            province: address.getStateCode()
+            provinceCode: address.getStateCode()
         }
     };
 
@@ -281,7 +283,7 @@ function getShippingAddress(pLi) {
         city: address.getCity(),
         countryCode: address.getCountryCode().toString(),
         postalCode: address.getPostalCode(),
-        province: address.getStateCode()
+        provinceCode: address.getStateCode()
     };
 
     return JSON.stringify(shippingAddress);
