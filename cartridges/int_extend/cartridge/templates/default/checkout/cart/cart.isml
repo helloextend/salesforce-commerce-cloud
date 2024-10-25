@@ -5,7 +5,7 @@
 
 	<isscript>
 		var EXT_GLOBAL_SWITCH = dw.system.Site.current.preferences.custom.extendGlobalSwitch.value;
-        var EXT_SHIPPING_SWITCH = dw.system.Site.current.preferences.custom.enableExtendShippingProtection.value;
+		var EXT_SHIPPING_SWITCH = dw.system.Site.current.preferences.custom.enableExtendShippingProtection.value;
 		var EXT_IS_CONTRACTS_API = dw.system.Site.current.preferences.custom.extendAPIMethod.value === 'contractsAPIonSchedule' ? true : false
 
 		var pageContext = {

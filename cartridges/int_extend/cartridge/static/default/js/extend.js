@@ -47,7 +47,7 @@ function extendPDP() {
         var Extend = window.Extend || undefined;
         if (Extend) {
             var productId = $('.product-add-to-cart input[name="pid"]').val();
-            const price = $('#extend-offer').data('price') * 100;
+            const price = parseInt($('#extend-offer').data('price')) * 100;
             const category = $('#extend-offer').data('category');
             var extendComponent = window.Extend.buttons.instance('#extend-offer');
             if (extendComponent) {
@@ -111,7 +111,7 @@ function extendAddToCart(form, page, minicart, dialog, addItemToCart) {
             $('.extend-form-data').remove();
         }
     } if (EXT_PDP_UPSELL_SWITCH && !isPlanSelected && $('#extend-offer').find('iframe').length) {
-        var price = $('#extend-offer').data('price') * 100;
+        var price = parseInt($('#extend-offer').data('price')) * 100;
         var category = $('#extend-offer').data('category');
         window.Extend.modal.open({
             referenceId: $('.product-number span').text().trim(),
@@ -140,13 +140,15 @@ function upsellModal(uuid) {
     $('body').on('click', '[data-pliuuid=' + uuid + '].extend-upsell-btn', function (e) {
         e.preventDefault();
 
+        const price = parseInt($(this).data('price')) * 100;
+
         var form = {
             pid: $(this).data('pid'),
             quantity: $(this).parents('.cart-row').children('.item-quantity').find('.input-text').val(),
             options: [],
             pliUUID: $(this).data('pliuuid'),
             category: $(this).data('category'),
-            price: $(this).data('price') * 100,
+            price: price,
         };
 
 
