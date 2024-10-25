@@ -35,7 +35,9 @@ function isEligibleForWarranty() {
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
     var pid,
         qty,
-        lead;
+        lead,
+        category,
+        price;
     var response = require('*/cartridge/scripts/util/Response');
 
     // Query string parameter wasn't provided
@@ -77,10 +79,18 @@ function isEligibleForWarranty() {
         lead.custom.isWarrantable = true;
     });
 
+    price = currentBasket.productLineItems[i].price.value / qty;
+    const productData = currentBasket.productLineItems[i].getProduct();
+    category = productData.variant
+        ? productData.masterProduct.primaryCategory.getID()
+        : productData.primaryCategory.getID();
+
     response.renderJSON({
         isEligible: true,
         pid: pid,
-        qty: qty
+        qty: qty,
+        category: category,
+        price: price
     });
 }
 

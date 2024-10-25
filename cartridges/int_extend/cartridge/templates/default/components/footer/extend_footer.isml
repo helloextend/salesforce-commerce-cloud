@@ -1,10 +1,10 @@
 <iscomment>Extend SDK</iscomment>
 <script>
     var EXT_STORE_ID = "${dw.system.Site.current.preferences.custom.extendStoreID}";
-    var EXT_GLOBAL_SWITCH = ${dw.system.Site.current.preferences.custom.extendGlobalSwitch};
-    var EXT_A_EXT_GLOBAL_SWITCH = ${dw.system.Site.current.preferences.custom.extendAnalyticsSwitch};
-    var EXT_PDP_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendPDPUpsellSwitch};
-    var EXT_CART_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendCartUpsellSwitch};
+    var EXT_GLOBAL_SWITCH = ${dw.system.Site.current.preferences.custom.extendGlobalSwitch.value};
+    var EXT_A_EXT_GLOBAL_SWITCH = ${dw.system.Site.current.preferences.custom.extendAnalyticsSwitch.value};
+    var EXT_PDP_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendPDPUpsellSwitch.value};
+    var EXT_CART_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendCartUpsellSwitch.value};
     var EXT_CART_UPSELL = "${URLUtils.https('Extend-IsEligibleForWarranty')}";
     var EXT_CART_ADDTOCART = "${URLUtils.https('Extend-AddExtendProduct')}";
     var EXT_ENVIRONMENT = "${dw.system.Site.current.preferences.custom.isExtendProductionMode}".toLowerCase();

@@ -30,7 +30,7 @@ function trackOfferViewedPDP(productId) {
 function trackAddToCart(data) {
     if (data.extendPlanId) {
         if (data.area === 'product_page' || data.area === 'cart_page') {
-            Extend.trackOfferAddedToCart({
+            window.Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
                 warrantyQuantity: +data.quantity,
@@ -41,7 +41,7 @@ function trackAddToCart(data) {
                 }
             });
         } else {
-            Extend.trackOfferAddedToCart({
+            window.Extend.trackOfferAddedToCart({
                 productId: data.productId || data.pid,
                 productQuantity: +data.quantity,
                 warrantyQuantity: +data.quantity,
@@ -107,7 +107,7 @@ function trackLinkClicked(data) {
 
 function trackExtendPDP(currentTarget) {
     var productId;
-    var extendComponent = Extend.buttons.instance('#extend-offer');
+    var extendComponent = window.Extend.buttons.instance('#extend-offer');
 
     if (extendComponent) {
         productId = extendComponent.getActiveProduct().id;
@@ -257,7 +257,7 @@ function trackCartUpdate() {
 
 function initExtendAnalytics() {
     var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
-    Extend.config({ storeId: EXT_STORE_ID });
+    window.Extend.config({ storeId: EXT_STORE_ID });
 }
 
 $(document).ready(function () {

@@ -285,6 +285,7 @@ function createShippingProtectionContractLine(order) {
     }
 
     var shippingProtectionLineItem = {};
+    shippingProtectionLineItem.lineItemTransactionId = 'shipping';
     var shipmentInfo = [];
 
     shippingProtectionLineItem.type = 'shipments';
