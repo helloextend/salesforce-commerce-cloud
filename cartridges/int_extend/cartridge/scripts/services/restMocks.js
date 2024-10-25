@@ -1,6 +1,14 @@
 'use strict';
 
 /**
+ * Mock response object for oauth service call
+ */
+var oauthResponseMock = JSON.stringify({
+    token_type: 'string',
+    access_token: 'string'
+});
+
+/**
  * Mock response object for products service call
  */
 var productsResponseMock = JSON.stringify({
@@ -102,7 +110,7 @@ var contractsResponseMock = JSON.stringify({
             city: 'San Francisco',
             countryCode: 'USA',
             postalCode: '94526',
-            provinceCode: 'CA'
+            province: 'CA'
         }
     },
     product: {
@@ -163,7 +171,7 @@ var refundsResponseMock = JSON.stringify({
             city: 'San Francisco',
             countryCode: 'US',
             postalCode: '94526',
-            provinceCode: 'CA'
+            province: 'CA'
         },
         shippingAddress: {
             address1: '535 Mission Street',
@@ -171,7 +179,7 @@ var refundsResponseMock = JSON.stringify({
             city: 'San Francisco',
             countryCode: 'US',
             postalCode: '94526',
-            provinceCode: 'CA'
+            province: 'CA'
         }
     },
     product: {
@@ -278,9 +286,9 @@ var ordersResponseMock = JSON.stringify({
     waitPeriod: 0
 });
 
-
 /** Exports mocks objects */
 module.exports = {
+    oauthResponseMock: oauthResponseMock,
     productsResponseMock: productsResponseMock,
     contractsResponseMock: contractsResponseMock,
     offersResponseMock: offersResponseMock,
