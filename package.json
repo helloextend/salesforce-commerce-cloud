@@ -40,5 +40,13 @@
   },
   "paths": {
     "base": "../helloextend/cartridges/app_storefront_base/"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "core-js",
+      "es5-ext",
+      "fsevents"
+    ]
   }
 }
