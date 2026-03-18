@@ -1,3 +1,11 @@
 {
-    "hooks": "./cartridge/scripts/hooks.json"
+  "hooks": "./cartridge/scripts/hooks.json",
+  "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "core-js",
+      "es5-ext",
+      "fsevents"
+    ]
+  }
 }
