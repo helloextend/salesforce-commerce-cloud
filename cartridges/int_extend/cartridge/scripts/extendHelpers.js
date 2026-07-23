@@ -79,15 +79,6 @@ function validateOffer(params) {
         return isValid;
     }
 
-    if (+extendPrice !== usedPlan.price) {
-        logger.error('Wrong price for the warranty plan with id "{0}". Wrong: {1}. Correct: {2} ',
-            extendPlanId,
-            +extendPrice,
-            usedPlan.price
-        );
-        return isValid;
-    }
-
     var coverageType = usedPlan.contract.coverageIncludes;
 
     offerInfo.isValid = true;
