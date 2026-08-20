@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # 1. Update SFCC cartridge and tooling dependencies (package.json)
+  - package-ecosystem: "npm"
+    directory: "/" # Adjust this if your package.json is inside a specific folder like /cartridges
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # 2. Update CI/CD and deployment workflows (.github/workflows)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
