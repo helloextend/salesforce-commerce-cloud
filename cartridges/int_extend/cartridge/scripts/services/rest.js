@@ -1,7 +1,6 @@
-/* eslint-disable no-undef */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable no-shadow */
+/* eslint-disable consistent-return */
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 /* eslint-disable new-cap */
 'use strict';
 
@@ -16,23 +15,16 @@ var mocks = require('./restMocks');
  * @param {Object} configObj - configuration object
  * @returns {dw.svc.LocalServiceRegistry} - initialized service instance
  */
-function createServiceCall(configObj) {
+function createServiceCall(configObj, accessToken) {
     return require('dw/svc/LocalServiceRegistry').createService('int_extend.http.Extend', {
         createRequest: function (service, requestData) {
-            var ACCESS_TOKEN = Site.getCustomPreferenceValue('extendAccessToken');
-
             var API_VERSION = null;
             var extendAPIMethod = Site.getCustomPreferenceValue('extendAPIMethod').value;
-
-            if (!extendAPIMethod) {
-                logger.warn('Choose API method to make a call. Current API version is {0}', extendAPIMethod);
-                return;
-            }
 
             var orderApiMethod = (extendAPIMethod === 'ordersAPIonOrderCreate') || (extendAPIMethod === 'ordersAPIonSchedule');
 
             if (orderApiMethod) {
-                API_VERSION = '2022-02-01';
+                API_VERSION = 'latest';
             } else {
                 // used '2021-04-01' API version in case of contracts API
                 API_VERSION = '2021-04-01';
@@ -43,7 +35,7 @@ function createServiceCall(configObj) {
             // Set request headers
             service.addHeader('Accept', 'application/json; version=' + API_VERSION);
             service.addHeader('Content-Type', 'application/json');
-            service.addHeader('X-Extend-Access-Token', ACCESS_TOKEN);
+            if (accessToken) service.addHeader('X-Extend-Access-Token', accessToken);
 
             if (configObj.XIdempotencyKey) {
                 service.addHeader('X-Idempotency-Key', configObj.XIdempotencyKey);
@@ -61,12 +53,12 @@ function createServiceCall(configObj) {
             // Set request endpoint
             service.setURL(credential.URL + configObj.endpoint);
 
-            logger.debug('Endpoint: {1} Request: {0}', requestData, configObj.endpoint);
+            if (accessToken) logger.debug('Endpoint: {1} Request: {0}', requestData, configObj.endpoint);
 
             return requestData;
         },
         parseResponse: function (service, httpClient) {
-            logger.debug('Endpoint: {1} Response: {0}', httpClient.text, configObj.endpoint);
+            if (accessToken) logger.debug('Endpoint: {1} Response: {0}', httpClient.text, configObj.endpoint);
             return JSON.parse(httpClient.text);
         },
         filterLogMessage: function () {
@@ -91,14 +83,19 @@ function createServiceCall(configObj) {
  */
 function createRequestConfiguration(endpoint, requestObject) {
     var HashMap = require('dw/util/HashMap');
-    var UUIDUtils = require('dw/util/UUIDUtils');
-    var mocks = require('~/cartridge/scripts/services/restMocks');
     var STORE_ID = Site.getCustomPreferenceValue('extendStoreID');
+    var UUIDUtils = require('dw/util/UUIDUtils');
 
     var configObj = {};
     configObj.params = new HashMap();
 
     switch (endpoint) {
+        case 'oauth':
+            configObj.endpoint = 'auth/oauth/token';
+            configObj.method = 'POST';
+            configObj.mock = mocks.oauthResponseMock;
+            break;
+
         case 'products':
             configObj.endpoint = 'stores/' + STORE_ID + '/products';
             configObj.method = 'POST';
@@ -126,14 +123,21 @@ function createRequestConfiguration(endpoint, requestObject) {
             break;
 
         case 'offer':
-            configObj.endpoint = 'offers?storeId=' + STORE_ID + '&productId=' + requestObject.pid;
+            const product = requestObject.pid;
+            const price = requestObject.price;
+            const category = requestObject.category;
+            const region = request.locale.split('_')[1];
+            configObj.endpoint = 'offers?storeId=' + STORE_ID +
+                '&productId=' + product + '&category=' + category +
+                '&price=' + price +
+                '&region=' + region;
             configObj.method = 'GET';
             configObj.mock = mocks.offersResponseMock;
             break;
 
         case 'orders':
             configObj.endpoint = 'orders';
-            configObj.method = 'POST';
+            configObj.method = 'PUT';
             configObj.extendMethod = 'orders';
             configObj.XIdempotencyKey = UUIDUtils.createUUID();
             configObj.mock = mocks.ordersResponseMock;
@@ -176,18 +180,54 @@ function createRequestConfiguration(endpoint, requestObject) {
 /**
  * @param {string} endpointName - name of API endpoint
  * @param {Object} requestObject - payload object for request
+ * @param {string} apiMethod - name of API method
  * @returns {Object} - response object
  */
-function makeServiceCall(endpointName, requestObject) {
+function makeServiceCall(endpointName, requestObject, apiMethod) {
     var configObj = createRequestConfiguration(endpointName, requestObject);
     var requestStr = JSON.stringify(requestObject);
-    var serviceRequest = createServiceCall(configObj);
+    var ACCESS_TOKEN = getAccessToken().access_token;
+
+    var serviceRequest = createServiceCall(configObj, ACCESS_TOKEN);
     var serviceResponse = serviceRequest.call(requestStr);
 
     if (!serviceResponse.ok) {
         var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
         logger.error(
-            'Request failed! Error: {0}; Code: {1}; REQUEST: {2}',
+            'Request failed! Error: {0}; Code: {1}; REQUEST: {2} BODY: {3}',
+            serviceResponse.errorMessage,
+            serviceResponse.error,
+            serviceRequest.URL,
+            requestStr
+        );
+        return {
+            error: true,
+            errorMessage: serviceResponse.errorMessage || 'No results found.',
+            errorCode: serviceResponse.error
+        };
+    }
+
+    return serviceResponse.object;
+}
+
+function getAccessToken() {
+    var configObj = createRequestConfiguration('oauth', null);
+    var CLIENT_ID = Site.getCustomPreferenceValue('extendClientID');
+    var CLIENT_SECRET = Site.getCustomPreferenceValue('extendClientSecret');
+
+    var requestBody = JSON.stringify({
+        grant_type: "client_credentials",
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        client_assertion: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+    });
+    var serviceRequest = createServiceCall(configObj);
+    var serviceResponse = serviceRequest.call(requestBody);
+
+    if (!serviceResponse.ok) {
+        var serviceURL = LocalServiceRegistry.createService('int_extend.http.Extend', {}).getURL();
+        logger.error(
+            'Failed to get access token. Error: {0}; Code: {1}; REQUEST: {2}',
             serviceResponse.errorMessage,
             serviceResponse.error,
             serviceRequest.URL

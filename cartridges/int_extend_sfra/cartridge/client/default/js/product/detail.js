@@ -152,17 +152,19 @@ module.exports = {
     extendInit: function () {
         var EXT_STORE_ID = window.EXT_STORE_ID || undefined;
         var EXT_ENVIRONMENT = window.EXT_ENVIRONMENT || undefined;
-        if ($('#extend-offer').length) {
-            Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
-            const pid = $('.product-detail').data('pid');
-            const price = $('#extend-offer').data('price') * 100;
-            const category = $('#extend-offer').data('category');
-            const region = $('#extend-offer').data('region');
-            Extend.buttons.render('#extend-offer', {
-                referenceId: pid,
-                price: price,
-                category: category
-            });
-        }
+        window.addEventListener('load', () => {
+            if (window.Extend && $('#extend-offer').length) {
+                window.Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+                const pid = $('.product-detail').data('pid');
+                const price = $('#extend-offer').data('price') * 100;
+                const category = $('#extend-offer').data('category');
+                const region = $('#extend-offer').data('region');
+                window.Extend.buttons.render('#extend-offer', {
+                    referenceId: pid,
+                    price: price,
+                    category: category
+                });
+            }
+        });
     }
 };

@@ -15,7 +15,7 @@ function extendInit(Extend) {
         return;
     }
 
-    Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+    window.Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
 }
 
 /**
@@ -104,7 +104,7 @@ function leadOfferModalOpen() {
 
             var addToCartUrl = $('body').find('input[name=lead-offer-modal-url]').val();
 
-            Extend.aftermarketModal.open({
+            window.Extend.aftermarketModal.open({
                 leadToken: leadToken,
                 onClose: function (plan) {
                     var $extendIframe = $('#extend-offers-modal-iframe');

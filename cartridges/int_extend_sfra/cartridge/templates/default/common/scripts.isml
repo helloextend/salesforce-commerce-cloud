@@ -10,9 +10,9 @@
 <iscomment> Extend SDK</iscomment>
 <script>
     var EXT_STORE_ID = "${dw.system.Site.current.preferences.custom.extendStoreID}";
-    var EXT_ENVIRONMENT = "${dw.system.Site.current.preferences.custom.isExtendProductionMode}".toLowerCase();
-    var EXT_PDP_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendPDPUpsellSwitch};
-    var EXT_CART_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendCartUpsellSwitch};
+    var EXT_ENVIRONMENT = "${dw.system.Site.current.preferences.custom.isExtendProductionMode.value}";
+    var EXT_PDP_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendPDPUpsellSwitch.value};
+    var EXT_CART_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendCartUpsellSwitch.value};
     var EXT_CART_ADDTOCART = "${URLUtils.https('Cart-AddExtendProduct')}";
     var EXT_CART_WARRANTYCHECK = "${URLUtils.https('Cart-DoesWarrantyExists')}";
     var EXT_IS_CONTRACTS_API = ${dw.system.Site.current.preferences.custom.extendAPIMethod.value === 'contractsAPIonSchedule' ? true : false};
@@ -21,9 +21,15 @@
     var EXT_SP_REMOVEFROMCART = "${URLUtils.https('Cart-RemoveShippingProtection')}";
     var EXT_CREATE_SP_QUOTES = "${URLUtils.https('Cart-ShippingProtectionCreateQuotes')}";
     var EXT_SP_ADDTOCART = "${URLUtils.https('Cart-AddExtendShippingOffer')}";
+    var EXT_GLOBAL_SWITCH = ${dw.system.Site.current.preferences.custom.extendGlobalSwitch.value};
+
+    if(EXT_GLOBAL_SWITCH) {
+        let extendSdk = document.createElement('script');
+        extendSdk.src = "${dw.system.Site.current.preferences.custom.extendSDK}";
+        document.head.append(extendSdk);
+    }
 </script>
 
-<isif condition="${dw.system.Site.current.preferences.custom.extendGlobalSwitch}">
-    <script defer src="${dw.system.Site.current.preferences.custom.extendSDK}"></script>
+<isif condition="${dw.system.Site.current.preferences.custom.extendGlobalSwitch.value}">
     <link rel="stylesheet" href="${URLUtils.staticURL('/css/extend.css')}" />
 </isif>

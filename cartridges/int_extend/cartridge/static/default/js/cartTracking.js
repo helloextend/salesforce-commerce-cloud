@@ -25,7 +25,7 @@ function extendInit() {
         return;
     }
 
-    Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
+    window.Extend.config({ storeId: EXT_STORE_ID, environment: EXT_ENVIRONMENT });
 }
 
 $(document).ready(function () {

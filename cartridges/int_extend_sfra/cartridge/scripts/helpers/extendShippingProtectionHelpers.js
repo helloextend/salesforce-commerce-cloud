@@ -264,6 +264,8 @@ function createShippingProtectionContractLine(order) {
 
     shippingProtectionLineItem.type = 'shipments';
 
+    shippingProtectionLineItem.lineItemTransactionId = 'shipping';
+
     var extendShippingQuoteId = extendShippingProtectionLineItem.custom.extendShippingQuoteId;
     shippingProtectionLineItem.quoteId = extendShippingQuoteId;
 

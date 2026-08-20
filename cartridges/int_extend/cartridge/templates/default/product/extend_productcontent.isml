@@ -3,9 +3,17 @@
     =============================================================
 </iscomment>
 <isscript>
-    var EXT_GLOBAL_SWITCH = dw.system.Site.current.preferences.custom.extendGlobalSwitch;
-    var EXT_PDP_SWITCH = dw.system.Site.current.preferences.custom.extendPDPSwitch;
+    var EXT_GLOBAL_SWITCH = dw.system.Site.current.preferences.custom.extendGlobalSwitch.value;
+    var EXT_PDP_SWITCH = dw.system.Site.current.preferences.custom.extendPDPSwitch.value;
 </isscript>
 <isif condition="${EXT_GLOBAL_SWITCH && EXT_PDP_SWITCH}">
-    <div id="extend-offer"></div>
+    <isscript>
+        const category = product.variant
+            ? product.masterProduct.primaryCategory.getID()
+            : product.primaryCategory.getID();
+    </isscript>
+    <div id="extend-offer" 
+        data-price="${product.priceModel.price.value}" 
+        data-category="${category}" >
+    </div>
 </isif>

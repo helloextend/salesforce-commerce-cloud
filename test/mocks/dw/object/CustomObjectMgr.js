@@ -29,7 +29,7 @@ var objects = {
                         city: 'Nevercity',
                         countryCode: "US",
                         postalCode: "94526",
-                        provinceCode: "CA"
+                        province: "CA"
                     }
                 },
                 LIUUID: '24851-25134'
@@ -59,7 +59,7 @@ var objects = {
                         city: 'Nevercity',
                         countryCode: "US",
                         postalCode: "94526",
-                        provinceCode: "CA"
+                        province: "CA"
                     }
                 },
                 LIUUID: '24751-25634'
@@ -88,7 +88,7 @@ var objects = {
                         city: 'Nevercity',
                         countryCode: "US",
                         postalCode: "94526",
-                        provinceCode: "CA"
+                        province: "CA"
                     }
                 },
                 LIUUID: '24751-25634'
@@ -115,7 +115,7 @@ var objects = {
                         city: 'Nevercity',
                         countryCode: "US",
                         postalCode: "94526",
-                        provinceCode: "CA"
+                        province: "CA"
                     }
                 }
             }
@@ -144,7 +144,7 @@ var objects = {
                         city: 'Nevercity',
                         countryCode: "US",
                         postalCode: "94526",
-                        provinceCode: "CA"
+                        province: "CA"
                     }
                 }
             }
@@ -173,7 +173,7 @@ var objects = {
                         'city': 'Nevercity',
                         'countryCode': "US",
                         'postalCode': "94526",
-                        'provinceCode': "CA"
+                        'province': "CA"
                     }
                 })
             },

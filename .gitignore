@@ -5,3 +5,4 @@
 dw.json
 node_modules/
 cartridges/*/cartridge/static/default/fonts/
+cartridges/app_storefront_base

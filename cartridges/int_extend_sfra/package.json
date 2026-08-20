@@ -1,6 +1,14 @@
 {
-   "hooks": "./hooks.json",
-   "devDependencies": {
-      "sgmf-scripts": "^2.4.1"
-   }
+  "hooks": "./hooks.json",
+  "devDependencies": {
+    "sgmf-scripts": "2.4.1"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "core-js",
+      "es5-ext",
+      "fsevents"
+    ]
+  }
 }

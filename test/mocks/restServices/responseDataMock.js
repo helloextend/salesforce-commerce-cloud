@@ -20,7 +20,7 @@ var createContractResponseSuccessMock = {
                 "city": "Nevercity",
                 "countryCode": "US",
                 "postalCode": "94526",
-                "provinceCode": "CA"
+                "province": "CA"
             }
         },
         "product": {

@@ -19,11 +19,11 @@ This repository contains the Extend integrations with the Salesforce Commerce Cl
 * `int_extend` - Includes SG Controllers specific logic
 * `int_extend_sfra` - Includes SFRA specific logic
 
-### SiteGenesis Javascript Controller (SGJC)
-For the manual, please see the `Extend Sitegenesis Integration Guide` file in the `documentation` directory.
-
 ### Salesforce Reference Architecture (SFRA)
-For the manual, please see the `Extend SFRA Integration Guide` file in the `documentation` directory.
+For setup instructions please see the [Extend SFRA Integration Guide](https://docs.extend.com/docs/product-protection-5).
+
+### SiteGenesis Javascript Controller (SGJC)
+For setup instructions please see the [Extend Sitegenesis Integration Guide](https://docs.extend.com/docs/product-protection-6).
 
 ## NPM scripts
 `npm install` - Install all of the local dependencies.

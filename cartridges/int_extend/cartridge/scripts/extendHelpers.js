@@ -66,7 +66,9 @@ function validateOffer(params) {
     var pid = params.pid.value;
 
     var paramOjb = {
-        pid: pid
+        pid: pid,
+        price: params.price,
+        category: params.category
     };
 
     var offer = extend.getOffer(paramOjb);
