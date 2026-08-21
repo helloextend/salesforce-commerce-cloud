@@ -1,15 +1,148 @@
-version: 2
-updates:
-  # 1. Update SFCC cartridge and tooling dependencies (package.json)
-  - package-ecosystem: "npm"
-    directory: "/" # Adjust this if your package.json is inside a specific folder like /cartridges
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
+# Dependabot configuration — helloextend/salesforce-commerce-cloud
+#
+# Context: the buildable manifest is the root package.json (name: int_extend_sfra);
+# package manager is pnpm@10.30.3. Build chain is sgmf-scripts 2.4.1 (webpack 4 era)
+# with exact-pinned versions throughout. Major bumps to that chain are not mergeable
+# without replacing sgmf-scripts, so they are ignored below rather than left to
+# generate dead PRs.
+#
+# Only the root manifest is managed. The nested cartridge manifests
+# (cartridges/int_extend_sfra/package.json, cartridges/int_extend/package.json) pin
+# nothing beyond sgmf-scripts, whose majors are ignored anyway — managing them would
+# only add duplicate PRs. Add a "/cartridges/int_extend_sfra" entry to `directories`
+# if that cartridge's tooling ever needs independent tracking.
+#
+# NOTE: the root has BOTH pnpm-lock.yaml and a stale package-lock.json tracked.
+# Because packageManager is pnpm, Dependabot updates pnpm-lock.yaml only and the
+# package-lock.json will drift. It should be removed and gitignored (pnpm project).
 
-  # 2. Update CI/CD and deployment workflows (.github/workflows)
-  - package-ecosystem: "github-actions"
+version: 2
+
+updates:
+  # ---------------------------------------------------------------------------
+  # SFCC cartridge + build tooling (root package.json / pnpm-lock.yaml)
+  # "npm" is the correct ecosystem for pnpm — Dependabot uses it for
+  # npm, yarn, pnpm and bun alike.
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 3
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    labels:
+      - "dependencies"
+      - "sfcc"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+
+    # Hold new releases for 7 days before proposing them. Guards against
+    # supply-chain attacks via freshly published versions.
+    cooldown:
+      default-days: 7
+
+    # Batch the low-risk churn into single PRs instead of one per package.
+    groups:
+      runtime-deps:
+        applies-to: version-updates
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      build-tooling:
+        applies-to: version-updates
+        patterns:
+          - "@babel/*"
+          - "babel-*"
+          - "*-loader"
+          - "node-sass"
+          - "sgmf-scripts"
+        update-types:
+          - "minor"
+          - "patch"
+      lint-and-test:
+        applies-to: version-updates
+        patterns:
+          - "eslint*"
+          - "mocha"
+          - "chai"
+          - "sinon*"
+          - "proxyquire"
+        update-types:
+          - "minor"
+          - "patch"
+
+    ignore:
+      # Legacy webpack-4 build chain. Majors here require replacing
+      # sgmf-scripts and rewriting the compile pipeline — handle as a
+      # deliberate project, not an incremental bump.
+      - dependency-name: "sgmf-scripts"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "node-sass"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "postcss-loader"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "sass-loader"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "css-loader"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "babel-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "babel-preset-env"
+        update-types: ["version-update:semver-major"]
+      # babel-loader 9 requires webpack 5 + Node 14 — dead PR under this chain.
+      - dependency-name: "babel-loader"
+        update-types: ["version-update:semver-major"]
+
+      # eslint 3.19.0 + airbnb-base 5 + eslint-plugin-import 1.x are a matched
+      # set. eslint 9 is a flat-config rewrite; do it as one piece of work.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-config-airbnb-base"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-plugin-import"
+        update-types: ["version-update:semver-major"]
+
+      # Storefront libs pinned to the SFRA base cartridge's expectations.
+      # bootstrap 5 drops jQuery and would break SFRA templates.
+      - dependency-name: "bootstrap"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "jquery"
+        update-types: ["version-update:semver-major"]
+
+  # ---------------------------------------------------------------------------
+  # GitHub Actions — DISABLED.
+  #
+  # This repo has no workflow files in .github/workflows/. The github-actions
+  # updater requires at least one .yml/.yaml workflow there; without one it
+  # fails every run with "Dependabot couldn't find a <anything>.yml" and
+  # reports "No PRs affected now".
+  #
+  # Re-enable by uncommenting once real workflows exist (CI lint/test, or a
+  # cartridge upload pipeline).
+  # ---------------------------------------------------------------------------
+  # - package-ecosystem: "github-actions"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "monday"
+  #   open-pull-requests-limit: 3
+  #   labels:
+  #     - "dependencies"
+  #     - "ci"
+  #   commit-message:
+  #     prefix: "chore(ci)"
+  #   cooldown:
+  #     default-days: 7
+  #   groups:
+  #     actions:
+  #       patterns:
+  #         - "*"
+  #       update-types:
+  #         - "minor"
+  #         - "patch"

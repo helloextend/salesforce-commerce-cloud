@@ -4,5 +4,8 @@
 .DS_Store
 dw.json
 node_modules/
+# pnpm project — npm/yarn lockfiles are not the source of truth
+package-lock.json
+yarn.lock
 cartridges/*/cartridge/static/default/fonts/
 cartridges/app_storefront_base
