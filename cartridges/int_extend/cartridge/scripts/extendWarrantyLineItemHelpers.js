@@ -48,7 +48,8 @@ function createExtendLineItem(cart, form, Product) {
         warrantyLi.setProductName('Extend Protection Plan' + ' for ' + form.productName);
         warrantyLi.setLineItemText('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + form.productName.value);
         warrantyLi.setManufacturerSKU(form.extendPlanId);
-        warrantyLi.setPriceValue(parseInt(form.extendPrice, 10) / 100);
+        var warrantyPrice = form.isEmbedded ? 0 : (parseInt(form.extendPrice, 10) / 100);
+        warrantyLi.setPriceValue(warrantyPrice);
         warrantyLi.setQuantityValue(parseInt(quantity, 10));
         warrantyLi.custom.isWarranty = true;
         warrantyLi.custom.planId = form.extendPlanId;

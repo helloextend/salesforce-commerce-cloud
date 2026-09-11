@@ -54,7 +54,8 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form, o
     Transaction.wrap(function () {
         warrantyLi.setProductName('Extend Product Protection: ' + parseInt(form.extendTerm / 12) + ' years for ' + warrantyName);
         warrantyLi.setManufacturerSKU(form.extendPlanId);
-        warrantyLi.setPriceValue(parseFloat(form.extendPrice) / 100);
+        var warrantyPrice = offerInfo.isEmbedded ? 0 : (parseFloat(form.extendPrice) / 100);
+        warrantyLi.setPriceValue(warrantyPrice);
         warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
         warrantyLi.custom.persistentUUID = warrantyLi.UUID;
         warrantyLi.custom.isWarranty = true;

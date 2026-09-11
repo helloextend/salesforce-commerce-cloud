@@ -76,6 +76,7 @@ function validateOffer(formObject) {
 
     offerInfo.isValid = true;
     offerInfo.coverageType = coverageType;
+    offerInfo.isEmbedded = usedPlan.isEmbedded || false;
 
     return offerInfo;
 }

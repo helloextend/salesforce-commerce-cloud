@@ -266,6 +266,13 @@ function mapProductWithWarranties (productLineItems, warrantyItems) {
         var warrantyProductByPriceASC = warrantyItems.filter (function (warrantyProduct) {
             return warrantyProduct.custom.parentLineItemUUID === UUID;
         }).sort(function (a, b) {
+            var aIsEmbedded = a.custom.isEmbedded ? 1 : 0;
+            var bIsEmbedded = b.custom.isEmbedded ? 1 : 0;
+
+            if (aIsEmbedded !== bIsEmbedded) {
+                return bIsEmbedded - aIsEmbedded;
+            }
+
             var basePriceA = a.basePrice.decimalValue;
             var basePriceB = b.basePrice.decimalValue;
             return basePriceA - basePriceB;

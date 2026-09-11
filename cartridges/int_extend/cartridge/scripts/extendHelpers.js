@@ -83,6 +83,7 @@ function validateOffer(params) {
 
     offerInfo.isValid = true;
     offerInfo.coverageType = coverageType;
+    offerInfo.isEmbedded = usedPlan.isEmbedded || false;
 
     return offerInfo;
 }
@@ -155,7 +156,9 @@ function createOrUpdateExtendLineItem(cart, params, Product) {
         warrantyLi.setProductName('Extend Product Protection: ' + parseInt(params.extendTerm / 12) + ' years for ' + parentLineItem.productName);
         warrantyLi.setLineItemText('Extend Product Protection: ' + parseInt(params.extendTerm / 12) + ' years for ' + parentLineItem.productName);
         warrantyLi.setManufacturerSKU(params.extendPlanId);
-        warrantyLi.setPriceValue(parseInt(params.extendPrice, 10) / 100);
+        var isEmbedded = (offerInfo && offerInfo['isEmbedded']) || false; // prophet-ts ignore
+        var warrantyPrice = isEmbedded ? 0 : (parseInt(params.extendPrice, 10) / 100);
+        warrantyLi.setPriceValue(warrantyPrice);
         warrantyLi.setQuantityValue(parseInt(quantity, 10));
         warrantyLi.custom.parentLineItemUUID = parentLineItem.UUID;
         warrantyLi.custom.coverageType = coverageType;
