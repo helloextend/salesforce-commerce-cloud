@@ -32,46 +32,37 @@ exports.create = function () {
         if (!contract.error) {
             // Update corresponding order line item with the contract number
             var order = OrderMgr.getOrder(contractCO.custom.orderNo);
-            var orderToken = order ? order.getOrderToken() : null;
+            var orderToken = order.getOrderToken();
 
             // Resolves an order using the orderNumber and orderToken.
-            if (orderToken) {
-                order = OrderMgr.getOrder(contractCO.custom.orderNo, orderToken);
-            }
+            order = OrderMgr.getOrder(contractCO.custom.orderNo, orderToken);
 
             if (order) {
                 var orderLogObject = jobHelpers.getContractLoggerModel(order);
                 logger.info(JSON.stringify(orderLogObject));
             }
 
-            var liuuid = contractCO.custom.LIUUID;
+            var liuuid = contractCO.custom.LIUUID.substring(0, contractCO.custom.LIUUID.indexOf('-'));
 
-            if (order && liuuid) {
-                for (var i = 0; i < order.productLineItems.length; i++) {
-                    var pLi = order.productLineItems[i];
+            for (var i = 0; i < order.productLineItems.length; i++) {
+                var pLi = order.productLineItems[i];
 
-                    if (pLi.UUID === liuuid) {
-                        var extendContractIds = ArrayList(pLi.custom.extendContractId || []);
-                        extendContractIds.add(contract.id);
+                if (pLi.UUID === liuuid) {
+                    var extendContractIds = ArrayList(pLi.custom.extendContractId);
+                    extendContractIds.add(contract.id);
 
-                        Transaction.wrap(function () {
-                            pLi.custom.extendContractId = extendContractIds;
-                        });
+                    Transaction.wrap(function () {
+                        pLi.custom.extendContractId = extendContractIds;
+                    });
 
-                        break;
-                    }
+                    break;
                 }
-
-                // Decrement queue only after the contract can be linked to its order line.
-                Transaction.wrap(function () {
-                    CustomObjectMgr.remove(contractCO);
-                });
-            } else {
-                logger.error('Extend contract {0} is missing an order or LIUUID.', contract.id);
-                Transaction.wrap(function () {
-                    contractCO.custom.log = 'Missing order or LIUUID';
-                });
             }
+
+            // Decrement queue
+            Transaction.wrap(function () {
+                CustomObjectMgr.remove(contractCO);
+            });
         } else {
             logger.debug(JSON.stringify({ errorCode: contract.errorCode, errorMessage: contract.errorMessage }));
             Transaction.wrap(function () {
