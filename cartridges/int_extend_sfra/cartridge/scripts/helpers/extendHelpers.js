@@ -49,8 +49,12 @@ function validateOffer(formObject) {
     var isValid = false;
 
     var purchaseCondition = formObject.pid || formObject.leadToken;
+    var hasValue = function (value) {
+        return value !== undefined && value !== null && value !== '';
+    };
 
-    if (!formObject.extendPlanId || !purchaseCondition || !formObject.extendPrice) {
+    // Embedded plans can have an explicit price of 0.
+    if (!hasValue(formObject.extendPlanId) || !hasValue(purchaseCondition) || !hasValue(formObject.extendPrice)) {
         return isValid;
     }
 

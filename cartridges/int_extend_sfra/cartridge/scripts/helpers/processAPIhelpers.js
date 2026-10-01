@@ -111,6 +111,7 @@ function createContractsCO(order, orderID) {
                 Transaction.wrap(function () {
                     var queueObj = CustomObjectMgr.createCustomObject('ExtendContractsQueue', pLi.UUID + '-' + j);
                     queueObj.custom.orderNo = orderID;
+                    queueObj.custom.LIUUID = pLi.UUID;
                     queueObj.custom.orderTotal = moneyToCents(order.getTotalGrossPrice());
                     queueObj.custom.currency = Site.getCurrent().getDefaultCurrency();
                     queueObj.custom.plan = getExtendPlan(pLi);

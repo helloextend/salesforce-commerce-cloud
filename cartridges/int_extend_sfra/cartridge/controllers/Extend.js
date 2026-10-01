@@ -199,7 +199,10 @@ server.post('PostPurchase', function (req, res, next) {
         message: Resource.msg('text.alert.addedtobasket', 'product', null)
     };
 
-    if (offerInfo.isValid && form.extendPlanId && form.extendPrice && form.extendTerm) {
+    var hasExtendPrice = form.extendPrice !== undefined && form.extendPrice !== null && form.extendPrice !== '';
+
+    // Embedded plans can have an explicit price of 0.
+    if (offerInfo.isValid && form.extendPlanId && hasExtendPrice && form.extendTerm) {
         var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
 
         // Determine whether warranty line item already exists for this product line item

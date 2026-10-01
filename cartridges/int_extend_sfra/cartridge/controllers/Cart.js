@@ -30,42 +30,78 @@ server.append('AddProduct', function (req, res, next) {
     var currentBasket = BasketMgr.getCurrentOrNewBasket();
 
     var form = req.form;
-    var viewData = res.getViewData(); // pliUUID
+    var viewData = res.getViewData() || {};
+    var hasValue = function (value) {
+        return value !== undefined && value !== null && value !== '';
+    };
 
     var offerInfo = extendHelpers.validateOffer(form);
     var isValid = offerInfo.isValid || false;
 
-    if (isValid && form.extendPlanId && form.extendPrice && form.extendTerm && !req.form.pidsObj) {
+    // Do not use truthy checks for extendPrice: embedded plans legitimately use 0.
+    if (isValid && hasValue(form.extendPlanId) && hasValue(form.extendPrice) && hasValue(form.extendTerm)) {
         var product = ProductMgr.getProduct('EXTEND-' + form.extendTerm);
         var parentLineItem;
+        var requestedParentUUID = viewData.pliUUID || form.pliUUID;
 
-        // Determine the parent product for the current Extend warranty product
+        // Prefer the UUID supplied by the base AddProduct route or cart flow.
         for (var i = 0; i < currentBasket.productLineItems.length; i++) {
-            if (currentBasket.productLineItems[i].UUID === viewData.pliUUID) {
+            if (requestedParentUUID && currentBasket.productLineItems[i].UUID === requestedParentUUID) {
                 parentLineItem = currentBasket.productLineItems[i];
                 break;
             }
         }
 
+        // Fallback for PDP requests where the base route does not expose pliUUID.
+        if (!parentLineItem && form.pid) {
+            for (var j = currentBasket.productLineItems.length - 1; j >= 0; j--) {
+                if (currentBasket.productLineItems[j].productID === form.pid && !currentBasket.productLineItems[j].custom.isWarranty) {
+                    parentLineItem = currentBasket.productLineItems[j];
+                    break;
+                }
+            }
+        }
+
+        // Product-set requests identify their added children in pidsObj.
+        if (!parentLineItem && form.pidsObj) {
+            try {
+                var setItems = JSON.parse(form.pidsObj);
+                for (var k = currentBasket.productLineItems.length - 1; k >= 0 && !parentLineItem; k--) {
+                    for (var m = 0; m < setItems.length; m++) {
+                        if (currentBasket.productLineItems[k].productID === setItems[m].pid && !currentBasket.productLineItems[k].custom.isWarranty) {
+                            parentLineItem = currentBasket.productLineItems[k];
+                            break;
+                        }
+                    }
+                }
+            } catch (e) {
+                // Leave parentLineItem unset; the request will be safely ignored below.
+            }
+        }
+
+        // Never create an orphan warranty line when the parent cannot be resolved.
+        if (!parentLineItem) {
+            return next();
+        }
+
         // Determine whether warranty line item already exists for this product line item
         var currentWarrantyLi;
         var warrantyLis = currentBasket.getProductLineItems('EXTEND-' + form.extendTerm);
-        for (var i = 0; i < warrantyLis.length; i++) {
-            if (warrantyLis[i].custom.parentLineItemUUID === parentLineItem.UUID) {
-                currentWarrantyLi = warrantyLis[i];
+        for (var n = 0; n < warrantyLis.length; n++) {
+            if (warrantyLis[n].custom.parentLineItemUUID === parentLineItem.UUID) {
+                currentWarrantyLi = warrantyLis[n];
                 break;
             }
         }
 
         // Determine whether the product already has any warranty in cart
-        var isWarrantyInCart = null;
+        var isWarrantyInCart = false;
         var productLineItems = currentBasket.getAllProductLineItems();
-        for (var i = 0; i < productLineItems.length; i++) {
-            var pLi = productLineItems[i];
-            if (pLi.custom.persistentUUID && (pLi.productID === form.pid)) {
+        for (var q = 0; q < productLineItems.length; q++) {
+            var pLi = productLineItems[q];
+            if (pLi.custom.persistentUUID && pLi.productID === form.pid) {
                 isWarrantyInCart = true;
-            } else {
-                isWarrantyInCart = false;
+                break;
             }
         }
 
@@ -77,7 +113,7 @@ server.append('AddProduct', function (req, res, next) {
             extendWarrantyLineItemHelpers.addExtendWarrantyToCart(currentBasket, product, parentLineItem, form, offerInfo);
         }
 
-        quantityTotal = !isWarrantyInCart ? viewData.quantityTotal + parseInt(form.quantity, 10) : viewData.quantityTotal;
+        quantityTotal = !isWarrantyInCart ? parseInt(viewData.quantityTotal || 0, 10) + parseInt(form.quantity, 10) : parseInt(viewData.quantityTotal || 0, 10);
 
         Transaction.wrap(function () {
             // Normalize cart quatities for extend warranty items

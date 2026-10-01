@@ -59,6 +59,7 @@ function addExtendWarrantyToCart(currentBasket, product, parentLineItem, form, o
         warrantyLi.setQuantityValue(parseInt(form.quantity, 10));
         warrantyLi.custom.persistentUUID = warrantyLi.UUID;
         warrantyLi.custom.isWarranty = true;
+        warrantyLi.custom.isEmbedded = offerInfo.isEmbedded || false;
         warrantyLi.custom.planId = form.extendPlanId;
         if (offerInfo.coverageType) {
             warrantyLi.custom.coverageType = offerInfo.coverageType;
