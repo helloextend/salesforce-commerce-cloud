@@ -271,6 +271,40 @@ server.post('AddExtendProduct', server.middleware.https, function (req, res, nex
 
 
 /**
+ * Replace paid, non-embedded warranties when an embedded offer becomes available.
+ * This route only operates on the current basket; submitted orders are not touched.
+ */
+server.post('SyncEmbeddedWarranties', server.middleware.https, function (req, res, next) {
+    var BasketMgr = require('dw/order/BasketMgr');
+    var Transaction = require('dw/system/Transaction');
+    var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+    var normalizeCartQuantities = require('*/cartridge/scripts/normalizationCartHook');
+    var syncEmbeddedWarranties = require('~/cartridge/scripts/helpers/embeddedWarrantySync');
+
+    var currentBasket = BasketMgr.getCurrentBasket();
+
+    if (!currentBasket) {
+        res.json({
+            replaced: 0
+        });
+        return next();
+    }
+
+    var syncResult = syncEmbeddedWarranties(currentBasket);
+
+    if (syncResult.replaced > 0) {
+        Transaction.wrap(function () {
+            normalizeCartQuantities(currentBasket);
+            basketCalculationHelpers.calculateTotals(currentBasket);
+        });
+    }
+
+    res.json(syncResult);
+    return next();
+});
+
+
+/**
  * Handle deletion of Extend parent line item
  */
 server.append('RemoveProductLineItem', function (req, res, next) {

@@ -39,6 +39,57 @@ function getUsedPlan(plans, extendPlanId) {
 }
 
 /**
+ * Return the embedded plan that should replace an existing paid plan.
+ * Prefer the existing plan term, then sort by plan id for deterministic behavior.
+ * @param {Object} plans - object with plans returned by the Extend offer API
+ * @param {string|number} preferredTerm - term from the current warranty plan
+ * @returns {Object|undefined} - selected embedded plan
+ */
+function getEmbeddedPlan(plans, preferredTerm) {
+    var embeddedPlans = [];
+
+    if (!plans) {
+        return;
+    }
+
+    Object.keys(plans).forEach(function (planType) {
+        var planGroup = plans[planType];
+
+        if (!planGroup || typeof planGroup.length !== 'number') {
+            return;
+        }
+
+        for (var i = 0; i < planGroup.length; i++) {
+            var plan = planGroup[i];
+            if (plan && (plan.isEmbedded === true || plan.isEmbedded === 'true')) {
+                embeddedPlans.push(plan);
+            }
+        }
+    });
+
+    if (embeddedPlans.length === 0) {
+        return;
+    }
+
+    embeddedPlans.sort(function (firstPlan, secondPlan) {
+        var firstId = String(firstPlan.id || '');
+        var secondId = String(secondPlan.id || '');
+        return firstId < secondId ? -1 : (firstId > secondId ? 1 : 0);
+    });
+
+    if (preferredTerm !== undefined && preferredTerm !== null && preferredTerm !== '') {
+        for (var j = 0; j < embeddedPlans.length; j++) {
+            if (String(embeddedPlans[j].term) === String(preferredTerm)) {
+                return embeddedPlans[j];
+            }
+        }
+    }
+
+    return embeddedPlans[0];
+}
+
+
+/**
  * Return is offer valid
  * @param {Object} formObject - formObject with offer information
  * @returns {boolean} - is offer price valid
@@ -86,5 +137,6 @@ function validateOffer(formObject) {
 }
 
 module.exports = {
-    validateOffer: validateOffer
+    validateOffer: validateOffer,
+    getEmbeddedPlan: getEmbeddedPlan
 };

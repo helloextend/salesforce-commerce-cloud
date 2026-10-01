@@ -15,6 +15,7 @@
     var EXT_CART_UPSELL_SWITCH = ${dw.system.Site.current.preferences.custom.extendCartUpsellSwitch.value};
     var EXT_CART_ADDTOCART = "${URLUtils.https('Cart-AddExtendProduct')}";
     var EXT_CART_WARRANTYCHECK = "${URLUtils.https('Cart-DoesWarrantyExists')}";
+    var EXT_CART_EMBEDDED_SYNC = "${URLUtils.https('Cart-SyncEmbeddedWarranties')}";
     var EXT_IS_CONTRACTS_API = ${dw.system.Site.current.preferences.custom.extendAPIMethod.value === 'contractsAPIonSchedule' ? true : false};
     var EXT_SHIPPING_SWITCH = "${dw.system.Site.current.preferences.custom.enableExtendShippingProtection.value}";
     var EXT_ESP_GET_CONFIG = "${URLUtils.https('Cart-GetConfig')}";

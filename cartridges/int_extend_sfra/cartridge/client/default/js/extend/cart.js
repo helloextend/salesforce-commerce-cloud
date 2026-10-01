@@ -168,9 +168,35 @@ function initExtend() {
 }
 
 /**
- * Render the upsell buttons
+ * Sync existing paid warranties with newly available embedded offers.
+ * @param {Function} callback - callback after a no-op or failed sync
  */
-function renderUpsellBtns() {
+function syncEmbeddedWarranties(callback) {
+    if (!window.EXT_CART_EMBEDDED_SYNC || !window.EXT_GLOBAL_SWITCH || !$('.cart-page').length) {
+        callback();
+        return;
+    }
+
+    $.ajax({
+        url: window.EXT_CART_EMBEDDED_SYNC,
+        method: 'POST',
+        dataType: 'json',
+        success: function (data) {
+            if (data && data.replaced > 0) {
+                // The server has recalculated the basket; reload the rendered cart once.
+                location.reload();
+                return;
+            }
+            callback();
+        },
+        error: function () {
+            // Do not block the cart or upsell UI if the optional sync fails.
+            callback();
+        }
+    });
+}
+
+function renderUpsellButtons() {
     if (!window.EXT_CART_UPSELL_SWITCH) {
         return;
     }
@@ -185,6 +211,13 @@ function renderUpsellBtns() {
 
         makeRequestForRender(uuid, addExtendUpsellBtnCart);
     });
+}
+
+/**
+ * Render the upsell buttons
+ */
+function renderUpsellBtns() {
+    syncEmbeddedWarranties(renderUpsellButtons);
 }
 
 /**
@@ -211,6 +244,10 @@ function renderUpsellBtnsMiniCart() {
  * Rerender the button after the warranty is deleted from cart
  */
 function updateUpsellBtns() {
+    $('body').on('promotion:success', function () {
+        syncEmbeddedWarranties(renderUpsellButtons);
+    });
+
     $('body').on('click', '.cart-delete-confirmation-btn', function () {
         $('body').on('cart:update', function () {
             renderUpsellBtns();
